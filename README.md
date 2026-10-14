@@ -51,15 +51,15 @@ L'app è pensata per essere **multi-tenant** e **white label**: oggi serve un so
 
 ## Variabili d'ambiente
 
-| Variabile                       | Visibilità      | Descrizione                                                        |
-| ------------------------------- | --------------- | ------------------------------------------------------------------ |
-| `NEXT_PUBLIC_SUPABASE_URL`      | pubblica        | URL del progetto Supabase                                          |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | pubblica        | Chiave anon di Supabase (i dati sono protetti dalla RLS)           |
-| `SUPABASE_SERVICE_ROLE_KEY`     | **solo server** | Chiave service role: bypassa la RLS, non va mai esposta al browser |
-| `NEXT_PUBLIC_VAPID_PUBLIC_KEY`  | pubblica        | Chiave pubblica VAPID per la sottoscrizione alle notifiche         |
-| `VAPID_PRIVATE_KEY`             | **solo server** | Chiave privata VAPID per firmare le notifiche                      |
-| `VAPID_SUBJECT`                 | solo server     | Contatto del mittente (es. `mailto:info@esempio.it`)               |
-| `NEXT_PUBLIC_APP_URL`           | pubblica        | URL pubblico dell'app (in locale `http://localhost:3000`)          |
+| Variabile                              | Visibilità      | Descrizione                                                                           |
+| -------------------------------------- | --------------- | ------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`             | pubblica        | URL del progetto Supabase                                                             |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | pubblica        | Publishable key di Supabase (`sb_publishable_…`), i dati sono protetti dalla RLS      |
+| `SUPABASE_SECRET_KEY`                  | **solo server** | Secret key di Supabase (`sb_secret_…`): bypassa la RLS, non va mai esposta al browser |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY`         | pubblica        | Chiave pubblica VAPID per la sottoscrizione alle notifiche                            |
+| `VAPID_PRIVATE_KEY`                    | **solo server** | Chiave privata VAPID per firmare le notifiche                                         |
+| `VAPID_SUBJECT`                        | solo server     | Contatto del mittente (es. `mailto:info@esempio.it`)                                  |
+| `NEXT_PUBLIC_APP_URL`                  | pubblica        | URL pubblico dell'app (in locale `http://localhost:3000`)                             |
 
 Le variabili con prefisso `NEXT_PUBLIC_` vengono incluse nel bundle del browser: non usare mai questo prefisso per chiavi segrete. Nessun file `.env*` (tranne `.env.example`) va committato.
 
@@ -103,6 +103,6 @@ Le variabili con prefisso `NEXT_PUBLIC_` vengono incluse nel bundle del browser:
 
 ## Deploy
 
-- **Hosting**: [Netlify](https://www.netlify.com), che supporta Next.js nativamente (runtime OpenNext). Imposta le variabili d'ambiente nel pannello del sito (Site configuration > Environment variables), con `SUPABASE_SERVICE_ROLE_KEY` e `VAPID_PRIVATE_KEY` limitate allo scope delle funzioni/build e mai esposte come `NEXT_PUBLIC_`. Aggiorna `NEXT_PUBLIC_APP_URL` con il dominio di produzione.
+- **Hosting**: [Netlify](https://www.netlify.com), che supporta Next.js nativamente (runtime OpenNext). Imposta le variabili d'ambiente nel pannello del sito (Site configuration > Environment variables), con `SUPABASE_SECRET_KEY` e `VAPID_PRIVATE_KEY` limitate allo scope delle funzioni/build e mai esposte come `NEXT_PUBLIC_`. Aggiorna `NEXT_PUBLIC_APP_URL` con il dominio di produzione.
 - **Backend**: progetto Supabase creato in una **region UE** (es. Frankfurt `eu-central-1`) per la conformità GDPR, trattandosi di dati sanitari. Aggiungi l'URL di produzione tra i Redirect URLs in Authentication > URL Configuration.
 - **Migrazioni**: applica le migrazioni della cartella `supabase/migrations` con `npx supabase db push`.
