@@ -220,6 +220,42 @@ Organizzazione del codice a livelli: `src/app` (solo pagine e route, gruppi `(ad
 
 White label: nome, logo e colore dello studio sono letti dal database; il manifest della PWA è generato dinamicamente con nome e icona dello studio. In futuro ogni studio sarà riconosciuto dal sottodominio o da un dominio personalizzato.
 
+## Linee guida di sviluppo
+
+Queste regole tengono il codice ordinato e facile da modificare man mano che l'app cresce, e vanno riportate anche in `CLAUDE.md` perché le seguano gli agenti di sviluppo.
+
+**Organizzazione del frontend**
+
+- **DEV-01** Un'unica app Next.js con due interfacce separate: gruppo di route `(admin)` sotto `/admin` (desktop-first, sidebar) e `(cliente)` sotto `/app` (mobile-first, menu a tendina), ciascuno con il proprio layout. Nessuna pagina mostra contenuti diversi in base al ruolo.
+- **DEV-02** Componenti in tre livelli: `components/ui` (shadcn), `components/shared` (usati da entrambe le aree, es. FileCard, MetricChart, StatusBadge) e `features/admin` o `features/cliente` (specifici di un'area). Un componente passa in `shared` solo quando serve davvero a entrambe.
+- **DEV-03** Controllo degli accessi su tre livelli: middleware, verifica del ruolo nel layout di ogni area e Row Level Security nel database.
+- **DEV-04** Il manifest della PWA ha `/app` come pagina iniziale, così l'app installata apre l'area cliente.
+
+**Dati e logica**
+
+- **DEV-05** I componenti non accedono mai direttamente a Supabase: le pagine leggono i dati tramite i service, le modifiche passano dalle Server Actions. I Route Handler (`app/api`) si usano solo per chiamate esterne come webhook e cron.
+- **DEV-06** Un file per dominio in ogni livello (files, tracking, clients, invites, appointments), mai un unico file con tutte le chiamate.
+- **DEV-07** Le Server Actions restituiscono sempre lo stesso formato: `{ ok: true, data }` oppure `{ ok: false, error }`.
+- **DEV-08** Costanti di dominio (categorie file, stati account, fasi del percorso, etichette) in un unico file, con i tipi ricavati da lì; nessun valore "magico" nei componenti.
+- **DEV-09** Tipi TypeScript del database generati con `supabase gen types`; schemi Zod condivisi tra form e Server Actions.
+- **DEV-10** Calcoli di dominio (media settimanale, misure in ritardo, slot liberi) scritti come funzioni pure, senza dipendenze da React o Supabase.
+
+**Componenti**
+
+- **DEV-11** I componenti di presentazione ricevono i dati come props e non li recuperano da soli.
+- **DEV-12** Props piccole e intenzionali (es. `status="invited"` invece di colori e testi passati dall'esterno); varianti con `cva` invece di componenti duplicati; composizione di pezzi piccoli invece di molte props booleane.
+- **DEV-13** Ogni sezione prevede stati vuoti, di caricamento e di errore (`EmptyState`, `loading.tsx`, `error.tsx`).
+- **DEV-14** Testi dell'interfaccia raccolti in un unico punto, per correggerli facilmente e tradurli in futuro.
+
+**Convenzioni e qualità**
+
+- **DEV-15** File in kebab-case, componenti in PascalCase, suffissi `.service.ts`, `.actions.ts`, `.repository.ts`, `.schema.ts`.
+- **DEV-16** TypeScript strict, ESLint e Prettier, con controllo a ogni commit tramite Husky e lint-staged.
+- **DEV-17** GitHub Action che a ogni push esegue lint, typecheck e build.
+- **DEV-18** Test unitari con Vitest sulle funzioni pure e test end-to-end con Playwright sui flussi critici (attivazione dal link, caricamento di un file, check-in giornaliero).
+- **DEV-19** Ogni modifica al database passa da una migrazione versionata in `supabase/migrations`, mai da modifiche manuali in produzione.
+- **DEV-20** Le astrazioni si introducono quando un elemento serve la seconda o terza volta, non in anticipo; ogni decisione di architettura viene annotata in `CLAUDE.md`.
+
 ## Modello dati
 
 Il cliente è un'entità dello studio separata dall'account di login: esiste dall'import, e si collega a un utente solo quando attiva l'account.

@@ -58,7 +58,6 @@ create table public.studios (
   logo_path      text,
   primary_color  text not null default '#2E6A4E' check (primary_color ~ '^#[0-9A-Fa-f]{6}$'),
   contact_email  text,
-  timezone       text not null default 'Europe/Rome',  -- fuso per la "data di oggi" dello studio
   created_at     timestamptz not null default now(),
   updated_at     timestamptz not null default now()
 );
@@ -300,33 +299,43 @@ returns uuid language sql stable security definer set search_path = '' as $$
    where user_id = (select auth.uid()) and account_status = 'active';
 $$;
 
--- Il cliente può registrare misure: account attivo e percorso non concluso
+-- Cliente dell'utente corrente con file e tracking sbloccati (C-09):
+-- account attivo e fase diversa da Onboarding
+create or replace function private.my_unlocked_client_id()
+returns uuid language sql stable security definer set search_path = '' as $$
+  select id from public.clients
+   where user_id = (select auth.uid())
+     and account_status = 'active'
+     and journey_stage <> 'onboarding';
+$$;
+
+-- Il cliente può registrare misure solo In percorso
+-- (In pausa e Concluso = sola lettura; Onboarding = nessun accesso)
 create or replace function private.my_client_can_track()
 returns boolean language sql stable security definer set search_path = '' as $$
   select exists (
     select 1 from public.clients
      where user_id = (select auth.uid())
        and account_status = 'active'
-       and journey_stage <> 'completed'
+       and journey_stage = 'in_progress'
   );
 $$;
 
--- Data di oggi nel fuso dello studio
-create or replace function private.studio_today(p_studio uuid)
-returns date language sql stable security definer set search_path = '' as $$
-  select (now() at time zone s.timezone)::date from public.studios s where s.id = p_studio;
+-- Data di oggi in Italia (non UTC): tutti gli studi della v1.0 sono italiani.
+-- Se servirà un fuso per studio, si aggiungerà una colonna con una migrazione.
+create or replace function private.today_rome()
+returns date language sql stable set search_path = '' as $$
+  select (now() at time zone 'Europe/Rome')::date;
 $$;
 
 -- =====================================================================
 -- TRIGGER: STUDI
 -- =====================================================================
 
--- Fuso valido; dall'app il titolare modifica solo i dati di branding
+-- Dall'app il titolare modifica solo i dati di branding
 create or replace function private.guard_studio()
 returns trigger language plpgsql set search_path = '' as $$
 begin
-  perform now() at time zone new.timezone;   -- errore se il fuso non esiste
-
   if tg_op = 'UPDATE' and (select auth.uid()) is not null
      and private.changed_outside(to_jsonb(old), to_jsonb(new),
            array['name', 'logo_path', 'primary_color', 'contact_email', 'updated_at']) then
@@ -336,7 +345,7 @@ begin
 end;
 $$;
 
-create trigger studios_guard before insert or update on public.studios
+create trigger studios_guard before update on public.studios
   for each row execute function private.guard_studio();
 
 -- Misure predefinite create automaticamente per ogni nuovo studio
@@ -656,7 +665,7 @@ begin
   if m.value_type in ('score_1_5', 'score_1_10') and new.value <> trunc(new.value) then
     raise exception 'Il voto deve essere un numero intero' using errcode = 'check_violation';
   end if;
-  if new.recorded_on > private.studio_today(v_studio) then
+  if new.recorded_on > private.today_rome() then
     raise exception 'La data non può essere nel futuro' using errcode = 'check_violation';
   end if;
   new.note := nullif(trim(new.note), '');
@@ -751,7 +760,7 @@ begin
   update public.client_files
      set first_read_at = now()
    where id = p_file_id
-     and client_id = private.my_client_id()
+     and client_id = private.my_unlocked_client_id()
      and first_read_at is null
   returning first_read_at into v_read_at;
   perform set_config('app.mark_file_read', '', true);
@@ -892,7 +901,7 @@ create policy "invites: staff modifica" on public.client_invites
   using (private.is_studio_member(studio_id))
   with check (private.is_studio_member(studio_id));
 
--- CLIENT_FILES (il cliente legge soltanto; first_read_at tramite mark_file_read)
+-- CLIENT_FILES (il cliente legge soltanto, non in Onboarding; first_read_at tramite mark_file_read)
 create policy "files: staff gestisce" on public.client_files
   for all to authenticated
   using (private.is_studio_member(studio_id))
@@ -900,7 +909,7 @@ create policy "files: staff gestisce" on public.client_files
 
 create policy "files: cliente legge i propri" on public.client_files
   for select to authenticated
-  using (client_id = private.my_client_id());
+  using (client_id = private.my_unlocked_client_id());
 
 -- METRICS
 create policy "metrics: staff gestisce" on public.metrics
@@ -920,7 +929,7 @@ create policy "goals: staff gestisce" on public.client_metric_goals
 
 create policy "goals: cliente legge i propri" on public.client_metric_goals
   for select to authenticated
-  using (client_id = private.my_client_id());
+  using (client_id = private.my_unlocked_client_id());
 
 -- TRACKING_ENTRIES
 create policy "tracking: staff gestisce" on public.tracking_entries
@@ -930,7 +939,7 @@ create policy "tracking: staff gestisce" on public.tracking_entries
 
 create policy "tracking: cliente legge le proprie" on public.tracking_entries
   for select to authenticated
-  using (client_id = private.my_client_id());
+  using (client_id = private.my_unlocked_client_id());
 
 create policy "tracking: cliente crea le proprie" on public.tracking_entries
   for insert to authenticated
@@ -1005,7 +1014,7 @@ create policy "storage client-files: cliente legge i propri" on storage.objects
   using (
     bucket_id = 'client-files'
     and split_part(name, '/', 1) = private.my_client_studio_id()::text
-    and split_part(name, '/', 2) = private.my_client_id()::text
+    and split_part(name, '/', 2) = private.my_unlocked_client_id()::text
   );
 
 -- Percorso loghi: {studio_id}/<file> – solo il titolare scrive (lettura pubblica dal bucket)
