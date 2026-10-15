@@ -1,29 +1,45 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
+import { Suspense } from "react";
+
+import { StudioThemeStyle } from "@/components/shared/studio-theme-style";
+import { Toaster } from "@/components/ui/sonner";
+import { APP_BACKGROUND_COLOR } from "@/lib/constants/domain";
+import { copy } from "@/lib/copy/it";
+import { resolveStudio } from "@/server/services/studio.service";
+
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Area clienti",
-  description: "Area riservata per nutrizionisti e clienti",
+  title: copy.app.fallbackName,
+  description: copy.app.description,
 };
+
+export const viewport: Viewport = {
+  themeColor: APP_BACKGROUND_COLOR,
+};
+
+/** Tema dello studio: legge la sessione, quindi arriva in streaming dietro un Suspense. */
+async function StudioTheme() {
+  const studio = await resolveStudio();
+  return <StudioThemeStyle primaryColor={studio.primaryColor} />;
+}
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="it"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="flex min-h-full flex-col">{children}</body>
+    <html lang="it" className={`${jakarta.variable} h-full antialiased`}>
+      <body className="flex min-h-full flex-col">
+        <Suspense fallback={null}>
+          <StudioTheme />
+        </Suspense>
+        {children}
+        <Toaster theme="light" />
+      </body>
     </html>
   );
 }

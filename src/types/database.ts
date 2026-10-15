@@ -598,9 +598,11 @@ export type Database = {
       get_studio_branding: {
         Args: { p_slug: string };
         Returns: {
+          id: string;
           logo_path: string;
           name: string;
           primary_color: string;
+          slug: string;
         }[];
       };
       mark_file_read: { Args: { p_file_id: string }; Returns: string };
@@ -610,6 +612,7 @@ export type Database = {
           client_id: string;
           role: string;
           studio_id: string;
+          studio_slug: string;
         }[];
       };
       register_push_subscription: {

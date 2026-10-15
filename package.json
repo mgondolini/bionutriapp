@@ -10,7 +10,10 @@
     "format": "prettier --write .",
     "typecheck": "next typegen && tsc --noEmit",
     "db:types": "supabase gen types typescript --local --schema public > src/types/database.ts && prettier --write src/types/database.ts",
-    "db:test": "supabase test db"
+    "db:test": "supabase test db",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "studio:create": "tsx scripts/create-studio.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -44,7 +47,9 @@
     "prettier-plugin-tailwindcss": "^0.8.1",
     "supabase": "^2.120.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vitest": "^5.0.4"
   },
   "packageManager": "pnpm@12.8.1"
 }

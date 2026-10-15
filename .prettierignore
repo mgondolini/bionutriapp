@@ -7,3 +7,7 @@ package-lock.json
 next-env.d.ts
 supabase/.temp
 supabase/.branches
+
+# Documenti di riferimento e configurazioni locali: non riformattare
+docs
+.mcp.json

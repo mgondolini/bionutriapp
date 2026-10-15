@@ -1,6 +1,6 @@
 -- Accesso del cliente: solo i propri dati, solo con account attivo.
 begin;
-select plan(24);
+select plan(26);
 select tests.create_fixtures();
 
 select tests.authenticate_as(tests.id('u1'));
@@ -48,8 +48,8 @@ select is(
 );
 
 select results_eq(
-  $$ select role, client_id from public.my_context() $$,
-  $$ values ('client'::text, tests.id('c1')) $$,
+  $$ select role, client_id, studio_slug from public.my_context() $$,
+  $$ values ('client'::text, tests.id('c1'), 'test-uno'::text) $$,
   'my_context riconosce il cliente'
 );
 
@@ -57,6 +57,17 @@ select results_eq(
 select tests.authenticate_as(tests.id('u5'));
 select is_empty($$ select 1 from public.clients $$, 'un cliente disattivato non vede il proprio profilo');
 select is_empty($$ select 1 from public.client_files $$, 'un cliente disattivato non vede i propri file');
+select results_eq(
+  $$ select role, client_id, studio_slug from public.my_context() $$,
+  $$ values ('client_disabled'::text, tests.id('c5'), 'test-uno'::text) $$,
+  'my_context segnala il cliente disattivato con lo slug dello studio'
+);
+select tests.authenticate_as(tests.id('owner1'));
+select results_eq(
+  $$ select role, studio_id, studio_slug from public.my_context() $$,
+  $$ values ('owner'::text, tests.id('studio1'), 'test-uno'::text) $$,
+  'my_context riconosce il titolare'
+);
 
 -- Utente autenticato senza studio né cliente
 select tests.authenticate_as(tests.id('stranger'));

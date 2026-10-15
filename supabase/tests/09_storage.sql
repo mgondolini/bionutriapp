@@ -8,7 +8,11 @@ select results_eq(
   $$ values ('client-files'::text, false, 10485760::bigint, array['application/pdf']::text[]) $$,
   'client-files è privato, solo PDF, max 10 MB'
 );
-select is((select public from storage.buckets where id = 'studio-assets'), true, 'studio-assets è pubblico');
+select results_eq(
+  $$ select public, allowed_mime_types from storage.buckets where id = 'studio-assets' $$,
+  $$ values (true, array['image/png', 'image/jpeg']::text[]) $$,
+  'studio-assets è pubblico e accetta solo PNG e JPEG'
+);
 
 -- Oggetti di esempio (inseriti lato server)
 insert into storage.objects (bucket_id, name) values

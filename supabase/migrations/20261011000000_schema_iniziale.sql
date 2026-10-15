@@ -725,26 +725,32 @@ $$;
 revoke execute on function public.client_account_status(uuid) from public, anon;
 grant execute on function public.client_account_status(uuid) to authenticated, service_role;
 
--- Chi sono? Usata dal proxy per instradare admin / cliente
+-- Chi sono? Usata dal proxy e da getSession() per instradare admin / cliente.
+-- Ruoli: quello in studio_members ('owner'), 'client' (account attivo) oppure
+-- 'client_disabled' (account sospeso: serve a mostrare "Accesso sospeso" con
+-- il nome dello studio, che la RLS altrimenti nasconderebbe).
 create or replace function public.my_context()
-returns table (role text, studio_id uuid, client_id uuid)
+returns table (role text, studio_id uuid, studio_slug text, client_id uuid)
 language sql stable security definer set search_path = '' as $$
-  select sm.role, sm.studio_id, null::uuid
+  select sm.role, sm.studio_id, s.slug, null::uuid
     from public.studio_members sm
+    join public.studios s on s.id = sm.studio_id
    where sm.user_id = (select auth.uid())
   union all
-  select 'client', c.studio_id, c.id
+  select case c.account_status when 'active' then 'client' else 'client_disabled' end,
+         c.studio_id, s.slug, c.id
     from public.clients c
-   where c.user_id = (select auth.uid()) and c.account_status = 'active';
+    join public.studios s on s.id = c.studio_id
+   where c.user_id = (select auth.uid()) and c.account_status in ('active', 'disabled');
 $$;
 revoke execute on function public.my_context() from public, anon;
 grant execute on function public.my_context() to authenticated;
 
 -- Branding pubblico per la pagina di login (prima dell'autenticazione)
 create or replace function public.get_studio_branding(p_slug text)
-returns table (name text, logo_path text, primary_color text)
+returns table (id uuid, slug text, name text, logo_path text, primary_color text)
 language sql stable security definer set search_path = '' as $$
-  select s.name, s.logo_path, s.primary_color
+  select s.id, s.slug, s.name, s.logo_path, s.primary_color
     from public.studios s
    where s.slug = p_slug;
 $$;
@@ -972,9 +978,11 @@ on conflict (id) do update
       file_size_limit = excluded.file_size_limit,
       allowed_mime_types = excluded.allowed_mime_types;
 
--- Asset degli studi (loghi): bucket pubblico in lettura
+-- Asset degli studi (loghi): bucket pubblico in lettura.
+-- Solo PNG e JPEG: sono i formati che le icone della PWA sanno disegnare,
+-- e un SVG pubblico potrebbe contenere script.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('studio-assets', 'studio-assets', true, 2097152, array['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'])
+values ('studio-assets', 'studio-assets', true, 2097152, array['image/png', 'image/jpeg'])
 on conflict (id) do update
   set public = excluded.public,
       file_size_limit = excluded.file_size_limit,
