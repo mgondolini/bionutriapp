@@ -56,12 +56,12 @@ select throws_ok(
 -- Data
 select throws_ok(
   $$ insert into public.tracking_entries (client_id, metric_id, value, recorded_on)
-     values (tests.id('c1'), (select id from m where key = 'steps'), 4, private.studio_today(tests.id('studio1')) + 1) $$,
+     values (tests.id('c1'), (select id from m where key = 'steps'), 4, private.today_rome() + 1) $$,
   '23514', 'La data non può essere nel futuro', 'data futura rifiutata'
 );
 select lives_ok(
   $$ insert into public.tracking_entries (client_id, metric_id, value, recorded_on)
-     values (tests.id('c1'), (select id from m where key = 'steps'), 4, private.studio_today(tests.id('studio1')) - 1) $$,
+     values (tests.id('c1'), (select id from m where key = 'steps'), 4, private.today_rome() - 1) $$,
   'si può compilare il giorno precedente'
 );
 

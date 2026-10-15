@@ -457,7 +457,6 @@ export type Database = {
           name: string;
           primary_color: string;
           slug: string;
-          timezone: string;
           updated_at: string;
         };
         ComputedFields: never;
@@ -469,7 +468,6 @@ export type Database = {
           name: string;
           primary_color?: string;
           slug: string;
-          timezone?: string;
           updated_at?: string;
         };
         Update: {
@@ -480,7 +478,6 @@ export type Database = {
           name?: string;
           primary_color?: string;
           slug?: string;
-          timezone?: string;
           updated_at?: string;
         };
         Relationships: [];

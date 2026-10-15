@@ -23,19 +23,26 @@ returns uuid language sql immutable as $$
     when 'u3'      then '30000000-0000-4000-a000-000000000003'
     when 'u4'      then '30000000-0000-4000-a000-000000000004'
     when 'u5'      then '30000000-0000-4000-a000-000000000005'
+    when 'u6'      then '30000000-0000-4000-a000-000000000006'
+    when 'u7'      then '30000000-0000-4000-a000-000000000007'
     when 'stranger' then '30000000-0000-4000-a000-0000000000ff'
     when 'c1'      then '40000000-0000-4000-a000-000000000001'
     when 'c2'      then '40000000-0000-4000-a000-000000000002'
     when 'c3'      then '40000000-0000-4000-a000-000000000003'
     when 'c4'      then '40000000-0000-4000-a000-000000000004'
     when 'c5'      then '40000000-0000-4000-a000-000000000005'
+    when 'c6'      then '40000000-0000-4000-a000-000000000006'
+    when 'c7'      then '40000000-0000-4000-a000-000000000007'
     when 'f1'      then '50000000-0000-4000-a000-000000000001'
     when 'f2'      then '50000000-0000-4000-a000-000000000002'
     when 'f3'      then '50000000-0000-4000-a000-000000000003'
     when 'f5'      then '50000000-0000-4000-a000-000000000005'
+    when 'f6'      then '50000000-0000-4000-a000-000000000006'
     when 'e1'      then '60000000-0000-4000-a000-000000000001'
     when 'e2'      then '60000000-0000-4000-a000-000000000002'
     when 'e3'      then '60000000-0000-4000-a000-000000000003'
+    when 'e6'      then '60000000-0000-4000-a000-000000000006'
+    when 'e7'      then '60000000-0000-4000-a000-000000000007'
   end)::uuid;
 $$;
 
@@ -109,6 +116,8 @@ $$;
 --     c2  attivo, in percorso, utente u2   file f2, registrazione e2
 --     c4  da invitare, nuovo (onboarding)
 --     c5  disattivato, utente u5           file f5
+--     c6  attivo, onboarding, utente u6    file f6, registrazione e6
+--     c7  attivo, in pausa, utente u7      registrazione e7
 --   studio2  titolare owner2
 --     c3  attivo, in percorso, utente u3   file f3, registrazione e3
 --   stranger: utente autenticato senza studio né cliente
@@ -118,7 +127,7 @@ returns void language plpgsql as $$
 declare
   v_name text;
 begin
-  foreach v_name in array array['owner1', 'owner2', 'u1', 'u2', 'u3', 'u4', 'u5', 'stranger'] loop
+  foreach v_name in array array['owner1', 'owner2', 'u1', 'u2', 'u3', 'u4', 'u5', 'u6', 'u7', 'stranger'] loop
     perform tests.create_user(tests.id(v_name), v_name || '@test.local');
   end loop;
 
@@ -135,19 +144,26 @@ begin
     (tests.id('c2'), tests.id('studio1'), 'Cliente', 'Due',     '3330000102', 'c2@test.local', 'imported'),
     (tests.id('c3'), tests.id('studio2'), 'Cliente', 'Tre',     '3330000103', 'c3@test.local', 'imported'),
     (tests.id('c4'), tests.id('studio1'), 'Cliente', 'Quattro', '3330000104', null,            'new'),
-    (tests.id('c5'), tests.id('studio1'), 'Cliente', 'Cinque',  '3330000105', null,            'imported');
+    (tests.id('c5'), tests.id('studio1'), 'Cliente', 'Cinque',  '3330000105', null,            'imported'),
+    (tests.id('c6'), tests.id('studio1'), 'Cliente', 'Sei',     '3330000106', null,            'new'),
+    (tests.id('c7'), tests.id('studio1'), 'Cliente', 'Sette',   '3330000107', null,            'imported');
 
   -- attivazione tramite invito, come in produzione
   insert into public.client_invites (client_id, token_hash) values
     (tests.id('c1'), tests.token_hash('fixture-c1')),
     (tests.id('c2'), tests.token_hash('fixture-c2')),
     (tests.id('c3'), tests.token_hash('fixture-c3')),
-    (tests.id('c5'), tests.token_hash('fixture-c5'));
+    (tests.id('c5'), tests.token_hash('fixture-c5')),
+    (tests.id('c6'), tests.token_hash('fixture-c6')),
+    (tests.id('c7'), tests.token_hash('fixture-c7'));
   perform public.activate_client(tests.token_hash('fixture-c1'), tests.id('u1'));
   perform public.activate_client(tests.token_hash('fixture-c2'), tests.id('u2'));
   perform public.activate_client(tests.token_hash('fixture-c3'), tests.id('u3'));
   perform public.activate_client(tests.token_hash('fixture-c5'), tests.id('u5'));
+  perform public.activate_client(tests.token_hash('fixture-c6'), tests.id('u6'));
+  perform public.activate_client(tests.token_hash('fixture-c7'), tests.id('u7'));
   update public.clients set account_status = 'disabled' where id = tests.id('c5');
+  update public.clients set journey_stage = 'paused' where id = tests.id('c7');
 
   insert into public.client_files (id, client_id, category, title, storage_path, size_bytes) values
     (tests.id('f1'), tests.id('c1'), 'diet', 'Dieta c1',
@@ -157,12 +173,16 @@ begin
     (tests.id('f3'), tests.id('c3'), 'diet', 'Dieta c3',
      tests.id('studio2') || '/' || tests.id('c3') || '/' || tests.id('f3') || '.pdf', 1000),
     (tests.id('f5'), tests.id('c5'), 'report', 'Report c5',
-     tests.id('studio1') || '/' || tests.id('c5') || '/' || tests.id('f5') || '.pdf', 1000);
+     tests.id('studio1') || '/' || tests.id('c5') || '/' || tests.id('f5') || '.pdf', 1000),
+    (tests.id('f6'), tests.id('c6'), 'diet', 'Dieta c6',
+     tests.id('studio1') || '/' || tests.id('c6') || '/' || tests.id('f6') || '.pdf', 1000);
 
   insert into public.tracking_entries (id, client_id, metric_id, value, recorded_on) values
     (tests.id('e1'), tests.id('c1'), tests.metric_id(tests.id('studio1'), 'circ_waist'), 80, current_date - 1),
     (tests.id('e2'), tests.id('c2'), tests.metric_id(tests.id('studio1'), 'circ_waist'), 90, current_date - 1),
-    (tests.id('e3'), tests.id('c3'), tests.metric_id(tests.id('studio2'), 'circ_waist'), 70, current_date - 1);
+    (tests.id('e3'), tests.id('c3'), tests.metric_id(tests.id('studio2'), 'circ_waist'), 70, current_date - 1),
+    (tests.id('e6'), tests.id('c6'), tests.metric_id(tests.id('studio1'), 'circ_waist'), 75, current_date - 1),
+    (tests.id('e7'), tests.id('c7'), tests.metric_id(tests.id('studio1'), 'circ_waist'), 85, current_date - 1);
 end;
 $$;
 

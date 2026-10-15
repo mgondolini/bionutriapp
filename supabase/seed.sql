@@ -78,8 +78,12 @@ update public.clients set journey_stage = 'completed' where id = 'bbbbbbbb-2222-
 update public.clients set account_status = 'disabled' where id = 'bbbbbbbb-2222-4000-8000-000000000002';
 update public.clients set push_enabled = true          where id = 'aaaaaaaa-2222-4000-8000-000000000001';
 
--- File (solo metadati: nello Storage locale i PDF non esistono)
+-- File (solo metadati: nello Storage locale i PDF non esistono).
+-- Il file di Marco resta invisibile a lui finché è in Onboarding (C-09).
 insert into public.client_files (client_id, category, title, storage_path, size_bytes, valid_from, note, first_read_at) values
+  ('aaaaaaaa-2222-4000-8000-000000000002', 'diet', 'Piano alimentare di partenza',
+   'aaaaaaaa-1111-4000-8000-000000000000/aaaaaaaa-2222-4000-8000-000000000002/3f0e8a52-0d8b-4c47-9a35-1b7f3e1d0005.pdf',
+   204800, current_date, null, null),
   ('aaaaaaaa-2222-4000-8000-000000000001', 'diet', 'Piano alimentare settembre',
    'aaaaaaaa-1111-4000-8000-000000000000/aaaaaaaa-2222-4000-8000-000000000001/3f0e8a52-0d8b-4c47-9a35-1b7f3e1d0001.pdf',
    245760, current_date - 45, null, now() - interval '40 days'),

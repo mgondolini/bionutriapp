@@ -7,7 +7,7 @@ select tests.authenticate_as(tests.id('owner1'));
 
 select results_eq(
   $$ select id from public.clients order by id $$,
-  $$ select unnest(array[tests.id('c1'), tests.id('c2'), tests.id('c4'), tests.id('c5')]) order by 1 $$,
+  $$ select unnest(array[tests.id('c1'), tests.id('c2'), tests.id('c4'), tests.id('c5'), tests.id('c6'), tests.id('c7')]) order by 1 $$,
   'il titolare 1 vede solo i clienti del proprio studio'
 );
 
