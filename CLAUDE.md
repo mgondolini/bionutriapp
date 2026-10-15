@@ -13,21 +13,21 @@ Web app per biologi nutrizionisti: il nutrizionista (admin) carica file PDF (die
 - Supabase (Postgres, Auth, Storage, RLS) via `@supabase/supabase-js` e `@supabase/ssr`
 - Zod (validazione), react-hook-form + `@hookform/resolvers` (form; usare il componente shadcn `field` con `Controller`)
 - web-push (notifiche push VAPID), `server-only`
-- Deploy: Netlify; Supabase in region UE. Package manager: npm.
+- Deploy: Netlify; Supabase in region UE. Package manager: pnpm (versione fissata in `packageManager`).
 
 ## Comandi
 
 ```bash
-npm run dev         # server di sviluppo
-npm run build       # build di produzione
-npm run lint        # ESLint
-npm run typecheck   # next typegen + tsc --noEmit
-npm run format      # Prettier
-npx supabase migration new <nome>   # nuova migrazione
-npx supabase db push                # applica le migrazioni al progetto collegato
+pnpm dev            # server di sviluppo
+pnpm build          # build di produzione
+pnpm lint           # ESLint
+pnpm typecheck      # next typegen + tsc --noEmit
+pnpm format         # Prettier
+pnpm supabase migration new <nome>  # nuova migrazione
+pnpm supabase db push               # applica le migrazioni al progetto collegato
 ```
 
-Prima di considerare concluso un lavoro: `npm run lint`, `npm run typecheck` e `npm run build` devono passare.
+Prima di considerare concluso un lavoro: `pnpm lint`, `pnpm typecheck` e `pnpm build` devono passare.
 
 ## Architettura a livelli
 

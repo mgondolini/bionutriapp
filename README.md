@@ -16,7 +16,7 @@ L'app è pensata per essere **multi-tenant** e **white label**: oggi serve un so
 
 ## Requisiti
 
-- Node.js 20.9 o superiore (consigliato Node 22 LTS) e npm
+- Node.js 20.9 o superiore (consigliato Node 22 LTS) e pnpm (versione indicata in `packageManager` di `package.json`, attivabile con `corepack enable`)
 - Un progetto Supabase (region UE)
 - Facoltativo, per Supabase in locale: Docker
 
@@ -29,7 +29,7 @@ L'app è pensata per essere **multi-tenant** e **white label**: oggi serve un so
    ```
 2. Installa le dipendenze:
    ```bash
-   npm install
+   pnpm install
    ```
 3. Crea il file delle variabili d'ambiente e compilalo (vedi sotto):
    ```bash
@@ -37,16 +37,16 @@ L'app è pensata per essere **multi-tenant** e **white label**: oggi serve un so
    ```
 4. Genera le chiavi VAPID per le notifiche push e copiale in `.env.local`:
    ```bash
-   npx web-push generate-vapid-keys
+   pnpm exec web-push generate-vapid-keys
    ```
 5. (Facoltativo) Collega la Supabase CLI al progetto remoto per gestire le migrazioni:
    ```bash
-   npx supabase login
-   npx supabase link --project-ref <project-ref>
+   pnpm supabase login
+   pnpm supabase link --project-ref <project-ref>
    ```
 6. Avvia il server di sviluppo e apri [http://localhost:3000](http://localhost:3000):
    ```bash
-   npm run dev
+   pnpm dev
    ```
 
 ## Variabili d'ambiente
@@ -65,14 +65,16 @@ Le variabili con prefisso `NEXT_PUBLIC_` vengono incluse nel bundle del browser:
 
 ## Script disponibili
 
-| Comando             | Descrizione                                             |
-| ------------------- | ------------------------------------------------------- |
-| `npm run dev`       | Avvia il server di sviluppo                             |
-| `npm run build`     | Build di produzione                                     |
-| `npm run start`     | Avvia la build di produzione                            |
-| `npm run lint`      | Analisi statica con ESLint                              |
-| `npm run typecheck` | Genera i tipi delle route e controlla i tipi TypeScript |
-| `npm run format`    | Formatta il codice con Prettier                         |
+| Comando          | Descrizione                                             |
+| ---------------- | ------------------------------------------------------- |
+| `pnpm dev`       | Avvia il server di sviluppo                             |
+| `pnpm build`     | Build di produzione                                     |
+| `pnpm start`     | Avvia la build di produzione                            |
+| `pnpm lint`      | Analisi statica con ESLint                              |
+| `pnpm typecheck` | Genera i tipi delle route e controlla i tipi TypeScript |
+| `pnpm format`    | Formatta il codice con Prettier                         |
+
+Gli script di installazione delle dipendenze sono bloccati di default: quelli consentiti sono elencati in `allowBuilds` dentro `pnpm-workspace.yaml` (per aggiungerne uno: `pnpm approve-builds`).
 
 ## Struttura delle cartelle
 
@@ -103,6 +105,6 @@ Le variabili con prefisso `NEXT_PUBLIC_` vengono incluse nel bundle del browser:
 
 ## Deploy
 
-- **Hosting**: [Netlify](https://www.netlify.com), che supporta Next.js nativamente (runtime OpenNext). Imposta le variabili d'ambiente nel pannello del sito (Site configuration > Environment variables), con `SUPABASE_SECRET_KEY` e `VAPID_PRIVATE_KEY` limitate allo scope delle funzioni/build e mai esposte come `NEXT_PUBLIC_`. Aggiorna `NEXT_PUBLIC_APP_URL` con il dominio di produzione.
+- **Hosting**: [Netlify](https://www.netlify.com), che supporta Next.js nativamente (runtime OpenNext). Imposta le variabili d'ambiente nel pannello del sito (Site configuration > Environment variables), con `SUPABASE_SECRET_KEY` e `VAPID_PRIVATE_KEY` limitate allo scope delle funzioni/build e mai esposte come `NEXT_PUBLIC_`. Aggiorna `NEXT_PUBLIC_APP_URL` con il dominio di produzione. Netlify riconosce pnpm da `pnpm-lock.yaml` e usa la versione indicata in `packageManager`.
 - **Backend**: progetto Supabase creato in una **region UE** (es. Frankfurt `eu-central-1`) per la conformità GDPR, trattandosi di dati sanitari. Aggiungi l'URL di produzione tra i Redirect URLs in Authentication > URL Configuration.
-- **Migrazioni**: applica le migrazioni della cartella `supabase/migrations` con `npx supabase db push`.
+- **Migrazioni**: applica le migrazioni della cartella `supabase/migrations` con `pnpm supabase db push`.
