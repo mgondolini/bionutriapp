@@ -123,6 +123,18 @@ type StaffSession = Extract<Session, { kind: "staff" }>;
 type ClientSession = Extract<Session, { kind: "client" }>;
 type DisabledClientSession = Extract<Session, { kind: "client_disabled" }>;
 
+/**
+ * Per le Server Actions: la sessione dello staff con lo studio, oppure null.
+ * Le azioni rispondono con un errore invece di reindirizzare.
+ */
+export async function getStaffSession(): Promise<
+  (StaffSession & { studio: { id: string } }) | null
+> {
+  const session = await getSession();
+  if (session.kind !== "staff" || !session.studio.id) return null;
+  return session as StaffSession & { studio: { id: string } };
+}
+
 /** Secondo livello di controllo (DEV-03b): chi non è staff torna alla propria area. */
 export async function requireStaff(): Promise<StaffSession> {
   const session = await getSession();

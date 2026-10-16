@@ -7,6 +7,10 @@ import type {
   AccountStatus,
   AdminNavKey,
   ClientNavKey,
+  ClientTab,
+  CsvDiscardReason,
+  CsvFileError,
+  CsvRowWarning,
   FileCategory,
   JourneyStage,
   StaffRole,
@@ -72,6 +76,7 @@ export const copy = {
     genericError: "Si è verificato un errore. Riprova tra qualche istante.",
     invalidInput: "Controlla i dati inseriti.",
     unauthorized: "Non hai i permessi per questa operazione.",
+    comingSoon: "Disponibile a breve.",
     logoAlt: (studioName: string) => `Logo di ${studioName}`,
   },
   auth: {
@@ -131,7 +136,173 @@ export const copy = {
       description:
         "Gestisci i tuoi clienti, gli inviti, i file condivisi e le misure di tracking.",
       emptyTitle: "Nessun cliente",
-      emptyDescription: "L'elenco dei clienti arriverà nella prossima fase.",
+      emptyDescription:
+        "Crea il primo cliente oppure importa l'elenco da un file CSV.",
+      noResultsTitle: "Nessun cliente trovato",
+      noResultsDescription: "Prova a cambiare i filtri o la ricerca.",
+      resetFilters: "Azzera filtri",
+      toolbar: {
+        statusLabel: "Stato account",
+        stageLabel: "Fase del percorso",
+        allStatuses: "Tutti",
+        allStages: "Tutte",
+        option: (label: string, count: number) => `${label} (${count})`,
+        searchLabel: "Cerca",
+        searchPlaceholder: "Cerca per nome, email o telefono",
+      },
+      table: {
+        caption: "Elenco dei clienti dello studio",
+        client: "Cliente",
+        phone: "Cellulare",
+        status: "Stato account e fase",
+        lastFile: "Ultimo file",
+        lastEntry: "Ultima misura",
+        actions: "Azioni",
+        noFile: "Nessun file",
+        noEntry: "Nessuna misura",
+        lastEntryOn: (date: string) => `Registrata il ${date}`,
+      },
+      actions: {
+        newClient: "Nuovo cliente",
+        importCsv: "Importa CSV",
+        invite: "Invia invito su WhatsApp",
+        reinvite: "Reinvia invito",
+        detail: "Dettaglio",
+        detailFor: (name: string) => `Dettaglio di ${name}`,
+        inviteFor: (name: string) => `Invia invito su WhatsApp a ${name}`,
+      },
+      inviteSoon: "L'invio degli inviti su WhatsApp sarà disponibile a breve.",
+      create: {
+        title: "Nuovo cliente",
+        description: "Scegli come inserire il cliente.",
+        modeLabel: "Modalità",
+        modes: {
+          new: {
+            label: "Nuovo cliente",
+            description:
+              "Solo nome e cellulare: completerà i dati all'attivazione.",
+          },
+          full: {
+            label: "Con dati completi",
+            description:
+              "Cliente già seguito: verificherà i dati all'attivazione.",
+          },
+        },
+        firstName: "Nome",
+        lastName: "Cognome",
+        phone: "Cellulare",
+        phonePlaceholder: "333 123 4567",
+        email: "Email (facoltativa)",
+        birthDate: "Data di nascita (facoltativa)",
+        initialState: "Alla creazione",
+        initialStateHint:
+          'Lo stato diventa "Attivo" quando il cliente usa il link di invito; la fase resta questa.',
+        submit: "Crea cliente",
+        submitting: "Creazione…",
+        cancel: "Annulla",
+        created: (name: string) => `Cliente ${name} creato.`,
+        duplicatePhone:
+          "Esiste già un cliente con questo cellulare nello studio.",
+        duplicateEmail: "Esiste già un cliente con questa email nello studio.",
+      },
+      import: {
+        title: "Importa clienti da CSV",
+        description:
+          "Il file deve avere una riga di intestazione con almeno la colonna del cellulare (es. nome; cognome; cellulare; email).",
+        steps: { upload: "File", preview: "Anteprima", confirm: "Conferma" },
+        fileLabel: "File CSV",
+        chooseFile: "Scegli il file",
+        noFile: "Nessun file selezionato",
+        limits:
+          "Separatore virgola o punto e virgola, massimo 1.000 righe e 1 MB.",
+        analyze: "Analizza il file",
+        analyzing: "Analisi in corso…",
+        back: "Indietro",
+        confirm: (count: number) =>
+          count === 1 ? "Importa 1 cliente" : `Importa ${count} clienti`,
+        importing: "Importazione…",
+        summaryValid: (count: number) =>
+          count === 1 ? "1 riga valida" : `${count} righe valide`,
+        summaryDiscarded: (count: number) =>
+          count === 1 ? "1 riga scartata" : `${count} righe scartate`,
+        validTitle: "Clienti da importare",
+        validHint: "Entreranno con fase In percorso e stato Da invitare.",
+        discardedTitle: "Righe scartate",
+        warningsTitle: "Dati corretti",
+        columns: {
+          line: "Riga",
+          client: "Cliente",
+          phone: "Cellulare",
+          email: "Email",
+          reason: "Motivo",
+        },
+        noValidRows: "Nessuna riga valida da importare.",
+        imported: (count: number) =>
+          count === 1 ? "1 cliente importato." : `${count} clienti importati.`,
+        conflict:
+          "Nel frattempo un cliente con lo stesso cellulare o la stessa email è stato aggiunto: analizza di nuovo il file.",
+        discardReasons: {
+          missing_phone: "Cellulare mancante",
+          invalid_phone: "Cellulare non valido",
+          missing_name: "Nome mancante",
+          duplicate_in_file: "Duplicato nel file",
+          already_in_studio: "Cliente già presente nello studio",
+        } satisfies Record<CsvDiscardReason, string>,
+        duplicateOf: (line: number) => `uguale alla riga ${line}`,
+        warnings: {
+          invalid_email_dropped: "email non valida, importato senza email",
+          invalid_birth_date_dropped:
+            "data di nascita non valida, importato senza data",
+        } satisfies Record<CsvRowWarning, string>,
+        fileErrors: {
+          empty: "Il file è vuoto.",
+          missing_phone_column:
+            'Manca la colonna del cellulare: aggiungi un\'intestazione "cellulare" o "telefono".',
+          too_many_rows: "Il file supera il limite di 1.000 righe.",
+          too_large: "Il file supera il limite di 1 MB.",
+        } satisfies Record<CsvFileError, string>,
+        readError: "Non è stato possibile leggere il file.",
+      },
+      validation: {
+        firstNameRequired: "Inserisci il nome.",
+        lastNameRequired: "Inserisci il cognome.",
+        nameTooLong: "Massimo 80 caratteri.",
+        phoneRequired: "Inserisci il cellulare.",
+        phoneInvalid: "Il numero di cellulare non è valido.",
+        emailInvalid: "Inserisci un indirizzo email valido.",
+        birthDateInvalid: "Data di nascita non valida.",
+      },
+      detail: {
+        breadcrumb: "Clienti",
+        activeSince: (date: string) => `Attivo dal ${date}`,
+        tabsLabel: "Sezioni della scheda cliente",
+        tabs: {
+          profilo: "Profilo",
+          file: "File",
+          tracking: "Tracking",
+        } satisfies Record<ClientTab, string>,
+        placeholders: {
+          profilo: {
+            title: "Profilo",
+            description:
+              "Dati anagrafici, stato dell'account e storico del percorso arriveranno nella prossima fase.",
+          },
+          file: {
+            title: "File",
+            description:
+              "Il caricamento e l'elenco dei file arriveranno in una fase successiva.",
+          },
+          tracking: {
+            title: "Tracking",
+            description:
+              "Le misure del cliente arriveranno in una fase successiva.",
+          },
+        } satisfies Record<ClientTab, { title: string; description: string }>,
+        notFoundTitle: "Cliente non trovato",
+        notFoundDescription:
+          "Il cliente non esiste o non appartiene al tuo studio.",
+        backToList: "Torna all'elenco clienti",
+      },
     },
     settings: {
       title: "Impostazioni studio",

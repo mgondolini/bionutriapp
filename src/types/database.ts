@@ -58,6 +58,13 @@ export type Database = {
             foreignKeyName: "client_files_client_id_fkey";
             columns: ["client_id"];
             isOneToOne: false;
+            referencedRelation: "client_list";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_files_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
             referencedRelation: "clients";
             referencedColumns: ["id"];
           },
@@ -120,6 +127,13 @@ export type Database = {
             foreignKeyName: "client_invites_client_id_fkey";
             columns: ["client_id"];
             isOneToOne: false;
+            referencedRelation: "client_list";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_invites_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
             referencedRelation: "clients";
             referencedColumns: ["id"];
           },
@@ -169,6 +183,13 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "client_metric_goals_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "client_list";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "client_metric_goals_client_id_fkey";
             columns: ["client_id"];
@@ -236,6 +257,13 @@ export type Database = {
             foreignKeyName: "client_stage_events_client_id_fkey";
             columns: ["client_id"];
             isOneToOne: false;
+            referencedRelation: "client_list";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_stage_events_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
             referencedRelation: "clients";
             referencedColumns: ["id"];
           },
@@ -259,6 +287,7 @@ export type Database = {
         Row: {
           account_status: string;
           activated_at: string | null;
+          birth_date: string | null;
           created_at: string;
           email: string | null;
           first_name: string;
@@ -276,6 +305,7 @@ export type Database = {
         Insert: {
           account_status?: string;
           activated_at?: string | null;
+          birth_date?: string | null;
           created_at?: string;
           email?: string | null;
           first_name: string;
@@ -292,6 +322,7 @@ export type Database = {
         Update: {
           account_status?: string;
           activated_at?: string | null;
+          birth_date?: string | null;
           created_at?: string;
           email?: string | null;
           first_name?: string;
@@ -528,6 +559,13 @@ export type Database = {
             foreignKeyName: "tracking_entries_client_id_fkey";
             columns: ["client_id"];
             isOneToOne: false;
+            referencedRelation: "client_list";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tracking_entries_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
             referencedRelation: "clients";
             referencedColumns: ["id"];
           },
@@ -556,10 +594,40 @@ export type Database = {
       };
     };
     Views: {
+      client_list: {
+        Row: {
+          account_status: string | null;
+          created_at: string | null;
+          effective_account_status: string | null;
+          email: string | null;
+          first_name: string | null;
+          id: string | null;
+          journey_stage: string | null;
+          last_entry_on: string | null;
+          last_file_category: string | null;
+          last_file_title: string | null;
+          last_file_uploaded_at: string | null;
+          last_name: string | null;
+          origin: string | null;
+          phone: string | null;
+          studio_id: string | null;
+        };
+        ComputedFields: never;
+        Relationships: [
+          {
+            foreignKeyName: "clients_studio_id_fkey";
+            columns: ["studio_id"];
+            isOneToOne: false;
+            referencedRelation: "studios";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       clients_with_status: {
         Row: {
           account_status: string | null;
           activated_at: string | null;
+          birth_date: string | null;
           created_at: string | null;
           effective_account_status: string | null;
           email: string | null;

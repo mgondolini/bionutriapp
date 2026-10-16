@@ -68,7 +68,7 @@ Il flusso è sempre: **pagina/componente → action → service → repository �
 
 ## Decisioni sul database
 
-- **Migrazioni**: finché nulla è applicato a un progetto remoto esiste una sola migrazione, `supabase/migrations/20261011000000_schema_iniziale.sql`, che si modifica direttamente. Dal primo deploy ogni modifica è una nuova migrazione (DEV-19). I file in `docs/database` sono solo riferimento storico.
+- **Migrazioni**: `20261011000000_schema_iniziale.sql` è lo schema di partenza; da `20261016000000_client_list.sql` in poi ogni modifica è una **nuova** migrazione in `supabase/migrations` (DEV-19), mai una modifica di quelle esistenti. I file in `docs/database` sono solo riferimento storico.
 - **Versioni future**: `supabase/future/v2_appuntamenti.sql` e `v3_collaboratori.sql` non vengono applicati da `db reset`; al rilascio si spostano in `supabase/migrations` con un nuovo timestamp (vedi `supabase/future/README.md`). La v1.0 usa già il ruolo `'owner'` in `studio_members`: la 3.0 allarga solo il check.
 - **Funzioni helper** delle policy nello schema `private` (security definer, `search_path = ''`), non esposto dalle API.
 - **Trigger come garanzia**: `studio_id` delle tabelle figlie ricavato sempre dal cliente; campi protetti (`guard_*`): il cliente modifica di sé solo nome, cognome e `push_enabled`; lo staff non tocca `user_id`/`activated_at` né i campi di sistema dei file e degli inviti. `auth.uid()` nullo = operazione lato server, libera.
@@ -98,6 +98,17 @@ Il flusso è sempre: **pagina/componente → action → service → repository �
 - **Secret key**: `src/lib/supabase/admin.ts` (`server-only`), importabile solo da `src/server/repositories` (regola ESLint `no-restricted-imports`). Lo script `scripts/create-studio.ts` (`pnpm studio:create`) è uno strumento separato e usa `supabase-js` direttamente, perché i moduli `server-only` non si importano fuori da Next.
 - **Accessibilità**: pulsanti e input shadcn portati a 44 px (`h-11`) nei componenti `ui`; link "Vai al contenuto"; menu e pannelli Base UI navigabili da tastiera.
 - **Test**: Vitest (`pnpm test`) su funzioni pure e service con repository simulati; `server-only` è sostituito da uno stub in `vitest.config.mts`.
+
+## Decisioni di architettura (fase 3: clienti)
+
+- **Elenco con una query**: la vista `client_list` (`security_invoker`, su `clients_with_status`) restituisce per ogni cliente stato calcolato, fase, ultimo file e data dell'ultima misura con due `LEFT JOIN LATERAL` (indici `client_files_last_idx`, `tracking_entries_last_idx`). `clients.repository.listClients()` fa una sola SELECT; filtri, ricerca e conteggi sono funzioni pure in `src/lib/clients/list-filters.ts` (circa 100 clienti per studio, NF-11).
+- **Conteggi a faccette**: ogni select conta applicando la ricerca e l'altro filtro, non il proprio.
+- **URL**: filtri e ricerca in `?stato=…&fase=…&q=…` (`CLIENT_LIST_PARAMS`), costruiti con `clientListUrl()`. Un filtro fa `router.push` (Indietro lo annulla), la ricerca `router.replace` con 300 ms di ritardo. Valori non validi ignorati da `clientListParamsSchema`.
+- **Telefono**: `src/lib/phone.ts` con libphonenumber-js (paese predefinito IT) per normalizzazione in E.164, formattazione e ricerca (cifre con e senza 39/0039). Il trigger del database resta la seconda barriera.
+- **Creazione (A-04)**: `createClientSchema` è un'unione discriminata su `mode` ("new" → origine `new`, "full" → `imported`); il form usa valori "piatti" (`CreateClientFormValues`) e invia alla Server Action i valori grezzi (`raw: true`), che li rivalida. Fase iniziale e stato `to_invite` li impone il trigger; i duplicati arrivano dagli indici unici e vengono tradotti in errori di campo.
+- **Import CSV (A-05)**: il file viene letto nel browser e passa alle Server Actions come testo (anteprima e conferma). Parsing in `src/lib/csv/parse-clients-csv.ts` (separatore ricavato dall'intestazione, alias italiani), pulizia in `src/lib/csv/clean-clients.ts` (righe scartate con motivo, correzioni come avvisi). Alla conferma il server rianalizza il file e inserisce con un solo INSERT (atomico); un conflitto nel frattempo annulla tutto. Limiti: 1.000 righe e 1 MB, verificati anche sul server.
+- **Scheda cliente**: `/admin/clienti/[id]` con schede come rotte figlie (`profilo`, `file`, `tracking`, `clientDetailPath()`); id non valido, inesistente o di un altro studio → `notFound()` (la RLS nasconde gli altri studi). Il layout sta dietro un Suspense, quindi la pagina 404 arriva nello stream (stato HTTP 200).
+- **Inviti**: `invites.actions.ts` controlla sessione e input ma per ora risponde "Disponibile a breve" (fase 4).
 
 ## Lingua
 

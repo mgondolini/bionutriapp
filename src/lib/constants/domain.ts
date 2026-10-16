@@ -91,3 +91,83 @@ export const LOGO_MIME_TYPES = ["image/png", "image/jpeg"] as const;
 export type LogoMimeType = (typeof LOGO_MIME_TYPES)[number];
 
 export const PASSWORD_MIN_LENGTH = 8;
+
+/** Stati dell'account per cui si può inviare (o reinviare) l'invito su WhatsApp (N-01). */
+export const INVITABLE_STATUSES: readonly AccountStatus[] = [
+  "to_invite",
+  "invited",
+  "invite_expired",
+];
+
+/** Origine del cliente: "imported" = già nel database (CSV o dati completi), "new" = solo nome e cellulare. */
+export const CLIENT_ORIGINS = ["imported", "new"] as const;
+export type ClientOrigin = (typeof CLIENT_ORIGINS)[number];
+
+/** Fase con cui nasce un cliente, uguale a quella che avrà dopo l'attivazione (A-04). */
+export const INITIAL_STAGE_BY_ORIGIN: Record<ClientOrigin, JourneyStage> = {
+  imported: "in_progress",
+  new: "onboarding",
+};
+
+/** Modalità del dialog "Nuovo cliente" (A-04) e origine corrispondente. */
+export const CLIENT_CREATION_MODES = ["new", "full"] as const;
+export type ClientCreationMode = (typeof CLIENT_CREATION_MODES)[number];
+export const ORIGIN_BY_CREATION_MODE: Record<ClientCreationMode, ClientOrigin> =
+  {
+    new: "new",
+    full: "imported",
+  };
+
+/** Nomi dei parametri dell'URL dell'elenco clienti (filtri e ricerca condivisibili). */
+export const CLIENT_LIST_PARAMS = {
+  status: "stato",
+  stage: "fase",
+  query: "q",
+} as const;
+export const CLIENT_SEARCH_MAX_LENGTH = 100;
+/** Cifre minime perché la ricerca consideri anche il cellulare. */
+export const PHONE_SEARCH_MIN_DIGITS = 3;
+
+/** Paese predefinito per i numeri scritti senza prefisso internazionale. */
+export const DEFAULT_PHONE_COUNTRY = "IT";
+
+/** Import da CSV (A-05): limiti validati nel browser e sul server. */
+export const CSV_MAX_ROWS = 1000;
+export const CSV_MAX_BYTES = 1024 * 1024;
+
+/** Motivi per cui una riga del CSV viene scartata. */
+export const CSV_DISCARD_REASONS = [
+  "missing_phone",
+  "invalid_phone",
+  "missing_name",
+  "duplicate_in_file",
+  "already_in_studio",
+] as const;
+export type CsvDiscardReason = (typeof CSV_DISCARD_REASONS)[number];
+
+/** Correzioni applicate a una riga valida (il dato non valido viene tralasciato). */
+export const CSV_ROW_WARNINGS = [
+  "invalid_email_dropped",
+  "invalid_birth_date_dropped",
+] as const;
+export type CsvRowWarning = (typeof CSV_ROW_WARNINGS)[number];
+
+/** Errori del file CSV nel suo insieme. */
+export const CSV_FILE_ERRORS = [
+  "empty",
+  "missing_phone_column",
+  "too_many_rows",
+  "too_large",
+] as const;
+export type CsvFileError = (typeof CSV_FILE_ERRORS)[number];
+
+/** Schede della scheda cliente (A4), rotte figlie di /admin/clienti/[id]. */
+export const CLIENT_TABS = ["profilo", "file", "tracking"] as const;
+export type ClientTab = (typeof CLIENT_TABS)[number];
+
+export function clientDetailPath(
+  clientId: string,
+  tab: ClientTab = "profilo",
+): string {
+  return `${ROUTES.admin.clients}/${clientId}/${tab}`;
+}

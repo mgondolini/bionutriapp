@@ -47,7 +47,7 @@ insert into public.studio_members (studio_id, user_id, role, display_name) value
 
 -- Clienti (cellulari nel formato di input: il trigger li normalizza in E.164)
 insert into public.clients (id, studio_id, first_name, last_name, phone, email, origin) values
-  ('aaaaaaaa-2222-4000-8000-000000000001', 'aaaaaaaa-1111-4000-8000-000000000000', 'Anna',   'Rossi',   '333 000 0001', 'Anna.Rossi@Example.test', 'imported'),
+  ('aaaaaaaa-2222-4000-8000-000000000001', 'aaaaaaaa-1111-4000-8000-000000000000', 'Anna',   'Rossi',   '333 123 4567', 'Anna.Rossi@Example.test', 'imported'),
   ('aaaaaaaa-2222-4000-8000-000000000002', 'aaaaaaaa-1111-4000-8000-000000000000', 'Marco',  null,      '+39 333 000 0002', null,                    'new'),
   ('aaaaaaaa-2222-4000-8000-000000000003', 'aaaaaaaa-1111-4000-8000-000000000000', 'Giulia', 'Verdi',   '0039 333 000 0003', 'giulia.verdi@example.test', 'imported'),
   ('aaaaaaaa-2222-4000-8000-000000000004', 'aaaaaaaa-1111-4000-8000-000000000000', 'Luca',   null,      '333-000-0004', null,                        'new'),
@@ -77,6 +77,7 @@ update public.clients set journey_stage = 'paused'    where id = 'bbbbbbbb-2222-
 update public.clients set journey_stage = 'completed' where id = 'bbbbbbbb-2222-4000-8000-000000000002';
 update public.clients set account_status = 'disabled' where id = 'bbbbbbbb-2222-4000-8000-000000000002';
 update public.clients set push_enabled = true          where id = 'aaaaaaaa-2222-4000-8000-000000000001';
+update public.clients set birth_date = '1991-03-12'    where id = 'aaaaaaaa-2222-4000-8000-000000000001';
 
 -- File (solo metadati: nello Storage locale i PDF non esistono).
 -- Il file di Marco resta invisibile a lui finché è in Onboarding (C-09).
