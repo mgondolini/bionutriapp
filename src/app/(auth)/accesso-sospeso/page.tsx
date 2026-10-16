@@ -1,10 +1,13 @@
+import { Suspense } from "react";
+
 import { LogoutButton } from "@/components/shared/logout-button";
-import { copy } from "@/lib/copy/it";
+import { PageLoading } from "@/components/shared/page-states";
 import { AuthCard } from "@/features/auth/auth-card";
+import { copy } from "@/lib/copy/it";
 import { requireDisabledClient } from "@/server/services/session.service";
 
-/** Cliente con account disattivato dallo studio. */
-export default async function SuspendedPage() {
+/** La sessione è un dato della richiesta: dietro Suspense (Cache Components). */
+async function SuspendedCard() {
   const session = await requireDisabledClient();
   return (
     <AuthCard
@@ -13,5 +16,14 @@ export default async function SuspendedPage() {
     >
       <LogoutButton />
     </AuthCard>
+  );
+}
+
+/** Cliente con account disattivato dallo studio. */
+export default function SuspendedPage() {
+  return (
+    <Suspense fallback={<PageLoading />}>
+      <SuspendedCard />
+    </Suspense>
   );
 }

@@ -1,11 +1,6 @@
-"use client";
-
-import { MessageCircle } from "lucide-react";
 import Link from "next/link";
-import { useTransition } from "react";
-import { toast } from "sonner";
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   INVITABLE_STATUSES,
   clientDetailPath,
@@ -13,7 +8,8 @@ import {
 } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { cn } from "@/lib/utils";
-import { sendWhatsAppInviteAction } from "@/server/actions/invites.actions";
+
+import { WhatsAppInviteButton } from "./whatsapp-invite-button";
 
 const t = copy.admin.clients.actions;
 
@@ -34,29 +30,18 @@ export function ClientRowActions({
   accountStatus,
   className,
 }: ClientRowActionsProps) {
-  const [isPending, startTransition] = useTransition();
   const canInvite = INVITABLE_STATUSES.includes(accountStatus);
   const inviteLabel = accountStatus === "to_invite" ? t.invite : t.reinvite;
-
-  const invite = () =>
-    startTransition(async () => {
-      const result = await sendWhatsAppInviteAction({ clientId });
-      if (result.ok) window.open(result.data.whatsappUrl, "_blank", "noopener");
-      else toast.error(result.error);
-    });
 
   return (
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
       {canInvite ? (
-        <Button
-          type="button"
-          onClick={invite}
-          disabled={isPending}
-          aria-label={t.inviteFor(name)}
-        >
-          <MessageCircle aria-hidden="true" />
-          {inviteLabel}
-        </Button>
+        <WhatsAppInviteButton
+          clientId={clientId}
+          name={name}
+          label={inviteLabel}
+          ariaLabel={t.inviteFor(name)}
+        />
       ) : null}
       <Link
         href={clientDetailPath(clientId)}

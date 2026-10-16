@@ -1,11 +1,21 @@
 import "server-only";
 
+import type { LoginIdentifier } from "@/lib/auth/login-identifier";
 import { createClient } from "@/lib/supabase/server";
 
-/** Login con email e password; i cookie di sessione vengono scritti dal client server. */
-export async function signInWithPassword(email: string, password: string) {
+/**
+ * Login con email o cellulare (E.164) e password; i cookie di sessione
+ * vengono scritti dal client server.
+ */
+export async function signInWithPassword(
+  identifier: LoginIdentifier,
+  password: string,
+) {
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabase.auth.signInWithPassword({
+    ...identifier,
+    password,
+  });
   return { ok: !error };
 }
 

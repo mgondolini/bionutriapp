@@ -102,14 +102,12 @@ async function main() {
     fail(`creazione dello studio non riuscita: ${studioError?.message}`);
   }
 
-  const { error: memberError } = await supabase
-    .from("studio_members")
-    .insert({
-      studio_id: studio.id,
-      user_id: userId,
-      role: "owner",
-      display_name: displayName!,
-    });
+  const { error: memberError } = await supabase.from("studio_members").insert({
+    studio_id: studio.id,
+    user_id: userId,
+    role: "owner",
+    display_name: displayName!,
+  });
   if (memberError) {
     await supabase.from("studios").delete().eq("id", studio.id);
     await supabase.auth.admin.deleteUser(userId);

@@ -33,6 +33,7 @@ import { FormMessage } from "@/components/shared/form-message";
 import { formatRatio, isHexColor, pickForeground } from "@/lib/color";
 import { DEFAULT_PRIMARY_COLOR, LOGO_MIME_TYPES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import { useHydrated } from "@/lib/use-hydrated";
 import { updateStudioSettingsAction } from "@/server/actions/studio.actions";
 import {
   studioSettingsSchema,
@@ -109,6 +110,7 @@ function ClientPreview({
 export function StudioSettingsForm({ initial }: StudioSettingsFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const hydrated = useHydrated();
   const form = useForm<StudioSettingsFormInput>({
     resolver: zodResolver(studioSettingsSchema),
     defaultValues: {
@@ -164,7 +166,7 @@ export function StudioSettingsForm({ initial }: StudioSettingsFormProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={onSubmit} noValidate>
+          <form method="post" onSubmit={onSubmit} noValidate>
             <FieldGroup>
               {error ? <FormMessage>{error}</FormMessage> : null}
 
@@ -273,7 +275,7 @@ export function StudioSettingsForm({ initial }: StudioSettingsFormProps) {
 
               <Button
                 type="submit"
-                disabled={isPending}
+                disabled={!hydrated || isPending}
                 className="w-full sm:w-fit"
               >
                 {isPending ? t.submitting : t.submit}

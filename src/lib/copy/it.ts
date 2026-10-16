@@ -7,6 +7,7 @@ import type {
   AccountStatus,
   AdminNavKey,
   ClientNavKey,
+  ClientOrigin,
   ClientTab,
   CsvDiscardReason,
   CsvFileError,
@@ -15,6 +16,7 @@ import type {
   JourneyStage,
   StaffRole,
 } from "@/lib/constants/domain";
+import type { JourneyAction } from "@/lib/domain/journey";
 
 const accountStatus: Record<AccountStatus, string> = {
   to_invite: "Da invitare",
@@ -83,14 +85,14 @@ export const copy = {
     login: {
       title: "Accedi",
       description: "Entra nella tua area riservata.",
-      identifierLabel: "Email",
-      identifierPlaceholder: "nome@esempio.it",
+      identifierLabel: "Email o cellulare",
+      identifierPlaceholder: "nome@esempio.it o 333 123 4567",
       passwordLabel: "Password",
       submit: "Accedi",
       submitting: "Accesso in corso…",
       forgotPassword: "Password dimenticata?",
-      invalidCredentials: "Email o password non corretti.",
-      accountNotEnabled: "Email o password non corretti.",
+      invalidCredentials: "Credenziali non corrette.",
+      accountNotEnabled: "Credenziali non corrette.",
     },
     recover: {
       title: "Recupera la password",
@@ -101,6 +103,11 @@ export const copy = {
       submitting: "Invio in corso…",
       sent: "Se l'indirizzo è registrato, riceverai un'email con il link per reimpostare la password.",
       backToLogin: "Torna all'accesso",
+      noEmailTitle: "Non hai un'email nell'account?",
+      noEmail:
+        "Chiedi allo studio un nuovo link: te lo invia su WhatsApp e potrai scegliere una nuova password.",
+      phoneEntered:
+        "Il recupero via email vale solo per chi ha un'email. Chiedi allo studio un nuovo link su WhatsApp.",
     },
     newPassword: {
       title: "Scegli una nuova password",
@@ -120,7 +127,9 @@ export const copy = {
         `Il tuo accesso è stato sospeso. Per informazioni contatta ${studioName}.`,
     },
     validation: {
-      identifierRequired: "Inserisci la tua email.",
+      identifierRequired: "Inserisci la tua email o il cellulare.",
+      identifierInvalid: "Inserisci un'email valida o un numero di cellulare.",
+      emailRequired: "Inserisci la tua email.",
       emailInvalid: "Inserisci un indirizzo email valido.",
       passwordRequired: "Inserisci la password.",
       passwordTooShort: "La password deve avere almeno 8 caratteri.",
@@ -171,7 +180,16 @@ export const copy = {
         detailFor: (name: string) => `Dettaglio di ${name}`,
         inviteFor: (name: string) => `Invia invito su WhatsApp a ${name}`,
       },
-      inviteSoon: "L'invio degli inviti su WhatsApp sarà disponibile a breve.",
+      invite: {
+        sending: "Preparazione del link…",
+        sent: (name: string) =>
+          `Link creato per ${name}: invia il messaggio da WhatsApp.`,
+        popupBlocked:
+          "Il browser ha bloccato la finestra di WhatsApp: consenti i popup per questo sito e riprova.",
+        failed: "Non è stato possibile creare l'invito. Riprova.",
+        disabled:
+          "Il cliente è disattivato: riattivalo prima di inviare un invito.",
+      },
       create: {
         title: "Nuovo cliente",
         description: "Scegli come inserire il cliente.",
@@ -275,6 +293,8 @@ export const copy = {
       detail: {
         breadcrumb: "Clienti",
         activeSince: (date: string) => `Attivo dal ${date}`,
+        notActiveYet: "Account non ancora attivo",
+        stageOnActivation: (stage: string) => `${stage} all'attivazione`,
         tabsLabel: "Sezioni della scheda cliente",
         tabs: {
           profilo: "Profilo",
@@ -282,11 +302,6 @@ export const copy = {
           tracking: "Tracking",
         } satisfies Record<ClientTab, string>,
         placeholders: {
-          profilo: {
-            title: "Profilo",
-            description:
-              "Dati anagrafici, stato dell'account e storico del percorso arriveranno nella prossima fase.",
-          },
           file: {
             title: "File",
             description:
@@ -297,11 +312,127 @@ export const copy = {
             description:
               "Le misure del cliente arriveranno in una fase successiva.",
           },
-        } satisfies Record<ClientTab, { title: string; description: string }>,
+        } satisfies Record<
+          Exclude<ClientTab, "profilo">,
+          { title: string; description: string }
+        >,
         notFoundTitle: "Cliente non trovato",
         notFoundDescription:
           "Il cliente non esiste o non appartiene al tuo studio.",
         backToList: "Torna all'elenco clienti",
+      },
+      profile: {
+        data: {
+          title: "Dati del cliente",
+          edit: "Modifica",
+          cancel: "Annulla",
+          save: "Salva",
+          saving: "Salvataggio…",
+          saved: "Dati salvati.",
+          firstName: "Nome",
+          lastName: "Cognome",
+          phone: "Cellulare",
+          email: "Email",
+          birthDate: "Data di nascita",
+          origin: "Origine",
+          empty: "—",
+          age: (date: string, years: number) =>
+            `${date} (${years} ${years === 1 ? "anno" : "anni"})`,
+          origins: {
+            imported: "Già seguito dallo studio (dati completi)",
+            new: "Inserito dallo studio (nuovo cliente)",
+          } satisfies Record<ClientOrigin, string>,
+          completedOnActivation: (name: string) =>
+            `I dati mancanti li inserisce ${name} quando attiva l'account.`,
+          authSyncHint:
+            "Il cliente ha un account: cambiando cellulare o email cambia anche il modo in cui accede.",
+          authConflict:
+            "Questo cellulare o questa email è già usato da un altro account.",
+          emailRequired:
+            "Il cliente accede anche con l'email: puoi cambiarla ma non toglierla.",
+        },
+        account: {
+          title: "Account",
+          status: "Stato account",
+          activation: "Data di attivazione",
+          notActivated: "Non ancora attivato",
+          notifications: "Notifiche",
+          pushOn: "Push attive",
+          pushOff: "Push non attive",
+          noNotifications: "—",
+          disable: "Disattiva account",
+          disableHint:
+            "L'accesso viene sospeso. Fase e dati restano invariati.",
+          enable: "Riattiva account",
+          enableHint:
+            "Il cliente torna ad accedere con le credenziali di prima. Se non aveva ancora un account, va invitato di nuovo.",
+          confirmDisableTitle: (name: string) =>
+            `Disattivare l'account di ${name}?`,
+          confirmDisable:
+            "Il cliente viene disconnesso subito e non potrà più accedere finché non riattivi l'account. Gli inviti aperti vengono annullati. Fase del percorso, file e misure restano invariati.",
+          confirmEnableTitle: (name: string) =>
+            `Riattivare l'account di ${name}?`,
+          confirmEnable: "Il cliente potrà di nuovo accedere all'app.",
+          confirm: "Conferma",
+          cancel: "Annulla",
+          disabled: "Account disattivato.",
+          enabled: "Account riattivato.",
+        },
+        invite: {
+          title: "Invito su WhatsApp",
+          lastSent: "Ultimo invio",
+          expiresAt: "Scadenza",
+          usedAt: "Link usato il",
+          never: "Mai inviato",
+          link: "Link",
+          linkInfo: "Personale, monouso, valido 14 giorni",
+          expiredNotice: (date: string) =>
+            `Invito scaduto il ${date}. Il link non è stato usato entro 14 giorni.`,
+          previewTitle: (phone: string) =>
+            `Messaggio che si apre in WhatsApp, verso ${phone}`,
+          previewLinkPlaceholder: "[link personale]",
+          previewNote: "Solo nome dello studio e link",
+          send: "Invia invito su WhatsApp",
+          resend: "Reinvia invito su WhatsApp",
+          newLink: "Invia nuovo link su WhatsApp",
+          sendHint:
+            "Si apre WhatsApp con il messaggio pronto. L'app registra la data dell'invio.",
+          resendHint:
+            "Il nuovo link annulla quello precedente. L'app registra la data dell'invio.",
+          newLinkHint:
+            "Per chi ha dimenticato la password e non ha un'email. Il nuovo link annulla il precedente.",
+          disabledHint: "Riattiva l'account per inviare un invito.",
+        },
+        stage: {
+          title: "Fase del percorso",
+          notAssigned: "Non ancora assegnata",
+          notAssignedHint: (stage: string) =>
+            `La fase parte quando il cliente attiva l'account: entrerà in ${stage}.`,
+          since: (stage: string, date: string) => `${stage} dal ${date}.`,
+          actions: {
+            complete_onboarding: "Onboarding completato",
+            pause: "Metti in pausa",
+            complete: "Concludi percorso",
+            resume: "Riprendi percorso",
+          } satisfies Record<JourneyAction, string>,
+          onboardingHint:
+            "Il cliente passa In percorso e sblocca file e tracking. Finché è in Onboarding vede solo la home di benvenuto.",
+          hint: "Ogni cambio è registrato nello storico.",
+          changed: (stage: string) => `Fase aggiornata: ${stage}.`,
+          notAllowed: "Questo cambio di fase non è consentito.",
+          conflict:
+            "La fase è stata cambiata nel frattempo: ricarica la pagina.",
+        },
+        history: {
+          title: "Storico del percorso",
+          empty: "Lo storico del percorso compare dopo l'attivazione.",
+          created: "Creazione",
+          transition: (from: string, to: string) => `${from} → ${to}`,
+          manual: (author: string) => `Manuale, ${author}`,
+          manualUnknown: "Manuale",
+          automatic: "Automatico",
+          meta: (date: string, author: string) => `${date} · ${author}`,
+        },
       },
     },
     settings: {
@@ -353,9 +484,31 @@ export const copy = {
       title: "Home",
       description:
         "Qui troverai l'ultimo file pubblicato e le misure da registrare.",
-      onboardingTitle: "Benvenuto!",
-      onboardingDescription:
-        "Il tuo nutrizionista ti contatterà per la chiamata di onboarding. Dopo la chiamata qui troverai diete, allenamenti, report e tracking.",
+      onboarding: {
+        welcome: "Ti diamo il benvenuto",
+        title: (studioName: string) =>
+          `Il tuo percorso con ${studioName} inizia con una chiamata`,
+        description: (studioName: string) =>
+          `${studioName} ti chiamerà per conoscerti e preparare il tuo piano. Prima della chiamata non serve fare nulla.`,
+        stepsTitle: "I prossimi passi",
+        steps: [
+          {
+            title: "Account attivato",
+            description: "Hai completato i tuoi dati.",
+          },
+          {
+            title: "Chiamata di onboarding",
+            description: "Data e ora le concordi con lo studio.",
+          },
+          {
+            title: "Ricevi il tuo primo piano",
+            description: "Appare qui, con la tua area personale.",
+          },
+        ],
+        stepDone: " (completato)",
+        areaTitle: "Area personale",
+        locked: "Si sblocca dopo l'onboarding",
+      },
     },
     sections: {
       diets: {
@@ -385,6 +538,61 @@ export const copy = {
         emptyDescription:
           "Dati personali, password e notifiche arriveranno nelle prossime fasi.",
       },
+    },
+  },
+  invites: {
+    /** Messaggio WhatsApp precompilato: SOLO nome dello studio e link (N-05). */
+    whatsappMessage: (studioName: string, link: string) =>
+      `Ciao! ${studioName} ti invita ad attivare il tuo account: ${link}`,
+  },
+  activation: {
+    metaTitle: "Attiva il tuo account",
+    title: "Attiva il tuo account",
+    introImported: (firstName: string) =>
+      `Ciao ${firstName}, lo studio ha già inserito i tuoi dati. Controllali e scegli una password.`,
+    introNew: (studioName: string) =>
+      `Ti diamo il benvenuto in ${studioName}. Completa i tuoi dati e scegli una password.`,
+    verifiedPhone: (phone: string) => `Numero verificato: ${phone}`,
+    dataTitle: "I tuoi dati",
+    firstName: "Nome",
+    lastName: "Cognome",
+    lastNamePlaceholder: "Inserisci il cognome",
+    email: "Email (facoltativa)",
+    emailPlaceholder: "nome@email.it",
+    emailHint: "Consigliata: ti serve per recuperare la password da solo.",
+    birthDate: "Data di nascita (facoltativa)",
+    passwordTitle: "Scegli la password",
+    password: "Password",
+    passwordPlaceholder: "Scegli una password",
+    passwordRequirements: "Almeno 8 caratteri.",
+    showPassword: "Mostra la password",
+    hidePassword: "Nascondi la password",
+    consent:
+      "Ho letto l'informativa privacy e acconsento al trattamento dei miei dati sulla salute.",
+    submit: "Attiva il mio account",
+    submitting: "Attivazione…",
+    validUntil: (date: string) => `Link personale, valido fino al ${date}.`,
+    afterNew: "Dopo l'attivazione ti aspetta la chiamata di onboarding.",
+    resetTitle: "Scegli una nuova password",
+    resetIntro: (firstName: string) =>
+      `Ciao ${firstName}, lo studio ti ha inviato un nuovo link: scegli una nuova password per entrare.`,
+    resetSubmit: "Salva e accedi",
+    invalidTitle: "Link non valido",
+    invalid: "Link non valido o scaduto: chiedi un nuovo invito allo studio.",
+    goToLogin: "Vai all'accesso",
+    failed:
+      "Non è stato possibile attivare l'account. Riprova o chiedi un nuovo invito allo studio.",
+    duplicateEmail:
+      "Questa email è già usata da un altro cliente dello studio: usane un'altra o lasciala vuota.",
+    validation: {
+      firstNameRequired: "Inserisci il nome.",
+      lastNameRequired: "Inserisci il cognome.",
+      nameTooLong: "Massimo 80 caratteri.",
+      emailInvalid: "Inserisci un indirizzo email valido.",
+      birthDateInvalid: "Data di nascita non valida.",
+      passwordTooShort: "La password deve avere almeno 8 caratteri.",
+      passwordTooLong: "La password può avere al massimo 72 caratteri.",
+      consentRequired: "Per attivare l'account serve il consenso.",
     },
   },
   manifest: {

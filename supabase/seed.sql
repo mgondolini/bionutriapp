@@ -6,35 +6,49 @@
 --   titolare: titolare.verde@…         titolare: titolare.blu@…
 --   Anna    attivo / in percorso       Sara   da invitare / in pausa
 --   Marco   attivo / onboarding        Paolo  disattivato / concluso
+--           (senza email: login con 333 000 0002)
 --   Giulia  invito inviato / in percorso
 --   Luca    invito scaduto / onboarding
 -- =====================================================================
 
--- Utenti di autenticazione (email confermata, login con password)
-create function pg_temp.create_user(p_id uuid, p_email text) returns void
+-- Utenti di autenticazione (login con password). I clienti hanno anche il
+-- cellulare come identificativo (login con cellulare, fase 4): in auth.users
+-- il numero si salva senza "+". Marco non ha email: entra solo con il cellulare.
+create function pg_temp.create_user(p_id uuid, p_email text, p_phone text default null) returns void
 language sql as $$
   insert into auth.users (
-    instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+    instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, phone, phone_confirmed_at,
     raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
     confirmation_token, recovery_token, email_change_token_new, email_change
   ) values (
     '00000000-0000-0000-0000-000000000000', p_id, 'authenticated', 'authenticated', p_email,
-    extensions.crypt('password123', extensions.gen_salt('bf')), now(),
-    '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''
+    extensions.crypt('password123', extensions.gen_salt('bf')),
+    case when p_email is not null then now() end,
+    ltrim(p_phone, '+'), case when p_phone is not null then now() end,
+    jsonb_build_object(
+      'provider', case when p_email is not null then 'email' else 'phone' end,
+      'providers', to_jsonb(array_remove(array[
+        case when p_email is not null then 'email' end,
+        case when p_phone is not null then 'phone' end], null))),
+    '{}', now(), now(), '', '', '', ''
   );
   insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
-  values (
-    gen_random_uuid(), p_id, p_id::text,
-    jsonb_build_object('sub', p_id::text, 'email', p_email, 'email_verified', true),
-    'email', now(), now(), now()
-  );
+  select gen_random_uuid(), p_id, p_id::text,
+         jsonb_build_object('sub', p_id::text, 'email', p_email, 'email_verified', true),
+         'email', now(), now(), now()
+   where p_email is not null
+  union all
+  select gen_random_uuid(), p_id, p_id::text,
+         jsonb_build_object('sub', p_id::text, 'phone', ltrim(p_phone, '+'), 'phone_verified', true),
+         'phone', now(), now(), now()
+   where p_phone is not null;
 $$;
 
 select pg_temp.create_user('aaaaaaaa-0000-4000-8000-000000000001', 'titolare.verde@example.test');
 select pg_temp.create_user('bbbbbbbb-0000-4000-8000-000000000001', 'titolare.blu@example.test');
-select pg_temp.create_user('aaaaaaaa-0000-4000-8000-0000000000c1', 'anna.rossi@example.test');
-select pg_temp.create_user('aaaaaaaa-0000-4000-8000-0000000000c2', 'marco.bianchi@example.test');
-select pg_temp.create_user('bbbbbbbb-0000-4000-8000-0000000000c2', 'paolo.viola@example.test');
+select pg_temp.create_user('aaaaaaaa-0000-4000-8000-0000000000c1', 'anna.rossi@example.test', '+393331234567');
+select pg_temp.create_user('aaaaaaaa-0000-4000-8000-0000000000c2', null,                       '+393330000002');
+select pg_temp.create_user('bbbbbbbb-0000-4000-8000-0000000000c2', 'paolo.viola@example.test', '+393330000006');
 
 -- Studi (le 9 misure predefinite vengono create dal trigger)
 insert into public.studios (id, name, slug, primary_color, contact_email) values
@@ -76,6 +90,8 @@ select public.activate_client(encode(extensions.digest('seed-token-paolo', 'sha2
 update public.clients set journey_stage = 'paused'    where id = 'bbbbbbbb-2222-4000-8000-000000000001';
 update public.clients set journey_stage = 'completed' where id = 'bbbbbbbb-2222-4000-8000-000000000002';
 update public.clients set account_status = 'disabled' where id = 'bbbbbbbb-2222-4000-8000-000000000002';
+-- Come fa l'app alla disattivazione: utente bloccato in Supabase Auth (ban)
+update auth.users set banned_until = now() + interval '100 years' where id = 'bbbbbbbb-0000-4000-8000-0000000000c2';
 update public.clients set push_enabled = true          where id = 'aaaaaaaa-2222-4000-8000-000000000001';
 update public.clients set birth_date = '1991-03-12'    where id = 'aaaaaaaa-2222-4000-8000-000000000001';
 

@@ -1,32 +1,23 @@
 import "server-only";
 
+import { parseLoginIdentifier } from "@/lib/auth/login-identifier";
 import { ROUTES } from "@/lib/constants/domain";
 import * as authRepository from "@/server/repositories/auth.repository";
 import { loadSession, type Session } from "@/server/services/session.service";
 
 /**
- * Converte l'identificativo del login nell'email di Supabase Auth.
- * Oggi accetta solo l'email; nella fase 4 riconoscerà anche il cellulare
- * (ricerca del cliente per telefono) senza cambiare il resto del flusso.
- */
-export async function resolveLoginEmail(
-  identifier: string,
-): Promise<string | null> {
-  return identifier.trim().toLowerCase() || null;
-}
-
-/**
- * Login con identificativo e password. Un account senza ruolo (né staff né
- * cliente) viene disconnesso subito, con lo stesso esito di credenziali errate.
+ * Login con email o cellulare e password (N-02). Un account senza ruolo (né
+ * staff né cliente) viene disconnesso subito, con lo stesso esito di
+ * credenziali errate.
  */
 export async function signIn(
-  identifier: string,
+  identifierInput: string,
   password: string,
 ): Promise<Session | null> {
-  const email = await resolveLoginEmail(identifier);
-  if (!email) return null;
+  const identifier = parseLoginIdentifier(identifierInput);
+  if (!identifier) return null;
 
-  const { ok } = await authRepository.signInWithPassword(email, password);
+  const { ok } = await authRepository.signInWithPassword(identifier, password);
   if (!ok) return null;
 
   const session = await loadSession();

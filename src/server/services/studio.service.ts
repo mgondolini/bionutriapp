@@ -85,3 +85,8 @@ export async function updateStudioSettings(
   updateTag(studioRepository.studioBrandingTag(studio.slug));
   return true;
 }
+
+/** Branding di uno studio dato lo slug (es. lo studio dell'invito nella pagina di attivazione). */
+export async function getStudioBySlug(slug: string): Promise<StudioBranding> {
+  return toStudioBranding(await studioRepository.getStudioBrandingBySlug(slug));
+}

@@ -13,6 +13,7 @@
     "db:test": "supabase test db",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "studio:create": "tsx scripts/create-studio.ts"
   },
   "dependencies": {
@@ -38,6 +39,8 @@
     "zod": "^4.6.6"
   },
   "devDependencies": {
+    "@next/env": "16.4.0",
+    "@playwright/test": "1.64.1",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/papaparse": "^5.5.2",

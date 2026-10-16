@@ -129,3 +129,33 @@ export const clientIdSchema = z.uuid();
 
 export const sendInviteSchema = z.object({ clientId: clientIdSchema });
 export type SendInviteInput = z.infer<typeof sendInviteSchema>;
+
+/** Cognome facoltativo nella modifica (i clienti nuovi non ce l'hanno finché non si attivano). */
+const optionalLastName = z
+  .string()
+  .trim()
+  .max(80, v.nameTooLong)
+  .transform((value) => value || null);
+
+/** Modifica dei dati anagrafici dalla scheda Profilo (A-06). */
+export const updateClientSchema = z.object({
+  clientId: clientIdSchema,
+  firstName,
+  lastName: optionalLastName,
+  phone: phoneSchema,
+  email: optionalEmail,
+  birthDate: optionalBirthDate,
+});
+export type UpdateClientInput = z.output<typeof updateClientSchema>;
+export type UpdateClientFormValues = z.input<typeof updateClientSchema>;
+
+/** Cambio di fase: la fase di partenza serve a non sovrascrivere un cambio concorrente. */
+export const changeStageSchema = z.object({
+  clientId: clientIdSchema,
+  from: z.enum(JOURNEY_STAGES),
+  to: z.enum(JOURNEY_STAGES),
+});
+export type ChangeStageInput = z.infer<typeof changeStageSchema>;
+
+export const clientAccountSchema = z.object({ clientId: clientIdSchema });
+export type ClientAccountInput = z.infer<typeof clientAccountSchema>;

@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import { useHydrated } from "@/lib/use-hydrated";
 import { loginAction } from "@/server/actions/auth.actions";
 import { loginSchema, type LoginInput } from "@/server/validation/auth.schema";
 
@@ -39,8 +40,10 @@ function IdentifierField({ control }: { control: Control<LoginInput> }) {
           <Input
             {...field}
             id="login-identifier"
-            type="email"
+            type="text"
             inputMode="email"
+            autoCapitalize="none"
+            spellCheck={false}
             autoComplete="username"
             placeholder={t.identifierPlaceholder}
             aria-invalid={fieldState.invalid}
@@ -55,6 +58,7 @@ function IdentifierField({ control }: { control: Control<LoginInput> }) {
 export function LoginForm({ next }: { next?: string }) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const hydrated = useHydrated();
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     defaultValues: { identifier: "", password: "", next },
@@ -70,7 +74,7 @@ export function LoginForm({ next }: { next?: string }) {
   });
 
   return (
-    <form onSubmit={onSubmit} noValidate>
+    <form method="post" onSubmit={onSubmit} noValidate>
       <FieldGroup>
         {error ? <FormMessage>{error}</FormMessage> : null}
         <IdentifierField control={form.control} />
@@ -93,7 +97,11 @@ export function LoginForm({ next }: { next?: string }) {
             </Field>
           )}
         />
-        <Button type="submit" disabled={isPending} className="w-full">
+        <Button
+          type="submit"
+          disabled={!hydrated || isPending}
+          className="w-full"
+        >
           {isPending ? t.submitting : t.submit}
         </Button>
         <Link

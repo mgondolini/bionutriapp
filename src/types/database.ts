@@ -296,6 +296,7 @@ export type Database = {
           last_name: string | null;
           origin: string;
           phone: string;
+          privacy_consent_at: string | null;
           push_enabled: boolean;
           studio_id: string;
           updated_at: string;
@@ -314,6 +315,7 @@ export type Database = {
           last_name?: string | null;
           origin: string;
           phone: string;
+          privacy_consent_at?: string | null;
           push_enabled?: boolean;
           studio_id: string;
           updated_at?: string;
@@ -331,6 +333,7 @@ export type Database = {
           last_name?: string | null;
           origin?: string;
           phone?: string;
+          privacy_consent_at?: string | null;
           push_enabled?: boolean;
           studio_id?: string;
           updated_at?: string;
@@ -623,6 +626,49 @@ export type Database = {
           },
         ];
       };
+      client_stage_history: {
+        Row: {
+          changed_at: string | null;
+          changed_by_name: string | null;
+          client_id: string | null;
+          from_stage: string | null;
+          id: string | null;
+          source: string | null;
+          studio_id: string | null;
+          to_stage: string | null;
+        };
+        ComputedFields: never;
+        Relationships: [
+          {
+            foreignKeyName: "client_stage_events_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "client_list";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_stage_events_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_stage_events_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients_with_status";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_stage_events_studio_id_fkey";
+            columns: ["studio_id"];
+            isOneToOne: false;
+            referencedRelation: "studios";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       clients_with_status: {
         Row: {
           account_status: string | null;
@@ -637,9 +683,11 @@ export type Database = {
           last_invite_created_at: string | null;
           last_invite_expires_at: string | null;
           last_invite_sent_at: string | null;
+          last_invite_used_at: string | null;
           last_name: string | null;
           origin: string | null;
           phone: string | null;
+          privacy_consent_at: string | null;
           push_enabled: boolean | null;
           studio_id: string | null;
           updated_at: string | null;
@@ -659,7 +707,7 @@ export type Database = {
     };
     Functions: {
       activate_client: {
-        Args: { p_token_hash: string; p_user_id: string };
+        Args: { p_profile?: Json; p_token_hash: string; p_user_id: string };
         Returns: string;
       };
       client_account_status: { Args: { p_client_id: string }; Returns: string };
@@ -691,6 +739,15 @@ export type Database = {
           p_user_agent?: string;
         };
         Returns: string;
+      };
+      set_journey_stage: {
+        Args: {
+          p_automatic?: boolean;
+          p_client_id: string;
+          p_from: string;
+          p_to: string;
+        };
+        Returns: boolean;
       };
     };
     Enums: {

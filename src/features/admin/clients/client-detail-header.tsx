@@ -2,7 +2,7 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 import { StatusBadge } from "@/components/shared/status-badge";
-import { ROUTES } from "@/lib/constants/domain";
+import { INITIAL_STAGE_BY_ORIGIN, ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { formatLongDate } from "@/lib/format";
 import { initialsOf } from "@/lib/studio/branding";
@@ -41,12 +41,27 @@ export function ClientDetailHeader({ client }: { client: ClientHeader }) {
           <h1 className="text-2xl font-bold tracking-tight">{name}</h1>
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={client.accountStatus} />
-            <StatusBadge status={client.journeyStage} />
             {client.activatedAt ? (
-              <span className="text-sm text-muted-foreground">
-                {t.activeSince(formatLongDate(client.activatedAt))}
-              </span>
-            ) : null}
+              <>
+                <StatusBadge status={client.journeyStage} />
+                <span className="text-sm text-muted-foreground">
+                  {t.activeSince(formatLongDate(client.activatedAt))}
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="text-sm text-muted-foreground">
+                  {t.stageOnActivation(
+                    copy.domain.journeyStage[
+                      INITIAL_STAGE_BY_ORIGIN[client.origin]
+                    ],
+                  )}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {t.notActiveYet}
+                </span>
+              </>
+            )}
           </div>
         </div>
       </div>

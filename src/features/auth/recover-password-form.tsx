@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import { useHydrated } from "@/lib/use-hydrated";
 import { requestPasswordResetAction } from "@/server/actions/auth.actions";
 import {
   recoverPasswordSchema,
@@ -29,6 +30,7 @@ export function RecoverPasswordForm() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const hydrated = useHydrated();
   const form = useForm<RecoverPasswordInput>({
     resolver: zodResolver(recoverPasswordSchema),
     defaultValues: { email: "" },
@@ -48,7 +50,7 @@ export function RecoverPasswordForm() {
       {sent ? (
         <FormMessage tone="info">{t.sent}</FormMessage>
       ) : (
-        <form onSubmit={onSubmit} noValidate>
+        <form method="post" onSubmit={onSubmit} noValidate>
           <FieldGroup>
             {error ? <FormMessage>{error}</FormMessage> : null}
             <Controller
@@ -71,12 +73,20 @@ export function RecoverPasswordForm() {
                 </Field>
               )}
             />
-            <Button type="submit" disabled={isPending} className="w-full">
+            <Button
+              type="submit"
+              disabled={!hydrated || isPending}
+              className="w-full"
+            >
               {isPending ? t.submitting : t.submit}
             </Button>
           </FieldGroup>
         </form>
       )}
+      <div className="rounded-lg bg-muted px-4 py-3 text-sm">
+        <p className="font-medium">{t.noEmailTitle}</p>
+        <p className="text-muted-foreground">{t.noEmail}</p>
+      </div>
       <Link
         href={ROUTES.login}
         className="inline-flex min-h-11 items-center justify-center text-sm font-medium text-primary underline-offset-4 hover:underline"

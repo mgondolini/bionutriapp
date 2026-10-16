@@ -33,7 +33,7 @@ export async function getClientHeader(clientId: string) {
   const { data, error } = await supabase
     .from("clients_with_status")
     .select(
-      "id, first_name, last_name, effective_account_status, journey_stage, activated_at",
+      "id, first_name, last_name, origin, effective_account_status, journey_stage, activated_at",
     )
     .eq("id", clientId)
     .maybeSingle();
@@ -106,4 +106,109 @@ export async function insertClients(
     throw error;
   }
   return { ok: true, ids: data.map((row) => row.id) };
+}
+
+/** Colonne della scheda Profilo (A-06, A-07). */
+const CLIENT_PROFILE_COLUMNS =
+  "id, studio_id, first_name, last_name, phone, email, birth_date, origin, account_status, effective_account_status, journey_stage, activated_at, push_enabled, user_id, created_at, last_invite_created_at, last_invite_sent_at, last_invite_expires_at, last_invite_used_at";
+
+/** Scheda Profilo; null se il cliente non esiste o è di un altro studio (RLS). */
+export async function getClientProfile(clientId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("clients_with_status")
+    .select(CLIENT_PROFILE_COLUMNS)
+    .eq("id", clientId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+/** Storico delle fasi (ST-04), dal più recente, con il nome dell'autore. */
+export async function listStageHistory(clientId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("client_stage_history")
+    .select("id, from_stage, to_stage, changed_at, source, changed_by_name")
+    .eq("client_id", clientId)
+    .order("changed_at", { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export type ClientDataUpdate = {
+  firstName: string;
+  lastName: string | null;
+  phone: string;
+  email: string | null;
+  birthDate: string | null;
+};
+
+export type UpdateResult =
+  | { ok: true }
+  | {
+      ok: false;
+      reason: "duplicate_phone" | "duplicate_email" | "duplicate" | "not_found";
+    };
+
+/** Modifica dei dati anagrafici (client dello staff: RLS e trigger attivi). */
+export async function updateClientData(
+  clientId: string,
+  data: ClientDataUpdate,
+): Promise<UpdateResult> {
+  const supabase = await createClient();
+  const { data: rows, error } = await supabase
+    .from("clients")
+    .update({
+      first_name: data.firstName,
+      last_name: data.lastName,
+      phone: data.phone,
+      email: data.email,
+      birth_date: data.birthDate,
+    })
+    .eq("id", clientId)
+    .select("id");
+  if (error) {
+    const duplicate = duplicateReason(error);
+    if (duplicate && !duplicate.ok) return duplicate;
+    throw error;
+  }
+  return rows.length === 1 ? { ok: true } : { ok: false, reason: "not_found" };
+}
+
+/**
+ * Cambio di fase tramite RPC set_journey_stage: aggiorna solo se la fase è
+ * ancora `from` (false = cambiata nel frattempo o cliente non visibile).
+ * `automatic` = cambio del sistema (v2.0), registrato senza autore.
+ */
+export async function setJourneyStage(
+  clientId: string,
+  from: string,
+  to: string,
+  automatic = false,
+): Promise<boolean> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("set_journey_stage", {
+    p_client_id: clientId,
+    p_from: from,
+    p_to: to,
+    p_automatic: automatic,
+  });
+  if (error) throw error;
+  return data;
+}
+
+/** Stato dell'account salvato (disattivazione e riattivazione). */
+export async function setAccountStatus(
+  clientId: string,
+  status: "active" | "to_invite" | "invited" | "disabled",
+): Promise<boolean> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("clients")
+    .update({ account_status: status })
+    .eq("id", clientId)
+    .select("id");
+  if (error) throw error;
+  return data.length === 1;
 }

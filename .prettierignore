@@ -11,3 +11,8 @@ supabase/.branches
 # Documenti di riferimento e configurazioni locali: non riformattare
 docs
 .mcp.json
+
+# Generato da pnpm: non riformattare
+pnpm-lock.yaml
+test-results
+playwright-report

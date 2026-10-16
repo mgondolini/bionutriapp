@@ -171,3 +171,20 @@ export function clientDetailPath(
 ): string {
   return `${ROUTES.admin.clients}/${clientId}/${tab}`;
 }
+
+/** Inviti su WhatsApp (N-01, N-02): token casuale, nel database solo l'hash. */
+export const INVITE_TOKEN_BYTES = 32;
+export const INVITE_VALIDITY_DAYS = 14;
+/** Lunghezza del token in base64url (32 byte → 43 caratteri). */
+export const INVITE_TOKEN_LENGTH = 43;
+
+/** Origine di un cambio di fase (ST-04): manuale dallo staff, automatico dal sistema (v2.0). */
+export const STAGE_SOURCES = ["manual", "automatic"] as const;
+export type StageSource = (typeof STAGE_SOURCES)[number];
+
+/** Durata del blocco in Supabase Auth per un account disattivato (circa 100 anni). */
+export const DISABLED_BAN_DURATION = "876000h";
+
+export function activationPath(token: string): string {
+  return `${ROUTES.activate}/${token}`;
+}

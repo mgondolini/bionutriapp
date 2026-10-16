@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import { useHydrated } from "@/lib/use-hydrated";
 import { setNewPasswordAction } from "@/server/actions/auth.actions";
 import {
   newPasswordSchema,
@@ -36,6 +37,7 @@ const linkClassName =
 export function NewPasswordForm({ tokenHash }: { tokenHash: string | null }) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const hydrated = useHydrated();
   const form = useForm<NewPasswordInput>({
     resolver: zodResolver(newPasswordSchema),
     defaultValues: {
@@ -66,7 +68,7 @@ export function NewPasswordForm({ tokenHash }: { tokenHash: string | null }) {
   });
 
   return (
-    <form onSubmit={onSubmit} noValidate>
+    <form method="post" onSubmit={onSubmit} noValidate>
       <FieldGroup>
         {error ? <FormMessage>{error}</FormMessage> : null}
         {(["password", "confirm"] as const).map((name) => (
@@ -91,7 +93,11 @@ export function NewPasswordForm({ tokenHash }: { tokenHash: string | null }) {
             )}
           />
         ))}
-        <Button type="submit" disabled={isPending} className="w-full">
+        <Button
+          type="submit"
+          disabled={!hydrated || isPending}
+          className="w-full"
+        >
           {isPending ? t.submitting : t.submit}
         </Button>
         {error ? (
