@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "studio:create": "tsx scripts/create-studio.ts"
+    "studio:create": "tsx scripts/create-studio.ts",
+    "seed:files": "tsx scripts/seed-files.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

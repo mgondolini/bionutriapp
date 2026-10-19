@@ -188,3 +188,58 @@ export const DISABLED_BAN_DURATION = "876000h";
 export function activationPath(token: string): string {
   return `${ROUTES.activate}/${token}`;
 }
+
+/** File dei clienti (A-08…A-11): bucket privato, solo PDF, al massimo 10 MB. */
+export const CLIENT_FILES_BUCKET = "client-files";
+export const FILE_MAX_BYTES = 10 * 1024 * 1024;
+export const FILE_MIME_TYPE = "application/pdf";
+export const FILE_EXTENSION = ".pdf";
+/** Ogni PDF inizia con questi byte; un .docx rinominato inizia con "PK". */
+export const PDF_MAGIC = "%PDF-";
+export const FILE_TITLE_MAX = 150;
+export const FILE_NOTE_MAX = 500;
+export const FILE_NAME_MAX = 255;
+/** Durata degli URL firmati per aprire o scaricare un file (NF-02). */
+export const SIGNED_URL_TTL_SECONDS = 60;
+
+/** Apertura di un file: nel visualizzatore del browser o come scaricamento. */
+export const FILE_OPEN_MODES = ["view", "download"] as const;
+export type FileOpenMode = (typeof FILE_OPEN_MODES)[number];
+
+/** Errori del caricamento, controllati nel browser e di nuovo sul server. */
+export const FILE_UPLOAD_ERRORS = [
+  "not_pdf",
+  "too_large",
+  "empty",
+  "invalid_pdf",
+  "upload_failed",
+] as const;
+export type FileUploadError = (typeof FILE_UPLOAD_ERRORS)[number];
+
+/** Pagina del cliente per ogni categoria di file (C-04). */
+export const CLIENT_FILE_ROUTES: Record<FileCategory, string> = {
+  diet: ROUTES.client.diets,
+  workout: ROUTES.client.workouts,
+  report: ROUTES.client.reports,
+};
+
+/** Parametro dell'URL del filtro per categoria nella scheda File. */
+export const FILE_LIST_PARAMS = { category: "categoria" } as const;
+
+/** Percorso in Storage: {studio_id}/{client_id}/{file_id}.pdf, costruito solo sul server. */
+export function clientFilePath(
+  studioId: string,
+  clientId: string,
+  fileId: string,
+): string {
+  return `${studioId}/${clientId}/${fileId}${FILE_EXTENSION}`;
+}
+
+/** Scheda File di un cliente, con il filtro per categoria facoltativo. */
+export function clientFilesUrl(
+  clientId: string,
+  category: FileCategory | null = null,
+): string {
+  const path = clientDetailPath(clientId, "file");
+  return category ? `${path}?${FILE_LIST_PARAMS.category}=${category}` : path;
+}

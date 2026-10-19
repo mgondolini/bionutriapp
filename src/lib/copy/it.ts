@@ -13,6 +13,7 @@ import type {
   CsvFileError,
   CsvRowWarning,
   FileCategory,
+  FileUploadError,
   JourneyStage,
   StaffRole,
 } from "@/lib/constants/domain";
@@ -302,24 +303,73 @@ export const copy = {
           tracking: "Tracking",
         } satisfies Record<ClientTab, string>,
         placeholders: {
-          file: {
-            title: "File",
-            description:
-              "Il caricamento e l'elenco dei file arriveranno in una fase successiva.",
-          },
           tracking: {
             title: "Tracking",
             description:
               "Le misure del cliente arriveranno in una fase successiva.",
           },
         } satisfies Record<
-          Exclude<ClientTab, "profilo">,
+          Exclude<ClientTab, "profilo" | "file">,
           { title: string; description: string }
         >,
         notFoundTitle: "Cliente non trovato",
         notFoundDescription:
           "Il cliente non esiste o non appartiene al tuo studio.",
         backToList: "Torna all'elenco clienti",
+      },
+      files: {
+        upload: {
+          title: "Pubblica un nuovo file",
+          category: "Categoria",
+          dropzone: "Trascina qui il PDF o scegli un file",
+          dropzoneHint: "Solo PDF, massimo 10 MB",
+          chooseFile: "Scegli file",
+          changeFile: "Cambia file",
+          removeFile: "Rimuovi il file selezionato",
+          ready: (size: string) => `${size} · pronto per la pubblicazione`,
+          titleLabel: "Titolo visibile al cliente",
+          titlePlaceholder: "Es. Piano alimentare novembre",
+          validFrom: "Data di validità",
+          note: "Nota per il cliente (facoltativa)",
+          notePlaceholder: "Un consiglio o un promemoria per il cliente",
+          noteCount: (length: number, max: number) => `${length}/${max}`,
+          notify: "Avvisa il cliente",
+          notifyHint:
+            "Invia una notifica push alla pubblicazione. Nel messaggio ci sono solo il nome dello studio e il link, mai dati sulla salute.",
+          submit: "Pubblica file",
+          uploading: (percent: number) => `Caricamento ${percent}%`,
+          verifying: "Verifica del file…",
+          progressLabel: "Avanzamento del caricamento",
+          published: (title: string) => `"${title}" pubblicato.`,
+        },
+        list: {
+          title: "File pubblicati",
+          filterLabel: "Filtra per categoria",
+          all: "Tutti",
+          caption: "File pubblicati per il cliente",
+          file: "File",
+          category: "Categoria",
+          uploadedAt: "Caricato il",
+          validFrom: "Valido dal",
+          readStatus: "Stato di lettura",
+          actions: "Azioni",
+          emptyTitle: "Nessun file pubblicato",
+          emptyDescription:
+            "Carica il primo PDF: il cliente lo troverà nella sua area.",
+          emptyCategoryTitle: "Nessun file in questa categoria",
+          delete: "Elimina",
+          deleteAria: (title: string) => `Elimina ${title}`,
+        },
+        delete: {
+          title: "Eliminare questo file?",
+          meta: (category: string, uploadedAt: string, read: string) =>
+            `${category} · caricato il ${uploadedAt} · ${read}`,
+          description: (name: string) =>
+            `Il file sparisce anche dall'area di ${name} e non si può recuperare. Se vuoi sostituirlo, pubblica una nuova versione.`,
+          cancel: "Annulla",
+          confirm: "Elimina file",
+          deleted: "File eliminato.",
+        },
       },
       profile: {
         data: {
@@ -484,6 +534,13 @@ export const copy = {
       title: "Home",
       description:
         "Qui troverai l'ultimo file pubblicato e le misure da registrare.",
+      latestFile: "Ultimo file",
+      noFilesTitle: "Ancora nessun file",
+      noFilesDescription:
+        "Quando lo studio pubblicherà un file per te, lo troverai qui.",
+      toRecordTitle: "Da registrare",
+      toRecordPlaceholder:
+        "Il riepilogo delle misure da registrare arriverà a breve.",
       onboarding: {
         welcome: "Ti diamo il benvenuto",
         title: (studioName: string) =>
@@ -510,22 +567,39 @@ export const copy = {
         locked: "Si sblocca dopo l'onboarding",
       },
     },
+    files: {
+      currentTitle: "In corso",
+      currentSince: (date: string) => `Dal ${date}`,
+      archiveTitle: "Archivio",
+      archiveCount: (count: number) =>
+        count === 1 ? "1 file" : `${count} file`,
+      archiveEmpty: "Nessun file precedente.",
+      futureValidity: (date: string) => `Valido dal ${date}`,
+    },
     sections: {
       diets: {
         title: "Diete",
+        subtitle: (studioName: string) =>
+          `I piani alimentari che ti ha inviato ${studioName}.`,
         emptyTitle: "Nessuna dieta",
-        emptyDescription: "Le diete arriveranno nelle prossime fasi.",
+        emptyDescription:
+          "Quando lo studio pubblicherà il tuo piano alimentare, lo troverai qui.",
       },
       workouts: {
         title: "Allenamenti",
+        subtitle: (studioName: string) =>
+          `Le schede di allenamento che ti ha inviato ${studioName}.`,
         emptyTitle: "Nessuna scheda",
         emptyDescription:
-          "Le schede di allenamento arriveranno nelle prossime fasi.",
+          "Quando lo studio pubblicherà una scheda di allenamento, la troverai qui.",
       },
       reports: {
         title: "Report",
+        subtitle: (studioName: string) =>
+          `I report e i controlli che ti ha inviato ${studioName}.`,
         emptyTitle: "Nessun report",
-        emptyDescription: "I report arriveranno nelle prossime fasi.",
+        emptyDescription:
+          "Quando lo studio pubblicherà un report, lo troverai qui.",
       },
       tracking: {
         title: "Tracking",
@@ -538,6 +612,44 @@ export const copy = {
         emptyDescription:
           "Dati personali, password e notifiche arriveranno nelle prossime fasi.",
       },
+    },
+  },
+  files: {
+    open: "Apri PDF",
+    openShort: "Apri",
+    download: "Scarica",
+    opening: "Apertura…",
+    openAria: (title: string) => `Apri ${title}`,
+    downloadAria: (title: string) => `Scarica ${title}`,
+    popupBlocked:
+      "Il browser ha bloccato la nuova finestra: tocca di nuovo per aprire il file.",
+    popupRetry: "Apri il file",
+    notFound: "File non trovato.",
+    notAvailable:
+      "Il file non è disponibile in questo momento. Riprova tra qualche istante.",
+    newBadge: "Nuovo",
+    currentBadge: "In corso",
+    toRead: "Da leggere",
+    readOn: (date: string) => `Letto il ${date}`,
+    notRead: "Non ancora letto",
+    meta: (date: string, size: string) => `${date} · ${size}`,
+    noteLabel: "Nota dello studio",
+    downloadFallback: "documento",
+    uploadErrors: {
+      not_pdf: "Puoi caricare solo file PDF.",
+      too_large: "Il file supera i 10 MB.",
+      empty: "Il file è vuoto.",
+      invalid_pdf: "Il file non è un PDF valido.",
+      upload_failed:
+        "Caricamento non riuscito. Controlla la connessione e riprova.",
+    } satisfies Record<FileUploadError, string>,
+    validation: {
+      categoryRequired: "Scegli una categoria.",
+      titleRequired: "Inserisci il titolo.",
+      titleTooLong: "Massimo 150 caratteri.",
+      validFromInvalid: "Inserisci una data di validità.",
+      noteTooLong: "Massimo 500 caratteri.",
+      fileRequired: "Scegli un file PDF.",
     },
   },
   invites: {

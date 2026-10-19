@@ -95,7 +95,7 @@ update auth.users set banned_until = now() + interval '100 years' where id = 'bb
 update public.clients set push_enabled = true          where id = 'aaaaaaaa-2222-4000-8000-000000000001';
 update public.clients set birth_date = '1991-03-12'    where id = 'aaaaaaaa-2222-4000-8000-000000000001';
 
--- File (solo metadati: nello Storage locale i PDF non esistono).
+-- File (solo metadati: i PDF di prova si caricano con `pnpm seed:files`).
 -- Il file di Marco resta invisibile a lui finché è in Onboarding (C-09).
 insert into public.client_files (client_id, category, title, storage_path, size_bytes, valid_from, note, first_read_at) values
   ('aaaaaaaa-2222-4000-8000-000000000002', 'diet', 'Piano alimentare di partenza',
@@ -113,6 +113,9 @@ insert into public.client_files (client_id, category, title, storage_path, size_
   ('bbbbbbbb-2222-4000-8000-000000000002', 'report', 'Report finale',
    'bbbbbbbb-1111-4000-8000-000000000000/bbbbbbbb-2222-4000-8000-000000000002/3f0e8a52-0d8b-4c47-9a35-1b7f3e1d0004.pdf',
    98304, current_date - 60, null, now() - interval '55 days');
+-- Caricati il giorno da cui valgono (alle 9 a Roma), così ordine e "ultimo file" sono realistici.
+update public.client_files
+   set uploaded_at = (valid_from + time '09:00') at time zone 'Europe/Rome';
 
 -- Obiettivo personale di Anna: 2,5 L di acqua
 insert into public.client_metric_goals (client_id, metric_id, goal_value)

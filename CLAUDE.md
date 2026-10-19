@@ -25,6 +25,7 @@ pnpm typecheck      # next typegen + tsc --noEmit
 pnpm format         # Prettier
 pnpm test           # Vitest (funzioni pure e service)
 pnpm test:e2e       # Playwright (richiede Supabase locale con il seed)
+pnpm seed:files     # PDF di prova nello Storage locale per i file del seed (dopo db reset)
 pnpm supabase migration new <nome>  # nuova migrazione
 pnpm supabase db push               # applica le migrazioni al progetto collegato
 ```
@@ -110,7 +111,7 @@ Il flusso è sempre: **pagina/componente → action → service → repository �
 - **Creazione (A-04)**: `createClientSchema` è un'unione discriminata su `mode` ("new" → origine `new`, "full" → `imported`); il form usa valori "piatti" (`CreateClientFormValues`) e invia alla Server Action i valori grezzi (`raw: true`), che li rivalida. Fase iniziale e stato `to_invite` li impone il trigger; i duplicati arrivano dagli indici unici e vengono tradotti in errori di campo.
 - **Import CSV (A-05)**: il file viene letto nel browser e passa alle Server Actions come testo (anteprima e conferma). Parsing in `src/lib/csv/parse-clients-csv.ts` (separatore ricavato dall'intestazione, alias italiani), pulizia in `src/lib/csv/clean-clients.ts` (righe scartate con motivo, correzioni come avvisi). Alla conferma il server rianalizza il file e inserisce con un solo INSERT (atomico); un conflitto nel frattempo annulla tutto. Limiti: 1.000 righe e 1 MB, verificati anche sul server.
 - **Scheda cliente**: `/admin/clienti/[id]` con schede come rotte figlie (`profilo`, `file`, `tracking`, `clientDetailPath()`); id non valido, inesistente o di un altro studio → `notFound()` (la RLS nasconde gli altri studi). Il layout sta dietro un Suspense, quindi la pagina 404 arriva nello stream (stato HTTP 200).
-- **Inviti**: vedi fase 4.
+- **Inviti**: vedi fase 4. **File**: vedi fase 5.
 
 ## Decisioni di architettura (fase 4: inviti, attivazione, profilo, fasi)
 
@@ -126,6 +127,21 @@ Il flusso è sempre: **pagina/componente → action → service → repository �
 - **Secret key**: usata solo in `invites.repository` (lettura dell'invito e RPC di attivazione, pagina pubblica senza utente) e `auth-admin.repository` (operazioni di Auth).
 - **Seed**: i clienti attivi hanno anche il cellulare in Auth; Marco non ha email (login con `333 000 0002`), Paolo è bloccato.
 - **Test e2e**: `playwright.config.ts` carica `.env.local` con `@next/env` e avvia `pnpm dev`; `e2e/activation.spec.ts` crea clienti con cellulari casuali, intercetta `wa.me` e li elimina alla fine. Prima installazione dei browser: `pnpm exec playwright install --with-deps chromium`.
+
+## Decisioni di architettura (fase 5: file)
+
+- **Livelli**: `files.schema.ts` → `files.actions.ts` → `files.service.ts` → `files.repository.ts`. Il repository usa sempre il client dell'utente: RLS di `client_files` e policy dello Storage valgono anche qui, la secret key non serve. Nessun Route Handler (DEV-05).
+- **Caricamento in tre passaggi** (Netlify limita il corpo delle richieste a circa 6 MB): `prepareUploadAction` valida metadati e file dichiarati e restituisce `{ fileId, uploadUrl }` (`createSignedUploadUrl`); il browser fa un PUT diretto su Storage con `XMLHttpRequest` (avanzamento) e `Content-Type: application/pdf`; `confirmUploadAction` verifica l'oggetto reale (esiste, `info()` per la dimensione, primi 5 byte `%PDF-` con una richiesta `Range`) e solo allora inserisce la riga, altrimenti elimina l'oggetto. Il bucket (10 MB, solo `application/pdf`) è un'ulteriore barriera: oltre il limite Storage risponde 400 con `statusCode: "413"`.
+- **Percorso**: `clientFilePath(studio, cliente, fileId)` solo sul server, con lo studio della sessione e il cliente verificato; dal browser arriva solo `fileId` (uuid), che diventa anche l'id della riga. Una conferma ripetuta (violazione unica) non dà errore e non rinvia la notifica.
+- **Oggetti orfani**: un caricamento mai confermato (scheda chiusa a metà) lascia l'oggetto senza riga. Da ripulire in futuro con un job (non nella 1.0). L'URL di caricamento vale 2 ore (fisso in Supabase) e solo per quel percorso, senza sovrascrivere.
+- **Apertura (C-05, NF-02)**: `openFileAction(fileId, mode)` è l'unico percorso per staff e cliente. Il cliente in Onboarding non ottiene nulla senza nemmeno leggere il file (`session.client.unlocked`), con la RLS come seconda barriera. URL firmato di 60 secondi (`SIGNED_URL_TTL_SECONDS`); con `download` il nome viene da `downloadFileName(title)`, solo ASCII perché Storage codifica due volte i caratteri non ASCII in `Content-Disposition`. La prima lettura si registra con `mark_file_read` DOPO aver creato l'URL (un oggetto mancante non risulta letto); lo staff non la registra. L'action aggiorna `/app` e la pagina della categoria (`revalidatePath`), così "Nuovo" scompare.
+- **Nel browser** (`OpenFileButton`): "Apri PDF" apre la finestra in modo sincrono al clic (`opener = null`) e ne cambia l'indirizzo alla risposta, come l'invito WhatsApp; "Scarica" fa `location.assign` (l'URL forza lo scaricamento, nessuna scheda vuota).
+- **File in corso** (`src/lib/files/current-file.ts`, puro): tra i file con validità non futura (giorno a Roma, `dayInRome()`), quello con la validità più recente, a parità l'ultimo caricato; i file con validità futura stanno nell'archivio. La home mostra l'ultimo _pubblicato_ (`latestPublished`), anche con validità futura. Lo staff vede il badge "In corso" per categoria (`currentFileIds`).
+- **Eliminazione (A-11)**: prima la riga, poi l'oggetto; se lo Storage fallisce resta solo un `console.error` con gli id.
+- **Notifiche (N-06)**: `notifications.service.notifyClient(clientId, { type })` è l'unico punto di invio; nella fase 5 scrive solo nei log (id e tipo, mai titoli o categorie). Il Web Push arriva nella fase 7; nessuna email (N-08).
+- **Componenti**: `FileCard` (varianti `featured` e `row`) e `OpenFileButton` in `components/shared` (area cliente e scheda File dello staff, che sotto `md` usa le card al posto della tabella). La nota è testo semplice (`whitespace-pre-line`, mai HTML). Filtro per categoria nell'URL (`?categoria=`, `clientFilesUrl()`).
+- **Seed**: le righe di `client_files` hanno `uploaded_at` uguale al giorno di validità; i PDF di prova si caricano con `pnpm seed:files` (solo Supabase locale). La colonna "Ultimo file" dell'elenco clienti era già alimentata dalla vista `client_list`.
+- **Test**: Vitest su schemi, file in corso, controlli e service (permessi di `openFile`, prima lettura, verifica alla conferma); `e2e/files.spec.ts` copre il flusso completo e il rifiuto lato server con il browser aggirato (`page.route` sostituisce il corpo del PUT).
 
 ## Lingua
 

@@ -76,3 +76,39 @@ export function ageOn(birthDate: string, today: Date): number {
   if (beforeBirthday) age -= 1;
   return age;
 }
+
+const isoDay = new Intl.DateTimeFormat("en-CA", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  timeZone: TIME_ZONE,
+});
+
+/** Giorno di calendario "YYYY-MM-DD" a Roma per un istante (di default adesso). */
+export function dayInRome(value: Date | string = new Date()): string {
+  return isoDay.format(typeof value === "string" ? new Date(value) : value);
+}
+
+const sizeFormat = new Intl.NumberFormat("it-IT", {
+  maximumFractionDigits: 1,
+});
+
+/** "320 KB", "1,4 MB" */
+export function formatFileSize(bytes: number): string {
+  if (bytes < 1024 * 1024) {
+    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  }
+  return `${sizeFormat.format(bytes / (1024 * 1024))} MB`;
+}
+
+const numericDate = new Intl.DateTimeFormat("it-IT", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  timeZone: TIME_ZONE,
+});
+
+/** "07/10/2026" */
+export function formatNumericDate(value: string): string {
+  return numericDate.format(toDate(value));
+}
