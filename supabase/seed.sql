@@ -55,9 +55,9 @@ insert into public.studios (id, name, slug, primary_color, contact_email) values
   ('aaaaaaaa-1111-4000-8000-000000000000', 'Studio Verde Nutrizione', 'studio-verde', '#2E6A4E', 'info@studio-verde.example.test'),
   ('bbbbbbbb-1111-4000-8000-000000000000', 'Studio Blu Benessere',    'studio-blu',   '#1F4E80', 'info@studio-blu.example.test');
 
-insert into public.studio_members (studio_id, user_id, role, display_name) values
-  ('aaaaaaaa-1111-4000-8000-000000000000', 'aaaaaaaa-0000-4000-8000-000000000001', 'owner', 'Dott.ssa Elena Verdi'),
-  ('bbbbbbbb-1111-4000-8000-000000000000', 'bbbbbbbb-0000-4000-8000-000000000001', 'owner', 'Dott. Franco Blu');
+insert into public.studio_members (studio_id, user_id, role, title, first_name, last_name) values
+  ('aaaaaaaa-1111-4000-8000-000000000000', 'aaaaaaaa-0000-4000-8000-000000000001', 'owner', 'Dott.ssa', 'Elena', 'Verdi'),
+  ('bbbbbbbb-1111-4000-8000-000000000000', 'bbbbbbbb-0000-4000-8000-000000000001', 'owner', 'Dott.', 'Franco', 'Blu');
 
 -- Clienti (cellulari nel formato di input: il trigger li normalizza in E.164)
 insert into public.clients (id, studio_id, first_name, last_name, phone, email, origin) values
@@ -131,19 +131,27 @@ select 'aaaaaaaa-2222-4000-8000-000000000001', m.id, v.value, current_date - v.d
     ('circ_waist',  80.0,  4, null),
     ('circ_glutes', 98.0, 35, null),
     ('circ_glutes', 97.0,  4, null),
-    ('steps',        4,    3, null),
-    ('steps',        5,    2, null),
-    ('steps',        3,    1, null),
-    ('sleep',        3,    3, null),
-    ('sleep',        4,    2, null),
-    ('water',        5,    2, null),
-    ('water',        4,    1, null),
+    -- Braccio: ultima rilevazione oltre 30 giorni fa → "In ritardo"
+    ('circ_right_arm', 29.0, 40, null),
+    -- Ombelicale e gamba mai registrate → "Da registrare"
     ('workouts',     7,    6, 'Gambe, buona energia'),
     ('workouts',     8,    3, null),
     ('workouts',     6,    1, 'Stanca dopo il lavoro')
   ) as v(key, value, days_ago, note)
   join public.metrics m
     on m.studio_id = 'aaaaaaaa-1111-4000-8000-000000000000' and m.key = v.key;
+
+-- Abitudini di Anna negli ultimi 13 giorni (oggi escluso: il check-in parte
+-- vuoto), con qualche giorno saltato: c'è sempre una settimana precedente
+-- da confrontare, qualunque sia il giorno della settimana.
+insert into public.tracking_entries (client_id, metric_id, value, recorded_on)
+select 'aaaaaaaa-2222-4000-8000-000000000001', m.id,
+       1 + (d * 7 + m.sort_order / 10) % 5, current_date - d
+  from generate_series(1, 13) as d
+  join public.metrics m
+    on m.studio_id = 'aaaaaaaa-1111-4000-8000-000000000000'
+   and m.key in ('steps', 'sleep', 'water')
+ where (d + m.sort_order / 10) % 4 <> 0;
 
 -- Una circonferenza per Paolo (percorso concluso, dati in sola lettura)
 insert into public.tracking_entries (client_id, metric_id, value, recorded_on)

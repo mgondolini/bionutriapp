@@ -37,18 +37,3 @@ export function LatestFile({ file }: { file: FileItem | null }) {
     </section>
   );
 }
-
-/** Segnaposto del riepilogo delle misure da registrare (completato nella fase 6). */
-export function ToRecordPlaceholder() {
-  return (
-    <section
-      aria-labelledby="to-record"
-      className="flex flex-col gap-2 rounded-xl border border-dashed p-5"
-    >
-      <h2 id="to-record" className="text-sm font-semibold">
-        {t.toRecordTitle}
-      </h2>
-      <p className="text-sm text-muted-foreground">{t.toRecordPlaceholder}</p>
-    </section>
-  );
-}

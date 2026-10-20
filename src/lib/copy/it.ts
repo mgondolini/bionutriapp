@@ -5,6 +5,7 @@
  */
 import type {
   AccountStatus,
+  CheckinDay,
   AdminNavKey,
   ClientNavKey,
   ClientOrigin,
@@ -14,10 +15,18 @@ import type {
   CsvRowWarning,
   FileCategory,
   FileUploadError,
+  HabitKey,
+  HabitScore,
   JourneyStage,
+  MetricKind,
   StaffRole,
 } from "@/lib/constants/domain";
+import {
+  CIRCUMFERENCE_INTERVAL_DAYS,
+  WORKOUT_RECENT_DAYS,
+} from "@/lib/constants/domain";
 import type { JourneyAction } from "@/lib/domain/journey";
+import type { CircumferenceStatus } from "@/lib/domain/tracking/circumferences";
 
 const accountStatus: Record<AccountStatus, string> = {
   to_invite: "Da invitare",
@@ -302,20 +311,116 @@ export const copy = {
           file: "File",
           tracking: "Tracking",
         } satisfies Record<ClientTab, string>,
-        placeholders: {
-          tracking: {
-            title: "Tracking",
-            description:
-              "Le misure del cliente arriveranno in una fase successiva.",
-          },
-        } satisfies Record<
-          Exclude<ClientTab, "profilo" | "file">,
-          { title: string; description: string }
-        >,
         notFoundTitle: "Cliente non trovato",
         notFoundDescription:
           "Il cliente non esiste o non appartiene al tuo studio.",
         backToList: "Torna all'elenco clienti",
+      },
+      tracking: {
+        overdue: (count: number, names: string) =>
+          `${count === 1 ? "1 circonferenza in ritardo" : `${count} circonferenze in ritardo`}: ${names}.`,
+        overdueHint: `Sono passati più di ${CIRCUMFERENCE_INTERVAL_DAYS} giorni dall'ultima registrazione.`,
+        sections: {
+          circumference: `In centimetri · una rilevazione ogni ${CIRCUMFERENCE_INTERVAL_DAYS} giorni`,
+          habit: (range: string) =>
+            `Voto da 1 a 5 rispetto all'obiettivo · settimana ${range}`,
+          workout: "Voto da 1 a 10 alla qualità di ogni sessione",
+        } satisfies Record<MetricKind, string | ((range: string) => string)>,
+        goals: {
+          title: "Obiettivi personali",
+          description:
+            "Servono a dare un significato ai voti da 1 a 5. Se non li imposti, valgono quelli predefiniti dello studio.",
+          edit: "Modifica obiettivi",
+          personal: "Personale",
+          studioDefault: "Predefinito dello studio",
+          captions: {
+            steps: "al giorno",
+            sleep: "di sonno per notte",
+            water: "di acqua al giorno",
+          } satisfies Record<HabitKey, string>,
+          dialogTitle: "Obiettivi personali",
+          dialogDescription: (clientName: string) =>
+            `Obiettivi di ${clientName}: le descrizioni dei voti del check-in si basano su questi valori.`,
+          labels: {
+            steps: "Passi al giorno",
+            sleep: "Ore di sonno per notte",
+            water: "Litri di acqua al giorno",
+          } satisfies Record<HabitKey, string>,
+          hint: (studioDefault: string, min: string, max: string) =>
+            `Predefinito dello studio: ${studioDefault}. Valori ammessi da ${min} a ${max}.`,
+          reset: "Ripristina predefinito",
+          resetAria: (name: string) =>
+            `Ripristina l'obiettivo predefinito: ${name}`,
+          resetDone: "Obiettivo predefinito ripristinato.",
+          save: "Salva obiettivi",
+          saved: "Obiettivi salvati.",
+          cancel: "Annulla",
+        },
+        circumference: {
+          deltaFrom: (delta: string, date: string) =>
+            `${delta} rispetto al ${date}`,
+          lastOn: (date: string) => `Ultima: ${date}`,
+          nextOn: (date: string) => `Prossima: ${date}`,
+          expired: (date: string, days: number) =>
+            `Scaduta il ${date} · ${days} gg fa`,
+          noEntries: "Nessuna registrazione",
+        },
+        habit: {
+          todayScore: (score: string) => `Voto di oggi: ${score}`,
+          todayMissing: "Oggi non ancora compilata",
+          goal: (amount: string) => `Obiettivo ${amount}`,
+        },
+        workout: {
+          thisWeek: (sessions: string) => `${sessions} questa settimana`,
+          averageAll: (average: string, sessions: string) =>
+            `Voto medio ${average} · ${sessions} in tutto`,
+          lastOn: (date: string) => `Ultimo: ${date}`,
+          recentAverage: (average: string) =>
+            `Voto medio ${average} (ultimi ${WORKOUT_RECENT_DAYS} gg)`,
+          noSessions: "Nessuna sessione registrata",
+        },
+        detail: {
+          backAria: "Torna alla scheda Tracking",
+          subtitle: {
+            circumference: `Centimetri · una rilevazione ogni ${CIRCUMFERENCE_INTERVAL_DAYS} giorni · registrata dal cliente`,
+            habit:
+              "Voto da 1 a 5 rispetto all'obiettivo · registrato dal cliente",
+            workout:
+              "Voto da 1 a 10 alla qualità di ogni sessione · registrato dal cliente a ogni allenamento",
+          } satisfies Record<MetricKind, string>,
+          lastValue: "Ultimo valore",
+          fromPrevious: "Variazione dalla precedente",
+          fromPreviousHint: (value: string, date: string) =>
+            `da ${value} il ${date}`,
+          fromStart: "Dall'inizio del percorso",
+          next: "Prossima rilevazione",
+          expired: "Scaduta",
+          expectedOn: (date: string, days: number) =>
+            `prevista il ${date}, ${days === 1 ? "1 giorno" : `${days} giorni`} fa`,
+          dueOn: (date: string) => `entro il ${date}`,
+          neverRecorded: "Nessuna registrazione",
+          historyTitle: "Storico",
+          initialValue: "Valore iniziale",
+          columns: {
+            date: "Data",
+            value: "Valore",
+            delta: "Variazione",
+            score: "Voto",
+            note: "Nota del cliente",
+          },
+          workoutAverage: "Voto medio",
+          workoutAverageOf: (sessions: string) => `su ${sessions}`,
+          lastWorkout: "Ultimo allenamento",
+          week: "Questa settimana",
+          recent: `Ultimi ${WORKOUT_RECENT_DAYS} giorni`,
+          sessionsUnit: (count: number) =>
+            count === 1 ? "sessione" : "sessioni",
+          averageLine: (average: string) => `voto medio ${average}`,
+          diaryTitle: "Diario degli allenamenti",
+          daysTitle: "Ultimi giorni",
+          limited: (count: number) =>
+            `Sono mostrate le ultime ${count} registrazioni.`,
+        },
       },
       files: {
         upload: {
@@ -539,8 +644,6 @@ export const copy = {
       noFilesDescription:
         "Quando lo studio pubblicherà un file per te, lo troverai qui.",
       toRecordTitle: "Da registrare",
-      toRecordPlaceholder:
-        "Il riepilogo delle misure da registrare arriverà a breve.",
       onboarding: {
         welcome: "Ti diamo il benvenuto",
         title: (studioName: string) =>
@@ -565,6 +668,109 @@ export const copy = {
         stepDone: " (completato)",
         areaTitle: "Area personale",
         locked: "Si sblocca dopo l'onboarding",
+      },
+    },
+    tracking: {
+      backAria: "Torna al tracking",
+      register: "Registra",
+      registerAria: (name: string) => `Registra: ${name}`,
+      checkinCard: {
+        title: "Check-in di oggi",
+        description: "Passi, sonno e acqua in una sola schermata.",
+        missing: (missing: number, total: number) =>
+          missing === 0
+            ? "Completato, a domani!"
+            : `Ne ${missing === 1 ? "manca" : "mancano"} ${missing} su ${total}.`,
+        cta: "Compila il check-in",
+        ctaEdit: "Modifica il check-in",
+        date: (weekday: string, date: string) => `${weekday} ${date}`,
+      },
+      checkin: {
+        title: "Check-in",
+        dayLabel: "Giorno del check-in",
+        days: {
+          today: (date: string) => `Oggi · ${date}`,
+          yesterday: (date: string) => `Ieri · ${date}`,
+        } satisfies Record<CheckinDay, (date: string) => string>,
+        goal: (amount: string) => `Il tuo obiettivo: ${amount}`,
+        noGoal: "Voto da 1 a 5",
+        save: "Salva check-in",
+        saving: "Salvataggio…",
+        saved: "Check-in salvato.",
+        skipHint:
+          "Puoi saltare un giorno: i giorni senza voto non vengono penalizzati.",
+        alreadyFilled:
+          "Hai già compilato questo giorno: puoi correggere i voti.",
+        notChosen: "Nessun voto scelto",
+      },
+      circumference: {
+        newTitle: "Nuova misura",
+        value: "Valore",
+        valuePlaceholder: "76,4",
+        date: "Data",
+        limits: (min: string, max: string, unit: string) =>
+          `Valori ammessi: da ${min} a ${max} ${unit}. La data non può essere futura.`,
+        save: "Salva misura",
+        saved: "Misura salvata.",
+        overdue: (days: number, date: string) =>
+          `In ritardo di ${days === 1 ? "1 giorno" : `${days} giorni`}: andava registrata entro il ${date}.`,
+        dueSoon: (date: string) => `Da registrare entro il ${date}.`,
+        never: "Non l'hai ancora registrata: inserisci la prima misura.",
+        nextOn: (date: string) => `Prossima rilevazione entro il ${date}.`,
+        fromStart: (delta: string, date: string) => `${delta} dal ${date}`,
+      },
+      workout: {
+        newTitle: "Registra un allenamento",
+        date: "Data",
+        note: "Nota",
+        noteOptional: "(facoltativa)",
+        notePlaceholder: "Com'è andata?",
+        save: "Salva allenamento",
+        saved: "Allenamento salvato.",
+        diaryTitle: "Il tuo diario",
+        averageAll: "voto medio in tutto",
+        weekSessions: "sessioni questa settimana",
+      },
+      habit: {
+        todayMissing: "Oggi non hai ancora dato questo voto.",
+        todayCta: "Compila oggi",
+      },
+      chartTitle: "Andamento",
+      history: {
+        title: "Storico",
+        editHint: "correggi o elimina una registrazione",
+        diaryTitle: "Ultime sessioni",
+        editHintShort: "correggi o elimina",
+        daysTitle: "Ultimi giorni",
+        limited: (count: number) =>
+          `Sono mostrate le ultime ${count} registrazioni.`,
+      },
+      edit: {
+        title: "Correggi la registrazione",
+        editAria: (date: string) => `Correggi la registrazione del ${date}`,
+        deleteAria: (date: string) => `Elimina la registrazione del ${date}`,
+        save: "Salva correzione",
+        saved: "Registrazione corretta.",
+        deleteTitle: "Eliminare questa registrazione?",
+        deleteDescription:
+          "La registrazione verrà eliminata definitivamente, anche dai grafici.",
+        deleteConfirm: "Elimina",
+        deleted: "Registrazione eliminata.",
+        cancel: "Annulla",
+      },
+      readOnly:
+        "Il tuo percorso è in pausa o concluso: puoi consultare i dati, ma non registrarne di nuovi.",
+      toRecord: {
+        count: (count: number) =>
+          count === 1 ? "1 misura" : `${count} misure`,
+        checkin: "Check-in di oggi",
+        checkinMissing: (names: string[]) =>
+          `Da compilare: ${names.map((name) => name.toLowerCase()).join(", ")}`,
+        today: "Oggi",
+        lastValue: (value: string, date: string) => `Ultima ${value} · ${date}`,
+        never: "Mai registrata",
+        allDone: "Tutto registrato: ottimo lavoro!",
+        cta: "Vai al tracking",
       },
     },
     files: {
@@ -603,8 +809,10 @@ export const copy = {
       },
       tracking: {
         title: "Tracking",
+        subtitle:
+          "Le tue misure, il check-in di ogni giorno e i tuoi allenamenti.",
         emptyTitle: "Nessuna misura",
-        emptyDescription: "Il tracking arriverà nelle prossime fasi.",
+        emptyDescription: "Lo studio non ha ancora configurato le misure.",
       },
       profile: {
         title: "Profilo",
@@ -612,6 +820,112 @@ export const copy = {
         emptyDescription:
           "Dati personali, password e notifiche arriveranno nelle prossime fasi.",
       },
+    },
+  },
+  tracking: {
+    kinds: {
+      circumference: {
+        title: "Circonferenze",
+        hint: `ogni ${CIRCUMFERENCE_INTERVAL_DAYS} giorni`,
+      },
+      habit: { title: "Abitudini giornaliere", hint: "voto da 1 a 5" },
+      workout: { title: "Allenamenti", hint: "voto da 1 a 10" },
+    } satisfies Record<MetricKind, { title: string; hint: string }>,
+    status: {
+      ok: "In regola",
+      due_soon: "In scadenza",
+      overdue: "In ritardo",
+      never: "Da registrare",
+    } satisfies Record<CircumferenceStatus, string>,
+    recordedAria: "Registrata nel periodo corrente",
+    entries: (count: number) =>
+      count === 1 ? "1 registrazione" : `${count} registrazioni`,
+    sessions: (count: number) =>
+      count === 1 ? "1 sessione" : `${count} sessioni`,
+    filledDays: (count: number) =>
+      count === 1 ? "1 giorno" : `${count} giorni`,
+    filledDaysOfWeek: (count: number) =>
+      count === 1 ? "1 giorno su 7" : `${count} giorni su 7`,
+    lastOn: (date: string) => `ultima ${date}`,
+    lastWorkout: (date: string, score: string) => `ultimo ${date}, ${score}`,
+    todayScore: (score: string) => `oggi ${score}`,
+    todayMissing: "oggi da compilare",
+    score: (value: number | string, max: number) => `${value}/${max}`,
+    outOf: (max: number) => `/ ${max}`,
+    weekAverage: (name: string) => `${name}, media della settimana`,
+    delta: (delta: string) => `${delta} rispetto alla scorsa settimana`,
+    deltaShort: (delta: string) => `${delta} rispetto alla scorsa`,
+    deltaZero: "uguale alla scorsa settimana",
+    noWeekValues: "Nessun voto questa settimana",
+    chartTitle: "Andamento",
+    habit: {
+      thisWeek: "Questa settimana",
+      averageOf: (range: string, days: string) => `media di ${range} · ${days}`,
+      previousAverage: (days: string) =>
+        `media della scorsa settimana · ${days}`,
+      noPrevious: "Nessun voto la scorsa settimana",
+      scaleGoal: (amount: string) => `obiettivo: ${amount}`,
+    },
+    noEntries: "Nessuna registrazione.",
+    firstValue: "Prima rilevazione",
+    noNote: "Nessuna nota",
+    valueWithUnit: (value: string, unit: string | null) =>
+      unit ? `${value} ${unit}` : value,
+    scale: {
+      title: "Come si danno i voti",
+      meanings: {
+        5: "Obiettivo raggiunto",
+        4: "Quasi raggiunto",
+        3: "A metà",
+        2: "Poco",
+        1: "Quasi niente",
+      } satisfies Record<HabitScore, string>,
+      atLeast: (amount: string) => `${amount} o più`,
+      about: (amount: string) => `circa ${amount}`,
+      lessThan: (amount: string) => `meno di ${amount}`,
+      amount: (value: string, unit: string) => `${value} ${unit}`,
+      hours: (hours: number) => (hours === 1 ? "1 ora" : `${hours} ore`),
+      hoursAndHalf: (hours: number) =>
+        hours === 1 ? "1 ora e mezza" : `${hours} ore e mezza`,
+      halfHour: "mezz'ora",
+      scoreLabel: (score: number, meaning: string) => `${score} · ${meaning}`,
+    },
+    chart: {
+      ranges: { months6: "6 mesi", months12: "12 mesi", all: "Tutto" },
+      rangeLabel: "Periodo del grafico",
+      date: "Data",
+      value: "Valore",
+      day: "Giorno",
+      currentWeek: "Questa settimana",
+      previousWeek: "Scorsa settimana",
+      empty: "Nessun dato da mostrare.",
+      summary: (title: string, count: number) =>
+        `${title}: ${count === 1 ? "1 valore" : `${count} valori`}. I dati sono nella tabella che segue.`,
+      notRecorded: "—",
+    },
+    validation: {
+      valueRequired: "Inserisci un valore.",
+      valueNumber: "Inserisci un numero, per esempio 76,4.",
+      valueDecimals: "Usa al massimo un decimale.",
+      valueRange: (min: string, max: string, unit: string) =>
+        `Il valore deve essere tra ${min} e ${max} ${unit}.`,
+      dateRequired: "Inserisci la data.",
+      dateFuture: "La data non può essere futura.",
+      scoreRequired: "Scegli un voto.",
+      noteTooLong: "Massimo 500 caratteri.",
+      checkinEmpty: "Scegli almeno un voto.",
+      goalRange: (min: string, max: string) =>
+        `L'obiettivo deve essere tra ${min} e ${max}.`,
+      goalStep: (step: string) => `Usa multipli di ${step}.`,
+    },
+    errors: {
+      readOnly:
+        "Il percorso è in pausa o concluso: non si possono registrare nuovi valori.",
+      metricNotFound: "Misura non trovata.",
+      entryNotFound: "Registrazione non trovata.",
+      outOfRange: "Il valore è fuori dai limiti ammessi.",
+      duplicateDay:
+        "Per questo giorno c'è già un voto: correggi quello esistente.",
     },
   },
   files: {

@@ -253,6 +253,13 @@ otp_expiry = 3600
 subject = "Reimposta la password"
 content_path = "./supabase/templates/recovery.html"
 
+# Cambio email (C-07): con double_confirm_changes il link arriva sia al vecchio
+# sia al nuovo indirizzo (a chi non aveva un'email solo al nuovo). La pagina
+# /conferma-email verifica il token solo al clic su "Conferma".
+[auth.email.template.email_change]
+subject = "Conferma il nuovo indirizzo email"
+content_path = "./supabase/templates/email_change.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

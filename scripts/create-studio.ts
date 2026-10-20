@@ -5,7 +5,8 @@
  *
  * Uso:
  *   pnpm studio:create --name "Studio Verde" --slug studio-verde \
- *     --email titolare@example.com --display-name "Dott.ssa Verdi" [--color "#2E6A4E"] [--env .env.local]
+ *     --email titolare@example.com --first-name Elena --last-name Verdi [--title "Dott.ssa"] \
+ *     [--color "#2E6A4E"] [--env .env.local]
  *
  * Stampa il link con cui il titolare sceglie la propria password (valido un'ora).
  * Lo script è uno strumento separato dall'app: non passa dai repository, che
@@ -31,7 +32,9 @@ const { values } = parseArgs({
     name: { type: "string" },
     slug: { type: "string" },
     email: { type: "string" },
-    "display-name": { type: "string" },
+    "first-name": { type: "string" },
+    "last-name": { type: "string" },
+    title: { type: "string" },
     color: { type: "string" },
     env: { type: "string", default: ".env.local" },
   },
@@ -42,12 +45,14 @@ if (values.env && existsSync(values.env)) process.loadEnvFile(values.env);
 const name = values.name?.trim();
 const slug = values.slug?.trim();
 const email = values.email?.trim().toLowerCase();
-const displayName = values["display-name"]?.trim();
+const firstName = values["first-name"]?.trim();
+const lastName = values["last-name"]?.trim() || null;
+const title = values.title?.trim() || null;
 const color = values.color?.trim().toUpperCase();
 
-if (!name || !slug || !email || !displayName) {
+if (!name || !slug || !email || !firstName) {
   fail(
-    "parametri obbligatori: --name, --slug, --email, --display-name (vedi l'intestazione dello script)",
+    "parametri obbligatori: --name, --slug, --email, --first-name (vedi l'intestazione dello script)",
   );
 }
 if (!SLUG.test(slug))
@@ -106,7 +111,9 @@ async function main() {
     studio_id: studio.id,
     user_id: userId,
     role: "owner",
-    display_name: displayName!,
+    first_name: firstName!,
+    last_name: lastName,
+    title,
   });
   if (memberError) {
     await supabase.from("studios").delete().eq("id", studio.id);

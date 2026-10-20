@@ -8,7 +8,7 @@ select tests.authenticate_as(tests.id('u1'));
 
 select throws_ok(
   $$ update public.clients set journey_stage = 'completed' where id = tests.id('c1') $$,
-  'P0001', 'Puoi modificare solo nome, cognome e preferenze di notifica',
+  'P0001', 'Puoi modificare solo nome, cognome, data di nascita e preferenze di notifica',
   'il cliente non cambia la propria fase'
 );
 select throws_ok(

@@ -1,0 +1,14 @@
+<h2>Conferma il nuovo indirizzo email</h2>
+<p>
+  Abbiamo ricevuto una richiesta per usare {{ .NewEmail }} come email del tuo
+  account.
+</p>
+<p>
+  <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email_change"
+    >Conferma il cambio di email</a
+  >
+</p>
+<p>
+  Il link è valido per un'ora. Se non hai fatto tu la richiesta, ignora questa
+  email: l'indirizzo non cambierà.
+</p>

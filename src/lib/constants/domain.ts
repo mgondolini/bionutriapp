@@ -243,3 +243,116 @@ export function clientFilesUrl(
   const path = clientDetailPath(clientId, "file");
   return category ? `${path}?${FILE_LIST_PARAMS.category}=${category}` : path;
 }
+
+/*
+ * Tracking (T-01…T-09). Le misure stanno nel database (una riga per studio,
+ * create dal trigger seed_default_metrics): qui solo tipi, regole e soglie.
+ */
+export const METRIC_VALUE_TYPES = [
+  "decimal",
+  "score_1_5",
+  "score_1_10",
+] as const;
+export type MetricValueType = (typeof METRIC_VALUE_TYPES)[number];
+
+export const METRIC_FREQUENCIES = [
+  "monthly_30d",
+  "daily",
+  "per_session",
+] as const;
+export type MetricFrequency = (typeof METRIC_FREQUENCIES)[number];
+
+/** Tipi di misura nell'interfaccia: ognuno ha la sua scheda e il suo form. */
+export const METRIC_KINDS = ["circumference", "habit", "workout"] as const;
+export type MetricKind = (typeof METRIC_KINDS)[number];
+export const METRIC_KIND_BY_FREQUENCY: Record<MetricFrequency, MetricKind> = {
+  monthly_30d: "circumference",
+  daily: "habit",
+  per_session: "workout",
+};
+
+/** Abitudini giornaliere del check-in (T-06), nell'ordine della schermata C9. */
+export const HABIT_KEYS = ["steps", "sleep", "water"] as const;
+export type HabitKey = (typeof HABIT_KEYS)[number];
+
+/** Una circonferenza va registrata ogni 30 giorni (T-05). */
+export const CIRCUMFERENCE_INTERVAL_DAYS = 30;
+/** "In scadenza" nella home: mancano al massimo 3 giorni (C-02). */
+export const DUE_SOON_DAYS = 3;
+/** Cifre decimali dei valori delle circonferenze (precisione del metro). */
+export const MEASURE_DECIMALS = 1;
+export const TRACKING_NOTE_MAX = 500;
+/** Righe mostrate nello storico di una misura (il grafico le usa tutte). */
+export const HISTORY_LIMIT = 60;
+/** Finestra delle statistiche recenti degli allenamenti (schermata A11). */
+export const WORKOUT_RECENT_DAYS = 30;
+
+/** Voti della scala delle abitudini, dal più alto (T-07). */
+export const HABIT_SCORES = [5, 4, 3, 2, 1] as const;
+export type HabitScore = (typeof HABIT_SCORES)[number];
+/** Voto minimo e massimo del check-in (T-06). */
+export const HABIT_SCORE_RANGE = {
+  min: HABIT_SCORES[HABIT_SCORES.length - 1],
+  max: HABIT_SCORES[0],
+} as const;
+/** Quota dell'obiettivo a cui corrisponde ogni voto: 4 ≈ 75%, 3 ≈ 50%, 2 ≈ 25%. */
+export const HABIT_SCORE_SHARES: Record<HabitScore, number> = {
+  5: 1,
+  4: 0.75,
+  3: 0.5,
+  2: 0.25,
+  1: 0.25,
+};
+/** Arrotondamento leggibile dei valori della scala: acqua 0,5 L, passi 500, sonno 30 minuti. */
+export const HABIT_GOAL_ROUNDING: Record<HabitKey, number> = {
+  steps: 500,
+  sleep: 0.5,
+  water: 0.5,
+};
+/** Unità dell'obiettivo del sonno (metrics.goal_unit): si scrive in ore e mezze ore. */
+export const HOURS_GOAL_UNIT = "ore";
+/** Per un'abitudine aggiunta da uno studio, senza un arrotondamento proprio. */
+export const DEFAULT_GOAL_ROUNDING = 0.1;
+
+/**
+ * Limiti degli obiettivi personali impostati dal nutrizionista (T-07).
+ * DA CONFERMARE con il nutrizionista.
+ */
+export const HABIT_GOAL_LIMITS: Record<
+  HabitKey,
+  { min: number; max: number; step: number }
+> = {
+  water: { min: 0.5, max: 6, step: 0.1 },
+  steps: { min: 1000, max: 30000, step: 1 },
+  sleep: { min: 4, max: 12, step: 0.5 },
+};
+
+/** Giorni compilabili dal check-in (T-06) e parametro dell'URL che li sceglie. */
+export const CHECKIN_DAYS = ["today", "yesterday"] as const;
+export type CheckinDay = (typeof CHECKIN_DAYS)[number];
+export const CHECKIN_DAY_PARAM = "giorno";
+export const CHECKIN_DAY_SLUGS: Record<CheckinDay, string> = {
+  today: "oggi",
+  yesterday: "ieri",
+};
+
+export const CHECKIN_PATH = `${ROUTES.client.tracking}/check-in`;
+
+export function checkinUrl(day: CheckinDay = "today"): string {
+  return day === "today"
+    ? CHECKIN_PATH
+    : `${CHECKIN_PATH}?${CHECKIN_DAY_PARAM}=${CHECKIN_DAY_SLUGS[day]}`;
+}
+
+/** Dettaglio di una misura nell'area cliente: la chiave non contiene "-", quindi non si confonde con "check-in". */
+export function trackingMetricPath(metricKey: string): string {
+  return `${ROUTES.client.tracking}/${metricKey}`;
+}
+
+/** Dettaglio di una misura nella scheda Tracking dello staff (A10, A11). */
+export function clientTrackingMetricPath(
+  clientId: string,
+  metricKey: string,
+): string {
+  return `${clientDetailPath(clientId, "tracking")}/${metricKey}`;
+}

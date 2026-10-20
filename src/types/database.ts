@@ -452,24 +452,33 @@ export type Database = {
       studio_members: {
         Row: {
           created_at: string;
-          display_name: string;
+          display_name: string | null;
+          first_name: string;
+          last_name: string | null;
           role: string;
           studio_id: string;
+          title: string | null;
           user_id: string;
         };
         ComputedFields: never;
         Insert: {
           created_at?: string;
-          display_name: string;
+          display_name?: never;
+          first_name: string;
+          last_name?: string | null;
           role?: string;
           studio_id: string;
+          title?: string | null;
           user_id: string;
         };
         Update: {
           created_at?: string;
-          display_name?: string;
+          display_name?: never;
+          first_name?: string;
+          last_name?: string | null;
           role?: string;
           studio_id?: string;
+          title?: string | null;
           user_id?: string;
         };
         Relationships: [
@@ -731,6 +740,7 @@ export type Database = {
           studio_slug: string;
         }[];
       };
+      my_email_available: { Args: { p_email: string }; Returns: boolean };
       register_push_subscription: {
         Args: {
           p_auth: string;
@@ -740,6 +750,10 @@ export type Database = {
         };
         Returns: string;
       };
+      save_daily_checkin: {
+        Args: { p_client_id: string; p_recorded_on: string; p_values: Json };
+        Returns: undefined;
+      };
       set_journey_stage: {
         Args: {
           p_automatic?: boolean;
@@ -748,6 +762,18 @@ export type Database = {
           p_to: string;
         };
         Returns: boolean;
+      };
+      update_my_client_profile: {
+        Args: {
+          p_birth_date: string;
+          p_first_name: string;
+          p_last_name: string;
+        };
+        Returns: undefined;
+      };
+      update_my_member_profile: {
+        Args: { p_first_name: string; p_last_name: string; p_title: string };
+        Returns: undefined;
       };
     };
     Enums: {

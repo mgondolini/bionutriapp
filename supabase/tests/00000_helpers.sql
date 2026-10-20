@@ -135,9 +135,9 @@ begin
     (tests.id('studio1'), 'Studio Uno', 'test-uno'),
     (tests.id('studio2'), 'Studio Due', 'test-due');
 
-  insert into public.studio_members (studio_id, user_id, display_name) values
-    (tests.id('studio1'), tests.id('owner1'), 'Titolare Uno'),
-    (tests.id('studio2'), tests.id('owner2'), 'Titolare Due');
+  insert into public.studio_members (studio_id, user_id, first_name, last_name) values
+    (tests.id('studio1'), tests.id('owner1'), 'Titolare', 'Uno'),
+    (tests.id('studio2'), tests.id('owner2'), 'Titolare', 'Due');
 
   insert into public.clients (id, studio_id, first_name, last_name, phone, email, origin) values
     (tests.id('c1'), tests.id('studio1'), 'Cliente', 'Uno',     '3330000101', 'c1@test.local', 'imported'),
