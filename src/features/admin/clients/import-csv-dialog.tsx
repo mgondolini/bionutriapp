@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { CSV_MAX_BYTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import type { CleanResult } from "@/lib/csv/clean-clients";
@@ -198,6 +199,7 @@ export function ImportCsvDialog() {
     setError(null);
     startTransition(async () => {
       const response = await previewImportAction({ csv: file.text });
+      if (redirectIfSignedOut(response)) return;
       if (!response.ok) {
         setError(response.error);
         return;
@@ -212,6 +214,7 @@ export function ImportCsvDialog() {
     setError(null);
     startTransition(async () => {
       const response = await confirmImportAction({ csv: file.text });
+      if (redirectIfSignedOut(response)) return;
       if (!response.ok) {
         setError(response.error);
         return;

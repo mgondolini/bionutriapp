@@ -56,13 +56,26 @@ returns uuid language sql as $$
   returning id;
 $$;
 
--- Simula una richiesta dell'API come utente autenticato
-create or replace function tests.authenticate_as(p_user uuid)
+-- Sessione di Auth (auth.sessions) per l'utente: senza, private.session_uid()
+-- considera il JWT revocato (fase 7). Security definer: si può chiamare anche
+-- mentre il ruolo corrente è authenticated.
+create or replace function tests.new_session(p_user uuid)
+returns uuid language sql security definer set search_path = '' as $$
+  insert into auth.sessions (id, user_id, created_at, updated_at)
+  values (gen_random_uuid(), p_user, now(), now())
+  returning id;
+$$;
+
+-- Simula una richiesta dell'API come utente autenticato, con una sessione
+-- valida oppure con quella indicata (per esempio una sessione già revocata)
+create or replace function tests.authenticate_as(p_user uuid, p_session uuid default null)
 returns void language plpgsql as $$
+declare
+  v_session uuid := coalesce(p_session, tests.new_session(p_user));
 begin
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claims',
-    json_build_object('sub', p_user, 'role', 'authenticated')::text, true);
+    json_build_object('sub', p_user, 'role', 'authenticated', 'session_id', v_session)::text, true);
 end;
 $$;
 

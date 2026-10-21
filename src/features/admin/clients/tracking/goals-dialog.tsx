@@ -25,6 +25,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { HABIT_GOAL_LIMITS, type HabitKey } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { formatGoalAmount } from "@/lib/domain/tracking/score-scale";
@@ -89,6 +90,7 @@ export function GoalsDialog({
     setError(null);
     startTransition(async () => {
       const result = await saveGoalsAction({ clientId, goals: values });
+      if (redirectIfSignedOut(result)) return;
       if (!result.ok) {
         setError(result.error);
         for (const [field, messages] of Object.entries(
@@ -107,6 +109,7 @@ export function GoalsDialog({
     setError(null);
     startTransition(async () => {
       const result = await resetGoalAction({ clientId, key });
+      if (redirectIfSignedOut(result)) return;
       if (!result.ok) {
         setError(result.error);
         return;

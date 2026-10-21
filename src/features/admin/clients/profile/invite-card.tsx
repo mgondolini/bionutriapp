@@ -5,7 +5,10 @@ import { formatPhone } from "@/lib/phone";
 import type { ClientProfile } from "@/server/services/clients.service";
 
 import { WhatsAppInviteButton } from "../whatsapp-invite-button";
-import { ProfileItem, ProfileSection } from "./profile-section";
+import {
+  ProfileItem,
+  ProfileSection,
+} from "@/components/shared/profile-section";
 
 const t = copy.admin.clients.profile.invite;
 

@@ -9,6 +9,7 @@ import { getSession } from "@/server/services/session.service";
 import { updateStudioSettings } from "@/server/services/studio.service";
 import { studioSettingsSchema } from "@/server/validation/studio.schema";
 import { fail, ok, type ActionResult } from "@/types/action-result";
+import { authFailure } from "@/server/actions/session-guard";
 
 /**
  * Impostazioni dello studio (A-14), solo per il titolare. Lo studio si ricava
@@ -19,7 +20,7 @@ export async function updateStudioSettingsAction(
 ): Promise<ActionResult> {
   const session = await getSession();
   if (session.kind !== "staff" || session.role !== "owner") {
-    return fail(copy.common.unauthorized);
+    return authFailure();
   }
   const { id, slug, logoPath } = session.studio;
   if (!id || !slug) return fail(copy.common.genericError);
@@ -51,7 +52,7 @@ export async function updateStudioSettingsAction(
           : undefined,
       },
     );
-    if (!updated) return fail(copy.common.unauthorized);
+    if (!updated) return authFailure();
   } catch (error) {
     console.error(
       "Salvataggio delle impostazioni dello studio non riuscito",

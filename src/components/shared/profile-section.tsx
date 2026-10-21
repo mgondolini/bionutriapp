@@ -2,16 +2,18 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-/** Riquadro della scheda Profilo con titolo e azione facoltativa. */
+/** Riquadro di un profilo (scheda cliente dello staff, profilo del cliente e del professionista) con titolo e azione facoltativa. */
 export function ProfileSection({
   title,
+  description,
   action,
   children,
   className,
 }: {
   title: string;
+  description?: string;
   action?: ReactNode;
-  children: ReactNode;
+  children?: ReactNode;
   className?: string;
 }) {
   const id = `profile-${title.toLowerCase().replace(/\W+/g, "-")}`;
@@ -23,10 +25,15 @@ export function ProfileSection({
         className,
       )}
     >
-      <div className="flex items-center justify-between gap-3">
-        <h2 id={id} className="text-base font-semibold">
-          {title}
-        </h2>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex min-w-48 flex-1 flex-col gap-0.5">
+          <h2 id={id} className="text-base font-semibold">
+            {title}
+          </h2>
+          {description ? (
+            <p className="text-sm text-muted-foreground">{description}</p>
+          ) : null}
+        </div>
         {action}
       </div>
       {children}

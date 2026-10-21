@@ -19,6 +19,7 @@ import {
   type ResetViaInviteInput,
 } from "@/server/validation/invites.schema";
 import { fail, ok, type ActionResult } from "@/types/action-result";
+import { authFailure } from "@/server/actions/session-guard";
 
 const t = copy.activation;
 
@@ -33,7 +34,7 @@ export async function sendWhatsAppInviteAction(
   ActionResult<{ whatsappUrl: string; sentAt: string; expiresAt: string }>
 > {
   const session = await getStaffSession();
-  if (!session) return fail(copy.common.unauthorized);
+  if (!session) return authFailure();
 
   const parsed = sendInviteSchema.safeParse(input);
   if (!parsed.success) return fail(copy.common.invalidInput);

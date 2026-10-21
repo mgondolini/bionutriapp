@@ -21,6 +21,7 @@ import {
   type UpdateClientFormValues,
 } from "@/server/validation/clients.schema";
 import { fail, ok, type ActionResult } from "@/types/action-result";
+import { authFailure } from "@/server/actions/session-guard";
 
 const t = copy.admin.clients;
 
@@ -29,7 +30,7 @@ export async function createClientAction(
   input: CreateClientFormValues,
 ): Promise<ActionResult<{ id: string }>> {
   const session = await getStaffSession();
-  if (!session) return fail(copy.common.unauthorized);
+  if (!session) return authFailure();
 
   const parsed = createClientSchema.safeParse(input);
   if (!parsed.success) {
@@ -61,7 +62,7 @@ export async function previewImportAction(
   input: CsvImportInput,
 ): Promise<ActionResult<CleanResult>> {
   const session = await getStaffSession();
-  if (!session) return fail(copy.common.unauthorized);
+  if (!session) return authFailure();
 
   const parsed = csvImportSchema.safeParse(input);
   if (!parsed.success) return fail(t.import.fileErrors.too_large);
@@ -79,7 +80,7 @@ export async function confirmImportAction(
   input: CsvImportInput,
 ): Promise<ActionResult<{ imported: number }>> {
   const session = await getStaffSession();
-  if (!session) return fail(copy.common.unauthorized);
+  if (!session) return authFailure();
 
   const parsed = csvImportSchema.safeParse(input);
   if (!parsed.success) return fail(t.import.fileErrors.too_large);
@@ -110,7 +111,7 @@ export async function updateClientAction(
   input: UpdateClientFormValues,
 ): Promise<ActionResult> {
   const session = await getStaffSession();
-  if (!session) return fail(copy.common.unauthorized);
+  if (!session) return authFailure();
 
   const parsed = updateClientSchema.safeParse(input);
   if (!parsed.success) {
@@ -152,7 +153,7 @@ export async function changeStageAction(
   input: ChangeStageInput,
 ): Promise<ActionResult> {
   const session = await getStaffSession();
-  if (!session) return fail(copy.common.unauthorized);
+  if (!session) return authFailure();
 
   const parsed = changeStageSchema.safeParse(input);
   if (!parsed.success) return fail(copy.common.invalidInput);
@@ -195,7 +196,7 @@ async function toggleAccount(
   ) => Promise<clientsService.AccountToggleResult>,
 ): Promise<ActionResult> {
   const session = await getStaffSession();
-  if (!session) return fail(copy.common.unauthorized);
+  if (!session) return authFailure();
 
   const parsed = clientAccountSchema.safeParse(input);
   if (!parsed.success) return fail(copy.common.invalidInput);

@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { MEASURE_DECIMALS, type MetricKind } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { formatDecimal } from "@/lib/format";
@@ -54,6 +55,7 @@ function HabitScoreForm({
         entryId: entry.id,
         values: { value },
       });
+      if (redirectIfSignedOut(result)) return;
       if (!result.ok) {
         setError(result.error);
         return;

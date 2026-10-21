@@ -16,6 +16,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { copy } from "@/lib/copy/it";
 import { formatLongDate } from "@/lib/format";
 import { formatPhone } from "@/lib/phone";
@@ -26,7 +27,10 @@ import {
   type UpdateClientFormValues,
 } from "@/server/validation/clients.schema";
 
-import { ProfileItem, ProfileSection } from "./profile-section";
+import {
+  ProfileItem,
+  ProfileSection,
+} from "@/components/shared/profile-section";
 
 const t = copy.admin.clients.profile.data;
 
@@ -77,6 +81,7 @@ export function ClientDataCard({ client }: { client: ClientProfile }) {
     setError(null);
     startTransition(async () => {
       const result = await updateClientAction(values);
+      if (redirectIfSignedOut(result)) return;
       if (result.ok) {
         toast.success(t.saved);
         setEditing(false);

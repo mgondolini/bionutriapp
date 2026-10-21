@@ -74,7 +74,7 @@ export async function loadSession(): Promise<Session> {
         kind: "staff",
         userId,
         role: context.role,
-        displayName: member.display_name,
+        displayName: member.display_name ?? member.first_name,
         studio,
       };
     }

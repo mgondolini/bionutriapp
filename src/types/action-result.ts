@@ -22,3 +22,15 @@ export function fail(
 ): ActionResult<never> {
   return { ok: false, error, fieldErrors };
 }
+
+/**
+ * Errore delle Server Actions quando manca una sessione valida (scaduta o
+ * revocata): l'interfaccia porta al login con "La sessione è scaduta"
+ * (`redirectIfSignedOut`). Diverso da "non autorizzato" (sessione valida,
+ * ruolo o dato non consentiti).
+ */
+export const UNAUTHENTICATED = "unauthenticated";
+
+export function isUnauthenticated(result: ActionResult<unknown>): boolean {
+  return !result.ok && result.error === UNAUTHENTICATED;
+}

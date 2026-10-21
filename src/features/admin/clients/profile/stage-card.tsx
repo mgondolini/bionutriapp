@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
+import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { INITIAL_STAGE_BY_ORIGIN } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { availableActions } from "@/lib/domain/journey";
@@ -12,7 +13,7 @@ import { formatLongDate } from "@/lib/format";
 import { changeStageAction } from "@/server/actions/clients.actions";
 import type { ClientProfile } from "@/server/services/clients.service";
 
-import { ProfileSection } from "./profile-section";
+import { ProfileSection } from "@/components/shared/profile-section";
 
 const t = copy.admin.clients.profile.stage;
 const stageLabel = copy.domain.journeyStage;
@@ -52,6 +53,7 @@ export function StageCard({
         from: stage,
         to,
       });
+      if (redirectIfSignedOut(result)) return;
       if (result.ok) toast.success(t.changed(stageLabel[to]));
       else toast.error(result.error);
     });

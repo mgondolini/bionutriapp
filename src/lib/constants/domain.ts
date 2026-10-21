@@ -44,11 +44,13 @@ export const ROUTES = {
   recoverPassword: "/recupera-password",
   newPassword: "/nuova-password",
   activate: "/attiva",
+  confirmEmail: "/conferma-email",
   suspended: "/accesso-sospeso",
   admin: {
     home: "/admin",
     clients: "/admin/clienti",
     settings: "/admin/impostazioni",
+    profile: "/admin/profilo",
   },
   client: {
     home: "/app",
@@ -91,6 +93,32 @@ export const LOGO_MIME_TYPES = ["image/png", "image/jpeg"] as const;
 export type LogoMimeType = (typeof LOGO_MIME_TYPES)[number];
 
 export const PASSWORD_MIN_LENGTH = 8;
+/** bcrypt (Supabase Auth) considera al massimo 72 byte. */
+export const PASSWORD_MAX_LENGTH = 72;
+
+/**
+ * Colonne di `clients` che il cliente modifica di sé dal profilo (C-07).
+ * Cellulare (identificativo di accesso e numero degli inviti), email (segue
+ * Auth dopo la conferma), stato, fase e studio restano esclusi: li ricontrolla
+ * anche il trigger guard_client.
+ */
+export const CLIENT_EDITABLE_FIELDS = [
+  "first_name",
+  "last_name",
+  "birth_date",
+] as const;
+export type ClientEditableField = (typeof CLIENT_EDITABLE_FIELDS)[number];
+
+/** Limiti dei campi del profilo, uguali ai check del database. */
+export const NAME_MAX_LENGTH = 80;
+export const TITLE_MAX_LENGTH = 20;
+
+/**
+ * Cambio email: uguale a `double_confirm_changes` di supabase/config.toml (e
+ * della dashboard sul progetto remoto). Chi ha già un'email conferma da
+ * entrambi gli indirizzi, chi non l'aveva solo dal nuovo.
+ */
+export const EMAIL_CHANGE_DOUBLE_CONFIRM = true;
 
 /** Stati dell'account per cui si può inviare (o reinviare) l'invito su WhatsApp (N-01). */
 export const INVITABLE_STATUSES: readonly AccountStatus[] = [

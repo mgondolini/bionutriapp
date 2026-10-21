@@ -1,20 +1,25 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import { redirect, RedirectType } from "next/navigation";
 import { z } from "zod";
 
-import { safeNextPath } from "@/lib/auth/route-decision";
-import { ROUTES } from "@/lib/constants/domain";
+import { loginUrl, safeNextPath } from "@/lib/auth/route-decision";
 import { copy } from "@/lib/copy/it";
 import * as authService from "@/server/services/auth.service";
-import { homeForSession, routeRoleOf } from "@/server/services/session.service";
+import {
+  getSession,
+  homeForSession,
+  routeRoleOf,
+} from "@/server/services/session.service";
 import {
   loginSchema,
   newPasswordSchema,
   recoverPasswordSchema,
+  signOutSchema,
   type LoginInput,
   type NewPasswordInput,
   type RecoverPasswordInput,
+  type SignOutInput,
 } from "@/server/validation/auth.schema";
 import { fail, ok, type ActionResult } from "@/types/action-result";
 
@@ -43,9 +48,33 @@ export async function loginAction(input: LoginInput): Promise<ActionResult> {
   );
 }
 
+/**
+ * "Esci" ed "Esci da tutti i dispositivi" (fase 7), chiamata dal browser:
+ * elimina le sottoscrizioni push e chiude la sessione. Il browser poi fa una
+ * navigazione completa con `replace` verso il login ("Sei uscito dall'app"),
+ * che azzera lo stato della pagina e la cache del router.
+ */
+export async function signOutAction(
+  input: SignOutInput,
+): Promise<ActionResult> {
+  const parsed = signOutSchema.safeParse(input);
+  const scope = parsed.success ? parsed.data.scope : "local";
+  const endpoint = parsed.success ? parsed.data.endpoint : null;
+  const session = await getSession();
+  const userId = session.kind === "anonymous" ? null : session.userId;
+  await authService.signOut(scope, endpoint, userId);
+  return ok();
+}
+
+/** "Esci" senza JavaScript (form): stessa uscita, poi redirect al login. */
 export async function logoutAction(): Promise<void> {
-  await authService.signOut();
-  redirect(ROUTES.login);
+  const session = await getSession();
+  await authService.signOut(
+    "local",
+    null,
+    session.kind === "anonymous" ? null : session.userId,
+  );
+  redirect(loginUrl({ reason: "loggedOut" }), RedirectType.replace);
 }
 
 /** Restituisce sempre successo, qualunque sia l'esito: non rivela se l'email esiste. */

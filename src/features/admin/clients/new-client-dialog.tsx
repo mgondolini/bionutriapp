@@ -31,6 +31,7 @@ import {
   ORIGIN_BY_CREATION_MODE,
   type ClientCreationMode,
 } from "@/lib/constants/domain";
+import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { copy } from "@/lib/copy/it";
 import { cn } from "@/lib/utils";
 import { createClientAction } from "@/server/actions/clients.actions";
@@ -97,6 +98,7 @@ export function NewClientDialog() {
     setError(null);
     startTransition(async () => {
       const result = await createClientAction(values);
+      if (redirectIfSignedOut(result)) return;
       if (result.ok) {
         toast.success(
           t.created(

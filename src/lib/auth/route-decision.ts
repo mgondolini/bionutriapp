@@ -12,6 +12,43 @@ export type RouteDecision = { type: "next" } | { type: "redirect"; to: string };
 /** Parametro della pagina di login con il percorso a cui tornare. */
 export const NEXT_PARAM = "next";
 
+/** Parametro della pagina di login con il motivo del ritorno al login (fase 7). */
+export const LOGIN_REASON_PARAM = "motivo";
+export const LOGIN_REASONS = {
+  loggedOut: "uscito",
+  expired: "sessione-scaduta",
+} as const;
+export type LoginReason = keyof typeof LOGIN_REASONS;
+
+/** "/login?next=…&motivo=…" */
+export function loginUrl(
+  options: { next?: string | null; reason?: LoginReason } = {},
+): string {
+  const params = new URLSearchParams();
+  if (options.next) params.set(NEXT_PARAM, options.next);
+  if (options.reason)
+    params.set(LOGIN_REASON_PARAM, LOGIN_REASONS[options.reason]);
+  const query = params.toString();
+  return query ? `${ROUTES.login}?${query}` : ROUTES.login;
+}
+
+/** Motivo letto dall'URL del login; null se assente o sconosciuto. */
+export function parseLoginReason(value: unknown): LoginReason | null {
+  const entry = Object.entries(LOGIN_REASONS).find(
+    ([, slug]) => slug === value,
+  );
+  return entry ? (entry[0] as LoginReason) : null;
+}
+
+/**
+ * Vero se la richiesta porta i cookie di sessione di Supabase
+ * (`sb-<progetto>-auth-token`, anche divisi in `.0`, `.1`…): con i cookie ma
+ * senza una sessione valida, la sessione è scaduta o è stata revocata.
+ */
+export function hasAuthCookie(names: readonly string[]): boolean {
+  return names.some((name) => /^sb-.+-auth-token(?:\.\d+)?$/.test(name));
+}
+
 const HOME: Record<RouteRole, string> = {
   anonymous: ROUTES.login,
   staff: ROUTES.admin.home,
@@ -34,6 +71,7 @@ const ALWAYS_PUBLIC = [
   "/favicon.ico",
   ROUTES.activate,
   ROUTES.newPassword,
+  ROUTES.confirmEmail,
 ];
 
 /** Pagine per chi non ha ancora una sessione: un utente autenticato va alla propria area. */
@@ -80,17 +118,32 @@ export function safeNextPath(
   return `${url.pathname}${url.search}`;
 }
 
-function loginRedirect(pathname: string, search: string): RouteDecision {
-  const params = new URLSearchParams({ [NEXT_PARAM]: `${pathname}${search}` });
-  return { type: "redirect", to: `${ROUTES.login}?${params.toString()}` };
+function loginRedirect(
+  pathname: string,
+  search: string,
+  sessionExpired: boolean,
+): RouteDecision {
+  return {
+    type: "redirect",
+    to: loginUrl({
+      next: `${pathname}${search}`,
+      reason: sessionExpired ? "expired" : undefined,
+    }),
+  };
 }
 
+/**
+ * `sessionExpired`: la richiesta aveva i cookie di sessione ma la sessione
+ * non è più valida (scaduta, refresh token non valido, revocata): il login
+ * mostra "La sessione è scaduta, accedi di nuovo".
+ */
 export function decideRoute(input: {
   pathname: string;
   search: string;
   role: RouteRole;
+  sessionExpired?: boolean;
 }): RouteDecision {
-  const { pathname, search, role } = input;
+  const { pathname, search, role, sessionExpired = false } = input;
 
   if (isAlwaysPublic(pathname)) return { type: "next" };
 
@@ -110,7 +163,9 @@ export function decideRoute(input: {
   for (const [base, owner] of protectedAreas) {
     if (!matches(pathname, base)) continue;
     if (role === owner) return { type: "next" };
-    if (role === "anonymous") return loginRedirect(pathname, search);
+    if (role === "anonymous") {
+      return loginRedirect(pathname, search, sessionExpired);
+    }
     return { type: "redirect", to: homeFor(role) };
   }
 

@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { copy } from "@/lib/copy/it";
 import { deleteFileAction } from "@/server/actions/files.actions";
 
@@ -43,6 +44,7 @@ export function DeleteFileDialog({
     setError(null);
     startTransition(async () => {
       const result = await deleteFileAction({ fileId });
+      if (redirectIfSignedOut(result)) return;
       if (result.ok) {
         toast.success(t.deleted);
         setOpen(false);

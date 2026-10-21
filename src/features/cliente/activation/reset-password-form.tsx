@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { FormMessage } from "@/components/shared/form-message";
+import { PasswordInput } from "@/components/shared/password-input";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -20,8 +21,6 @@ import {
   resetViaInviteSchema,
   type ResetViaInviteInput,
 } from "@/server/validation/invites.schema";
-
-import { PasswordInput } from "./password-field";
 
 const t = copy.activation;
 

@@ -2,7 +2,7 @@ import { copy } from "@/lib/copy/it";
 import { formatShortDateTime } from "@/lib/format";
 import type { StageHistoryItem } from "@/server/services/clients.service";
 
-import { ProfileSection } from "./profile-section";
+import { ProfileSection } from "@/components/shared/profile-section";
 
 const t = copy.admin.clients.profile.history;
 const stageLabel = copy.domain.journeyStage;

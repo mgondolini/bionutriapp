@@ -1,21 +1,36 @@
 "use client";
 
-import { Menu, Settings, Users, type LucideIcon } from "lucide-react";
+import { Menu as MenuPrimitive } from "@base-ui/react/menu";
+import {
+  ChevronsUpDown,
+  LogOut,
+  Menu,
+  Settings,
+  UserRound,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
-import { LogoutButton } from "@/components/shared/logout-button";
 import { MAIN_CONTENT_ID, SkipLink } from "@/components/shared/skip-link";
 import { StudioLogo } from "@/components/shared/studio-logo";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import type { AdminNavKey } from "@/lib/constants/domain";
+import { useSignOut } from "@/lib/auth/use-sign-out";
+import { ROUTES, type AdminNavKey } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +50,59 @@ const ICONS: Record<AdminNavKey, LucideIcon> = {
 
 function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+const menuItemClassName =
+  "flex min-h-11 cursor-default items-center gap-3 rounded-md px-2 py-1.5 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-highlighted:bg-accent";
+
+/** Menu utente in fondo alla sidebar (A1): Profilo ed Esci. */
+function UserMenu({
+  user,
+  onNavigate,
+}: {
+  user: AdminFrameProps["user"];
+  onNavigate?: () => void;
+}) {
+  const { signOut, isPending } = useSignOut();
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        aria-label={copy.profile.staff.openMenu(user.displayName)}
+        className="flex min-h-11 w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors outline-none hover:bg-sidebar-accent focus-visible:ring-3 focus-visible:ring-ring/50"
+      >
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate text-sm font-semibold">
+            {user.displayName}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {user.roleLabel}
+          </span>
+        </span>
+        <ChevronsUpDown
+          aria-hidden="true"
+          className="size-4 text-muted-foreground"
+        />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side="top" align="start" className="w-56">
+        <MenuPrimitive.LinkItem
+          closeOnClick
+          render={<Link href={ROUTES.admin.profile} onClick={onNavigate} />}
+          className={menuItemClassName}
+        >
+          <UserRound aria-hidden="true" className="size-4" />
+          {copy.profile.staff.profileLink}
+        </MenuPrimitive.LinkItem>
+        <DropdownMenuItem
+          disabled={isPending}
+          onClick={() => signOut("local")}
+          className={menuItemClassName}
+        >
+          <LogOut aria-hidden="true" className="size-4" />
+          {copy.common.logout}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }
 
 function SidebarContent({
@@ -78,12 +146,8 @@ function SidebarContent({
         </ul>
       </nav>
 
-      <div className="flex flex-col gap-3 border-t pt-4">
-        <div className="px-2">
-          <p className="text-sm font-semibold">{user.displayName}</p>
-          <p className="text-xs text-muted-foreground">{user.roleLabel}</p>
-        </div>
-        <LogoutButton />
+      <div className="border-t pt-4">
+        <UserMenu user={user} onNavigate={onNavigate} />
       </div>
     </div>
   );

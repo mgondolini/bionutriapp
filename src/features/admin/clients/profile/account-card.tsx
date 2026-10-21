@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { copy } from "@/lib/copy/it";
 import { formatLongDate } from "@/lib/format";
 import {
@@ -22,7 +23,10 @@ import {
 } from "@/server/actions/clients.actions";
 import type { ClientProfile } from "@/server/services/clients.service";
 
-import { ProfileItem, ProfileSection } from "./profile-section";
+import {
+  ProfileItem,
+  ProfileSection,
+} from "@/components/shared/profile-section";
 
 const t = copy.admin.clients.profile.account;
 
@@ -54,6 +58,7 @@ export function AccountCard({
     startTransition(async () => {
       const action = enabling ? enableAccountAction : disableAccountAction;
       const result = await action({ clientId: client.id });
+      if (redirectIfSignedOut(result)) return;
       if (result.ok) {
         toast.success(enabling ? t.enabled : t.disabled);
         setConfirming(false);

@@ -5,6 +5,7 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { copy } from "@/lib/copy/it";
 import { sendWhatsAppInviteAction } from "@/server/actions/invites.actions";
 
@@ -48,6 +49,7 @@ export function WhatsAppInviteButton({
       const result = await sendWhatsAppInviteAction({ clientId });
       if (!result.ok) {
         popup?.close();
+        if (redirectIfSignedOut(result)) return;
         toast.error(result.error);
         return;
       }

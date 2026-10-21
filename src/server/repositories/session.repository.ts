@@ -30,7 +30,7 @@ export async function getStaffMember(studioId: string, userId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("studio_members")
-    .select("display_name, role")
+    .select("display_name, first_name, role")
     .eq("studio_id", studioId)
     .eq("user_id", userId)
     .maybeSingle();

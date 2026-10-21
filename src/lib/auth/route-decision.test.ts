@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { decideRoute, safeNextPath, type RouteRole } from "./route-decision";
+import {
+  decideRoute,
+  hasAuthCookie,
+  loginUrl,
+  parseLoginReason,
+  safeNextPath,
+  type RouteRole,
+} from "./route-decision";
 
 function decide(pathname: string, role: RouteRole, search = "") {
   return decideRoute({ pathname, search, role });
@@ -123,5 +130,72 @@ describe("safeNextPath", () => {
     ]) {
       expect(safeNextPath(next, "client")).toBeNull();
     }
+  });
+});
+
+describe("sessione scaduta o revocata (fase 7)", () => {
+  it("area protetta con i cookie ma senza sessione: login con motivo e ritorno", () => {
+    expect(
+      decideRoute({
+        pathname: "/app/tracking",
+        search: "?x=1",
+        role: "anonymous",
+        sessionExpired: true,
+      }),
+    ).toEqual({
+      type: "redirect",
+      to: "/login?next=%2Fapp%2Ftracking%3Fx%3D1&motivo=sessione-scaduta",
+    });
+    expect(
+      decideRoute({
+        pathname: "/admin/clienti",
+        search: "",
+        role: "anonymous",
+        sessionExpired: true,
+      }),
+    ).toEqual({
+      type: "redirect",
+      to: "/login?next=%2Fadmin%2Fclienti&motivo=sessione-scaduta",
+    });
+  });
+
+  it("senza cookie (mai entrato o uscito): login senza messaggio", () => {
+    expect(
+      decideRoute({ pathname: "/app", search: "", role: "anonymous" }),
+    ).toEqual({ type: "redirect", to: "/login?next=%2Fapp" });
+  });
+
+  it("la pagina di login resta accessibile anche con la sessione scaduta", () => {
+    expect(
+      decideRoute({
+        pathname: "/login",
+        search: "?motivo=sessione-scaduta",
+        role: "anonymous",
+        sessionExpired: true,
+      }),
+    ).toEqual({ type: "next" });
+  });
+
+  it("un account disattivato durante la sessione va ad Accesso sospeso", () => {
+    expect(decide("/app", "client_disabled")).toEqual({
+      type: "redirect",
+      to: "/accesso-sospeso",
+    });
+  });
+
+  it("riconosce i cookie di sessione di Supabase, anche divisi", () => {
+    expect(hasAuthCookie(["sb-127-auth-token"])).toBe(true);
+    expect(hasAuthCookie(["theme", "sb-abc-auth-token.0"])).toBe(true);
+    expect(hasAuthCookie(["sb-abc-auth-token-code-verifier"])).toBe(false);
+    expect(hasAuthCookie(["theme"])).toBe(false);
+  });
+
+  it("URL e motivo del login", () => {
+    expect(loginUrl()).toBe("/login");
+    expect(loginUrl({ reason: "loggedOut" })).toBe("/login?motivo=uscito");
+    expect(parseLoginReason("uscito")).toBe("loggedOut");
+    expect(parseLoginReason("sessione-scaduta")).toBe("expired");
+    expect(parseLoginReason("altro")).toBeNull();
+    expect(parseLoginReason(["uscito"])).toBeNull();
   });
 });

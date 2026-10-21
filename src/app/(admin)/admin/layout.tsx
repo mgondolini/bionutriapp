@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 
+import { BfcacheGuard } from "@/components/shared/bfcache-guard";
 import { PageLoading } from "@/components/shared/page-states";
 import { AdminFrame, type AdminNavItem } from "@/features/admin/admin-frame";
 import { ADMIN_NAV } from "@/lib/constants/domain";
@@ -36,8 +37,11 @@ async function AdminShell({ children }: { children: React.ReactNode }) {
 
 export default function AdminLayout({ children }: LayoutProps<"/admin">) {
   return (
-    <Suspense fallback={<PageLoading />}>
-      <AdminShell>{children}</AdminShell>
-    </Suspense>
+    <>
+      <BfcacheGuard />
+      <Suspense fallback={<PageLoading />}>
+        <AdminShell>{children}</AdminShell>
+      </Suspense>
+    </>
   );
 }

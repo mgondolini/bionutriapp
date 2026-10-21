@@ -10,17 +10,26 @@ import { copy } from "@/lib/copy/it";
 
 const t = copy.activation;
 
-/** Password con pulsante mostra/nascondi; i requisiti sono descritti da `describedBy`. */
+/**
+ * Password con pulsante mostra/nascondi; i requisiti sono descritti da
+ * `describedBy`. Usata da attivazione e cambio password (cliente e staff).
+ */
 export function PasswordInput<T extends FieldValues>({
   field,
   id,
   invalid,
   describedBy,
+  autoComplete = "new-password",
+  placeholder = t.passwordPlaceholder,
+  disabled,
 }: {
   field: ControllerRenderProps<T>;
   id: string;
   invalid: boolean;
-  describedBy: string;
+  describedBy?: string;
+  autoComplete?: "new-password" | "current-password";
+  placeholder?: string;
+  disabled?: boolean;
 }) {
   const [visible, setVisible] = useState(false);
   return (
@@ -29,8 +38,9 @@ export function PasswordInput<T extends FieldValues>({
         {...field}
         id={id}
         type={visible ? "text" : "password"}
-        autoComplete="new-password"
-        placeholder={t.passwordPlaceholder}
+        autoComplete={autoComplete}
+        placeholder={placeholder}
+        disabled={disabled}
         aria-invalid={invalid}
         aria-describedby={describedBy}
         className="pr-12"

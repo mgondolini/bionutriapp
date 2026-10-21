@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { FormMessage } from "@/components/shared/form-message";
 import { MetricIcon } from "@/components/shared/metric-icon";
 import { Button } from "@/components/ui/button";
+import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { formatGoalAmount } from "@/lib/domain/tracking/score-scale";
@@ -71,6 +72,7 @@ export function CheckinForm({ checkin }: { checkin: Checkin }) {
     }
     startTransition(async () => {
       const result = await saveCheckinAction(parsed.data);
+      if (redirectIfSignedOut(result)) return;
       if (!result.ok) {
         setError(result.error);
         return;

@@ -9,6 +9,7 @@ import { FormMessage } from "@/components/shared/form-message";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { TRACKING_NOTE_MAX } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { useHydrated } from "@/lib/use-hydrated";
@@ -66,6 +67,7 @@ export function WorkoutForm({
     setError(null);
     startTransition(async () => {
       const result = await submitEntry(mode, values);
+      if (redirectIfSignedOut(result)) return;
       if (!result.ok) {
         setError(result.error);
         return;

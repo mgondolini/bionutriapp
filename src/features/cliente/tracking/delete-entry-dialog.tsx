@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { copy } from "@/lib/copy/it";
 import { deleteEntryAction } from "@/server/actions/tracking.actions";
 
@@ -40,6 +41,7 @@ export function DeleteEntryDialog({
     setError(null);
     startTransition(async () => {
       const result = await deleteEntryAction({ entryId });
+      if (redirectIfSignedOut(result)) return;
       if (result.ok) {
         toast.success(t.deleted);
         setOpen(false);

@@ -2,7 +2,7 @@ import "server-only";
 
 /*
  * Unico punto di invio delle notifiche ai clienti (N-06): chi pubblica un
- * file chiama solo notifyClient, così il canale (Web Push nella fase 7,
+ * file chiama solo notifyClient, così il canale (Web Push nella fase 8,
  * eventualmente email in futuro) cambia senza toccare il resto. Nessuna
  * email nella 1.0 (N-08).
  */

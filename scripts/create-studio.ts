@@ -138,7 +138,7 @@ async function main() {
     type: "recovery",
   });
   console.log(`Studio "${name}" creato (slug: ${slug}, id: ${studio.id}).`);
-  console.log(`Titolare: ${displayName} <${email}>`);
+  console.log(`Titolare: ${[title, firstName, lastName].filter(Boolean).join(" ")} <${email}>`);
   console.log("Link per scegliere la password (valido un'ora):");
   console.log(`${appUrl}/nuova-password?${params.toString()}`);
 }

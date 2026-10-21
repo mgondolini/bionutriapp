@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { FormMessage } from "@/components/shared/form-message";
+import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { formatRatio, isHexColor, pickForeground } from "@/lib/color";
 import { DEFAULT_PRIMARY_COLOR, LOGO_MIME_TYPES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
@@ -139,6 +140,7 @@ export function StudioSettingsForm({ initial }: StudioSettingsFormProps) {
 
     startTransition(async () => {
       const result = await updateStudioSettingsAction(formData);
+      if (redirectIfSignedOut(result)) return;
       if (result.ok) {
         toast.success(t.saved);
         form.reset({ ...values, logo: undefined });

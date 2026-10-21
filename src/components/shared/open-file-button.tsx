@@ -5,6 +5,7 @@ import { useTransition, type ComponentProps } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import type { FileOpenMode } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { openFileAction } from "@/server/actions/files.actions";
@@ -56,6 +57,7 @@ export function OpenFileButton({
       const result = await openFileAction({ fileId, mode });
       if (!result.ok) {
         popup?.close();
+        if (redirectIfSignedOut(result)) return;
         toast.error(result.error);
         return;
       }

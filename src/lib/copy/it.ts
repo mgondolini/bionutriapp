@@ -25,6 +25,7 @@ import {
   CIRCUMFERENCE_INTERVAL_DAYS,
   WORKOUT_RECENT_DAYS,
 } from "@/lib/constants/domain";
+import type { LoginReason } from "@/lib/auth/route-decision";
 import type { JourneyAction } from "@/lib/domain/journey";
 import type { CircumferenceStatus } from "@/lib/domain/tracking/circumferences";
 
@@ -103,6 +104,10 @@ export const copy = {
       forgotPassword: "Password dimenticata?",
       invalidCredentials: "Credenziali non corrette.",
       accountNotEnabled: "Credenziali non corrette.",
+      reasons: {
+        loggedOut: "Sei uscito dall'app.",
+        expired: "La sessione è scaduta, accedi di nuovo.",
+      } satisfies Record<LoginReason, string>,
     },
     recover: {
       title: "Recupera la password",
@@ -143,7 +148,137 @@ export const copy = {
       emailInvalid: "Inserisci un indirizzo email valido.",
       passwordRequired: "Inserisci la password.",
       passwordTooShort: "La password deve avere almeno 8 caratteri.",
+      passwordTooLong: "La password può avere al massimo 72 caratteri.",
       passwordMismatch: "Le due password non coincidono.",
+    },
+  },
+  /** Profilo del cliente (C13, C-07) e del professionista, sessione (fase 7). */
+  profile: {
+    client: {
+      title: "Profilo",
+      clientOf: (studioName: string, since: string) =>
+        `Cliente di ${studioName} dal ${since}`,
+      clientOfNoDate: (studioName: string) => `Cliente di ${studioName}`,
+    },
+    staff: {
+      title: "Il tuo profilo",
+      description:
+        "I tuoi dati e l'accesso. Nome, logo e colore dello studio sono in Impostazioni studio.",
+      menuLabel: "Menu utente",
+      openMenu: (name: string) => `Menu utente di ${name}`,
+      profileLink: "Profilo",
+    },
+    personal: {
+      title: "Dati personali",
+      edit: "Modifica",
+      editAria: "Modifica i dati personali",
+      cancel: "Annulla",
+      save: "Salva",
+      saving: "Salvataggio…",
+      saved: "Dati salvati.",
+      name: "Nome",
+      titleLabel: "Titolo",
+      titleHint: "Facoltativo, per esempio Dott.ssa. Compare prima del nome.",
+      firstName: "Nome",
+      lastName: "Cognome",
+      birthDate: "Data di nascita",
+      noValue: "—",
+      phone: "Cellulare",
+      phoneHint: "Per cambiarlo contatta lo studio.",
+      displayNamePreview: (name: string) => `Comparirai come: ${name}`,
+    },
+    email: {
+      title: "Email",
+      current: "Email attuale",
+      none: "Nessuna email",
+      clientHint:
+        "Con un'email potrai recuperare la password da solo, senza chiedere un nuovo link allo studio.",
+      staffHint: "È l'email con cui accedi e recuperi la password.",
+      newLabel: "Nuova email",
+      addLabel: "La tua email",
+      change: "Cambia email",
+      add: "Aggiungi email",
+      submit: "Invia il link di conferma",
+      submitting: "Invio in corso…",
+      cancel: "Annulla",
+      sentToNew: (email: string) =>
+        `Ti abbiamo inviato un link a ${email}: l'indirizzo cambierà quando lo apri.`,
+      sentToBoth: (email: string) =>
+        `Ti abbiamo inviato un link a ${email} e uno all'indirizzo attuale: l'email cambierà quando li avrai aperti entrambi.`,
+      pending: (email: string) => `In attesa di conferma: ${email}`,
+      sameAsCurrent: "È già la tua email.",
+      unavailable: "Non è possibile usare questo indirizzo email.",
+      failed:
+        "Non è stato possibile inviare il link. Riprova tra qualche minuto.",
+    },
+    confirmEmail: {
+      title: "Conferma il nuovo indirizzo email",
+      description:
+        "Premi il pulsante per confermare: solo allora l'email dell'account cambierà.",
+      submit: "Conferma",
+      submitting: "Conferma in corso…",
+      done: "Email confermata: da ora usa il nuovo indirizzo.",
+      partial:
+        "Conferma ricevuta. Apri anche il link che ti abbiamo inviato all'altro indirizzo per completare il cambio.",
+      invalidLink:
+        "Il link non è valido o è scaduto. Richiedi di nuovo il cambio dal profilo.",
+      missingLink:
+        "Apri il link ricevuto via email per confermare il nuovo indirizzo.",
+      goToApp: "Vai all'app",
+      goToLogin: "Vai all'accesso",
+    },
+    password: {
+      title: "Password",
+      description: "Scegli una password che non usi altrove.",
+      open: "Cambia password",
+      dialogTitle: "Cambia password",
+      dialogDescription:
+        "Dopo il cambio resterai connesso qui; gli altri dispositivi dovranno accedere di nuovo.",
+      currentLabel: "Password attuale",
+      newLabel: "Nuova password",
+      confirmLabel: "Ripeti la nuova password",
+      requirements: "Almeno 8 caratteri.",
+      submit: "Salva la password",
+      submitting: "Salvataggio…",
+      cancel: "Annulla",
+      saved:
+        "Password aggiornata. Gli altri dispositivi sono stati disconnessi.",
+      failed:
+        "Non è stato possibile cambiare la password. Controlla la password attuale e riprova.",
+    },
+    notifications: {
+      title: "Notifiche",
+      label: "Avvisi sul telefono",
+      description: "Ricevi una notifica quando arriva un nuovo file.",
+      active: "Attive su questo dispositivo.",
+      inactive: "Non attive.",
+      saved: (enabled: boolean) =>
+        enabled ? "Notifiche attivate." : "Notifiche disattivate.",
+    },
+    session: {
+      title: "Accesso",
+      logout: "Esci",
+      logoutHint: "Chiudi la sessione su questo dispositivo.",
+      logoutAll: "Esci da tutti i dispositivi",
+      logoutAllHint:
+        "Chiudi la sessione su ogni telefono e computer, compreso questo.",
+      logoutAllTitle: "Uscire da tutti i dispositivi?",
+      logoutAllDescription:
+        "Dovrai accedere di nuovo su ogni dispositivo, compreso questo.",
+      logoutAllConfirm: "Esci da tutti",
+      cancel: "Annulla",
+    },
+    validation: {
+      firstNameRequired: "Inserisci il nome.",
+      lastNameRequired: "Inserisci il cognome.",
+      nameTooLong: "Massimo 80 caratteri.",
+      titleTooLong: "Massimo 20 caratteri.",
+      birthDateInvalid: "Data di nascita non valida.",
+      emailRequired: "Inserisci l'email.",
+      emailInvalid: "Inserisci un indirizzo email valido.",
+      currentPasswordRequired: "Inserisci la password attuale.",
+      confirmRequired: "Ripeti la nuova password.",
+      samePassword: "La nuova password deve essere diversa da quella attuale.",
     },
   },
   admin: {
@@ -814,12 +949,6 @@ export const copy = {
         emptyTitle: "Nessuna misura",
         emptyDescription: "Lo studio non ha ancora configurato le misure.",
       },
-      profile: {
-        title: "Profilo",
-        emptyTitle: "Profilo",
-        emptyDescription:
-          "Dati personali, password e notifiche arriveranno nelle prossime fasi.",
-      },
     },
   },
   tracking: {
@@ -1016,8 +1145,6 @@ export const copy = {
       nameTooLong: "Massimo 80 caratteri.",
       emailInvalid: "Inserisci un indirizzo email valido.",
       birthDateInvalid: "Data di nascita non valida.",
-      passwordTooShort: "La password deve avere almeno 8 caratteri.",
-      passwordTooLong: "La password può avere al massimo 72 caratteri.",
       consentRequired: "Per attivare l'account serve il consenso.",
     },
   },

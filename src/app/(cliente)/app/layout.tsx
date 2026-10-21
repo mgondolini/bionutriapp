@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 
+import { BfcacheGuard } from "@/components/shared/bfcache-guard";
 import { MAIN_CONTENT_ID, SkipLink } from "@/components/shared/skip-link";
 import { PageLoading } from "@/components/shared/page-states";
 import {
@@ -52,6 +53,7 @@ export default function ClientLayout({ children }: LayoutProps<"/app">) {
   return (
     <div className="flex min-h-full flex-1 flex-col">
       <SkipLink />
+      <BfcacheGuard />
       <Suspense fallback={<PageLoading />}>
         <ClientShell>{children}</ClientShell>
       </Suspense>

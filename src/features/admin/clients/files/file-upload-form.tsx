@@ -23,6 +23,7 @@ import {
   PDF_MAGIC,
   type FileUploadError,
 } from "@/lib/constants/domain";
+import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { copy } from "@/lib/copy/it";
 import { checkDeclaredFile, hasPdfHeader } from "@/lib/files/file-checks";
 import { dayInRome, formatFileSize } from "@/lib/format";
@@ -166,6 +167,7 @@ export function FileUploadForm({ clientId }: { clientId: string }) {
         fileType: file.type,
         fileSize: file.size,
       });
+      if (redirectIfSignedOut(prepared)) return;
       if (!prepared.ok) {
         setError(prepared.error);
         return;
@@ -189,6 +191,7 @@ export function FileUploadForm({ clientId }: { clientId: string }) {
         clientId,
         fileId: prepared.data.fileId,
       });
+      if (redirectIfSignedOut(confirmed)) return;
       setProgress(null);
       if (!confirmed.ok) {
         setError(confirmed.error);

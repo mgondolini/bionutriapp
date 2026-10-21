@@ -31,6 +31,7 @@ import {
   type UpdateEntryInput,
 } from "@/server/validation/tracking.schema";
 import { fail, ok, type ActionResult } from "@/types/action-result";
+import { authFailure } from "@/server/actions/session-guard";
 
 const e = copy.tracking.errors;
 
@@ -69,7 +70,7 @@ export async function saveCheckinAction(
   input: CheckinInput,
 ): Promise<ActionResult> {
   const actor = await clientActor();
-  if (!actor) return fail(copy.common.unauthorized);
+  if (!actor) return authFailure();
 
   const parsed = checkinSchema.safeParse(input);
   if (!parsed.success) {
@@ -91,7 +92,7 @@ export async function addEntryAction(
   input: AddEntryInput,
 ): Promise<ActionResult> {
   const actor = await clientActor();
-  if (!actor) return fail(copy.common.unauthorized);
+  if (!actor) return authFailure();
 
   const parsed = addEntrySchema.safeParse(input);
   if (!parsed.success) return fail(copy.common.invalidInput);
@@ -111,7 +112,7 @@ export async function updateEntryAction(
   input: UpdateEntryInput,
 ): Promise<ActionResult> {
   const actor = await clientActor();
-  if (!actor) return fail(copy.common.unauthorized);
+  if (!actor) return authFailure();
 
   const parsed = updateEntrySchema.safeParse(input);
   if (!parsed.success) return fail(copy.common.invalidInput);
@@ -135,7 +136,7 @@ export async function deleteEntryAction(
   input: EntryIdInput,
 ): Promise<ActionResult> {
   const actor = await clientActor();
-  if (!actor) return fail(copy.common.unauthorized);
+  if (!actor) return authFailure();
 
   const parsed = entryIdSchema.safeParse(input);
   if (!parsed.success) return fail(copy.common.invalidInput);
@@ -165,7 +166,7 @@ export async function saveGoalsAction(
   input: SaveGoalsInput,
 ): Promise<ActionResult> {
   const session = await getStaffSession();
-  if (!session) return fail(copy.common.unauthorized);
+  if (!session) return authFailure();
 
   const parsed = saveGoalsSchema.safeParse(input);
   if (!parsed.success) {
@@ -192,7 +193,7 @@ export async function resetGoalAction(
   input: ResetGoalInput,
 ): Promise<ActionResult> {
   const session = await getStaffSession();
-  if (!session) return fail(copy.common.unauthorized);
+  if (!session) return authFailure();
 
   const parsed = resetGoalSchema.safeParse(input);
   if (!parsed.success) return fail(copy.common.invalidInput);

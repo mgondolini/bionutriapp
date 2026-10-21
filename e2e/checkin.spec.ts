@@ -1,5 +1,3 @@
-import { createHash, randomBytes } from "node:crypto";
-
 import { expect, test, type Page } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 
@@ -10,10 +8,10 @@ import { averageText } from "../src/lib/domain/tracking/labels";
 import {
   adminClient,
   cleanup,
+  createActiveClient,
   login,
   newDevice,
   OWNER,
-  randomMobile,
 } from "./helpers";
 
 /*
@@ -26,7 +24,7 @@ import {
 
 const STUDIO_ID = "aaaaaaaa-1111-4000-8000-000000000000";
 const PASSWORD = "password-checkin-1";
-const phone = randomMobile();
+let phone = "";
 const email = `checkin.${Date.now().toString(36)}@example.test`;
 let clientId = "";
 
@@ -39,51 +37,19 @@ type Habit = keyof typeof QUESTIONS;
 
 test.describe.configure({ mode: "serial" });
 
-/** Cliente In percorso con account attivo, attivata come farebbe il link (activate_client). */
 test.beforeAll(async () => {
-  const admin = adminClient();
-  const { data: user, error: userError } = await admin.auth.admin.createUser({
-    email,
+  const client = await createActiveClient({
+    firstName: "Giulia",
+    lastName: "Check-in",
     password: PASSWORD,
-    email_confirm: true,
+    email,
   });
-  if (userError) throw userError;
-
-  const { data: client, error } = await admin
-    .from("clients")
-    .insert({
-      studio_id: STUDIO_ID,
-      first_name: "Giulia",
-      last_name: "Check-in",
-      phone: phone.e164,
-      email,
-      origin: "imported",
-    })
-    .select("id")
-    .single();
-  if (error) throw error;
-  clientId = client.id;
-
-  const tokenHash = createHash("sha256")
-    .update(randomBytes(32).toString("base64url"))
-    .digest("hex");
-  const { error: inviteError } = await admin
-    .from("client_invites")
-    .insert({
-      studio_id: STUDIO_ID,
-      client_id: clientId,
-      token_hash: tokenHash,
-    });
-  if (inviteError) throw inviteError;
-  const { error: activateError } = await admin.rpc("activate_client", {
-    p_token_hash: tokenHash,
-    p_user_id: user.user.id,
-  });
-  if (activateError) throw activateError;
+  clientId = client.clientId;
+  phone = client.phone.e164;
 });
 
 test.afterAll(async () => {
-  await cleanup([phone.e164]);
+  await cleanup([phone]);
 });
 
 function group(page: Page, habit: Habit) {

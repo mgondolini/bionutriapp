@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 
 import { FormMessage } from "@/components/shared/form-message";
+import { PasswordInput } from "@/components/shared/password-input";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -23,8 +24,6 @@ import {
   activationSchema,
   type ActivationFormValues,
 } from "@/server/validation/invites.schema";
-
-import { PasswordInput } from "./password-field";
 
 const t = copy.activation;
 

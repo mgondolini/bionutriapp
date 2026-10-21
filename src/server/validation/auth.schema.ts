@@ -5,8 +5,8 @@ import {
   looksLikeEmail,
   parseLoginIdentifier,
 } from "@/lib/auth/login-identifier";
-import { PASSWORD_MIN_LENGTH } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import { passwordSchema } from "@/server/validation/password.schema";
 
 const v = copy.auth.validation;
 
@@ -48,7 +48,7 @@ export type RecoverPasswordInput = z.infer<typeof recoverPasswordSchema>;
 
 export const newPasswordSchema = z
   .object({
-    password: z.string().min(PASSWORD_MIN_LENGTH, v.passwordTooShort),
+    password: passwordSchema,
     confirm: z.string().min(1, v.passwordRequired),
     tokenHash: z.string().trim().min(1).max(200).optional(),
   })
@@ -57,3 +57,13 @@ export const newPasswordSchema = z
     path: ["confirm"],
   });
 export type NewPasswordInput = z.infer<typeof newPasswordSchema>;
+
+/**
+ * Uscita (fase 7): `local` = questo dispositivo, `global` = tutti. L'endpoint
+ * è quello della sottoscrizione push del browser (fase 8), da eliminare.
+ */
+export const signOutSchema = z.object({
+  scope: z.enum(["local", "global"]),
+  endpoint: z.url().max(2048).nullable(),
+});
+export type SignOutInput = z.infer<typeof signOutSchema>;

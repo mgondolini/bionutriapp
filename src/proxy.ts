@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import {
   decideRoute,
+  hasAuthCookie,
   isAlwaysPublic,
   type RouteRole,
 } from "@/lib/auth/route-decision";
@@ -16,18 +17,34 @@ import { fetchUserContextRows } from "@/server/repositories/session.repository";
  * In Next.js 16 la convenzione `middleware` è stata rinominata in `proxy`.
  */
 export async function proxy(request: NextRequest) {
+  const hadSession = hasAuthCookie(
+    request.cookies.getAll().map((cookie) => cookie.name),
+  );
   const { response, supabase, userId } = await updateSession(request);
   const { pathname, search } = request.nextUrl;
 
   if (isAlwaysPublic(pathname)) return response;
 
+  // Server Action: nessun redirect (la risposta deve restare quella
+  // dell'azione). L'azione verifica da sola la sessione e, se manca,
+  // risponde { ok: false, error: "unauthenticated" }.
+  if (request.headers.has("next-action")) return response;
+
   let role: RouteRole = "anonymous";
   if (userId) {
     const context = resolveUserContext(await fetchUserContextRows(supabase));
     role = context.kind === "none" ? "anonymous" : context.kind;
+    // JWT ancora firmato ma sessione revocata (logout altrove, cambio
+    // password): si cancellano i cookie, il login dirà "sessione scaduta".
+    if (role === "anonymous") await supabase.auth.signOut({ scope: "local" });
   }
 
-  const decision = decideRoute({ pathname, search, role });
+  const decision = decideRoute({
+    pathname,
+    search,
+    role,
+    sessionExpired: hadSession && role === "anonymous",
+  });
   if (decision.type === "next") return response;
 
   // Il redirect deve portare con sé i cookie di sessione appena rinnovati.

@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTransition } from "react";
 
 import { StudioLogo } from "@/components/shared/studio-logo";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -24,10 +23,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useSignOut } from "@/lib/auth/use-sign-out";
 import { ROUTES, type ClientNavKey } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { cn } from "@/lib/utils";
-import { logoutAction } from "@/server/actions/auth.actions";
 
 export type ClientMenuItem = {
   key: ClientNavKey | "profile";
@@ -86,7 +85,7 @@ export function ClientHeader({
   profile,
 }: ClientHeaderProps) {
   const pathname = usePathname();
-  const [isPending, startTransition] = useTransition();
+  const { signOut, isPending } = useSignOut();
 
   return (
     <header className="sticky top-0 z-40 border-b bg-card">
@@ -134,7 +133,7 @@ export function ClientHeader({
             />
             <DropdownMenuItem
               disabled={isPending}
-              onClick={() => startTransition(() => logoutAction())}
+              onClick={() => signOut("local")}
               className={itemClassName}
             >
               <LogOut aria-hidden="true" className="size-5" />

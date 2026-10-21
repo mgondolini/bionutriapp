@@ -64,6 +64,7 @@ describe("getSession", () => {
     ]);
     vi.mocked(sessionRepository.getStaffMember).mockResolvedValue({
       display_name: "Dott.ssa Verdi",
+      first_name: "Verdi",
       role: "owner",
     });
 
@@ -151,6 +152,7 @@ describe("getSession", () => {
     ]);
     vi.mocked(sessionRepository.getStaffMember).mockResolvedValue({
       display_name: "Titolare",
+      first_name: "Titolare",
       role: "owner",
     });
 

@@ -1,22 +1,12 @@
 // Schemi Zod condivisi tra form (client) e Server Actions: niente "server-only".
 import { z } from "zod";
 
-import {
-  INVITE_TOKEN_LENGTH,
-  PASSWORD_MIN_LENGTH,
-} from "@/lib/constants/domain";
+import { INVITE_TOKEN_LENGTH } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { parseBirthDate } from "@/lib/csv/clean-clients";
+import { passwordSchema } from "@/server/validation/password.schema";
 
 const v = copy.activation.validation;
-
-/** bcrypt (Supabase Auth) considera al massimo 72 byte. */
-export const PASSWORD_MAX_LENGTH = 72;
-
-export const passwordSchema = z
-  .string()
-  .min(PASSWORD_MIN_LENGTH, v.passwordTooShort)
-  .max(PASSWORD_MAX_LENGTH, v.passwordTooLong);
 
 /** Token del link: solo la forma; la validità la decide il server con l'hash. */
 export const inviteTokenSchema = z

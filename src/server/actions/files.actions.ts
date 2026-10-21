@@ -23,6 +23,7 @@ import {
   type PrepareUploadInput,
 } from "@/server/validation/files.schema";
 import { fail, ok, type ActionResult } from "@/types/action-result";
+import { authFailure } from "@/server/actions/session-guard";
 
 const t = copy.files;
 
@@ -42,7 +43,7 @@ export async function prepareUploadAction(
   input: PrepareUploadInput,
 ): Promise<ActionResult<{ fileId: string; uploadUrl: string }>> {
   const session = await getStaffSession();
-  if (!session) return fail(copy.common.unauthorized);
+  if (!session) return authFailure();
 
   const parsed = prepareUploadSchema.safeParse(input);
   if (!parsed.success) {
@@ -70,7 +71,7 @@ export async function confirmUploadAction(
   input: ConfirmUploadInput,
 ): Promise<ActionResult> {
   const session = await getStaffSession();
-  if (!session) return fail(copy.common.unauthorized);
+  if (!session) return authFailure();
 
   const parsed = confirmUploadSchema.safeParse(input);
   if (!parsed.success) {
@@ -115,7 +116,7 @@ export async function openFileAction(
       unlocked: session.client.unlocked,
     };
   } else {
-    return fail(copy.common.unauthorized);
+    return authFailure();
   }
 
   const parsed = openFileSchema.safeParse(input);
@@ -142,7 +143,7 @@ export async function deleteFileAction(
   input: FileIdInput,
 ): Promise<ActionResult> {
   const session = await getStaffSession();
-  if (!session) return fail(copy.common.unauthorized);
+  if (!session) return authFailure();
 
   const parsed = fileIdSchema.safeParse(input);
   if (!parsed.success) return fail(copy.common.invalidInput);
