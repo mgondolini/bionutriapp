@@ -24,7 +24,7 @@ Nella 1.0 esistono due ruoli: il nutrizionista (admin) e il cliente. Il ruolo di
 | Titolare (admin) | Nutrizionista che gestisce lo studio: clienti, file, tracking, impostazioni | v1.0 |
 | Cliente | Paziente dello studio: consulta i propri file e registra le proprie misure | v1.0 |
 | Collaboratore | Nutrizionista dello stesso studio che opera solo sui clienti assegnati e vede tutti gli altri in lettura | v3.0 |
-| Amministratore piattaforma | Lo sviluppatore: crea gli studi e il primo titolare, lato server | v1.0 (senza interfaccia) |
+| Super admin (sviluppatrice) | Area dedicata per vedere, creare e modificare tutti gli studi con nome, logo e colore; non accede ai dati sanitari dei clienti | v1.2 (nella 1.0 opera direttamente sul database) |
 
 ## Roadmap
 
@@ -32,7 +32,8 @@ Il rilascio è diviso in tre versioni: la 1.0 copre file e tracking, la 2.0 aggi
 
 | Versione | Contenuto | Prerequisiti |
 | --- | --- | --- |
-| 1.0 | Gestione clienti, inviti via WhatsApp, fasi del percorso con onboarding, pubblicazione file (diete, allenamenti, report), tracking misure, notifiche push, PWA, branding dello studio | — |
+| 1.0 | Gestione clienti, inviti via WhatsApp, fasi del percorso con onboarding, pubblicazione file (diete, allenamenti, report), tracking misure, notifiche push, PWA, branding dello studio impostato nel database | — |
+| 1.2 | Area piattaforma per la sviluppatrice: elenco, creazione e modifica degli studi con nome, logo e colore | 1.0 in produzione |
 | 2.0 | Calendario appuntamenti del nutrizionista, con slot di disponibilità importati da Google Calendar tramite link iCal | 1.0 in produzione |
 | 3.0 | Più professionisti per studio, assegnazione dei clienti, permessi differenziati, calendario per professionista | 2.0 |
 | Backlog | Notifiche email, vendita ad altri studi, abbonamenti, misure personalizzabili da interfaccia | Da pianificare |
@@ -68,7 +69,7 @@ L'area admin è desktop-first, con sidebar, e si compone di elenco clienti e sch
 
 **Impostazioni studio**
 
-- **A-14** Nome, logo e colore principale dello studio (white label). Nella 1.0 possono essere impostati anche solo lato database.
+- **A-14** Il titolare non modifica nome, logo e colore dello studio: le impostazioni stilistiche sono gestite solo dalla sviluppatrice (nella 1.0 direttamente nel database, dalla 1.2 dall'area piattaforma).
 
 ## Requisiti v1.0 – area cliente
 
@@ -85,6 +86,19 @@ L'area cliente è mobile-first e installabile come PWA; la navigazione avviene d
 - **C-09** Proposta da confermare: il cliente in Onboarding vede una home di benvenuto con i prossimi passi e le informazioni sulla chiamata, mentre file e tracking si sbloccano quando passa In percorso.
 
 Nota: "Allenamenti" nel menu indica le schede di allenamento caricate dal nutrizionista; il diario degli allenamenti svolti si trova nel Tracking.
+
+## Requisiti v1.2 – area piattaforma (sviluppatrice)
+
+L'area piattaforma è riservata alla sviluppatrice e serve a gestire gli studi e il loro aspetto. È separata dall'area admin degli studi e non mostra dati sanitari dei clienti. Nella 1.0 studi, titolari e branding vengono creati dalla sviluppatrice direttamente nel database, con uno script di seed.
+
+- **PL-01** Accesso dedicato sotto `/platform`, riservato agli utenti presenti nella tabella `platform_admins`; stessa pagina di login, con autenticazione a due fattori (TOTP di Supabase) obbligatoria.
+- **PL-02** Elenco di tutti gli studi con logo, nome, slug, colore principale, numero di professionisti e di clienti, data di creazione e pulsante "Dettaglio".
+- **PL-03** Creazione di uno studio: nome, slug (usato in futuro per il sottodominio), email di contatto, logo e colore principale.
+- **PL-04** Creazione del titolare dello studio con un link di invito, da inviare via WhatsApp o email.
+- **PL-05** Dettaglio e modifica dello studio: sostituzione del logo, scelta del colore con selettore e controllo automatico del contrasto (WCAG AA sul testo bianco dei pulsanti), modifica di nome e contatti.
+- **PL-06** Anteprima dal vivo del branding sulle schermate principali (login, home cliente, area admin) prima di salvare.
+- **PL-07** Ogni modifica a uno studio viene registrata con data e autore.
+- **PL-08** La sviluppatrice vede solo dati aggregati (conteggi) degli studi, mai anagrafiche, file o misure dei clienti; ogni accesso eccezionale ai dati, per esempio per assistenza, va autorizzato dallo studio.
 
 ## Tracking delle misure
 
@@ -226,7 +240,7 @@ Queste regole tengono il codice ordinato e facile da modificare man mano che l'a
 
 **Organizzazione del frontend**
 
-- **DEV-01** Un'unica app Next.js con due interfacce separate: gruppo di route `(admin)` sotto `/admin` (desktop-first, sidebar) e `(cliente)` sotto `/app` (mobile-first, menu a tendina), ciascuno con il proprio layout. Nessuna pagina mostra contenuti diversi in base al ruolo.
+- **DEV-01** Un'unica app Next.js con due interfacce separate: gruppo di route `(admin)` sotto `/admin` (desktop-first, sidebar) e `(cliente)` sotto `/app` (mobile-first, menu a tendina), ciascuno con il proprio layout; il gruppo `(platform)` sotto `/platform` ospiterà dalla v1.2 l'area della sviluppatrice. Nessuna pagina mostra contenuti diversi in base al ruolo.
 - **DEV-02** Componenti in tre livelli: `components/ui` (shadcn), `components/shared` (usati da entrambe le aree, es. FileCard, MetricChart, StatusBadge) e `features/admin` o `features/cliente` (specifici di un'area). Un componente passa in `shared` solo quando serve davvero a entrambe.
 - **DEV-03** Controllo degli accessi su tre livelli: middleware, verifica del ruolo nel layout di ogni area e Row Level Security nel database.
 - **DEV-04** Il manifest della PWA ha `/app` come pagina iniziale, così l'app installata apre l'area cliente.
@@ -262,7 +276,7 @@ Il cliente è un'entità dello studio separata dall'account di login: esiste dal
 
 | Tabella | Contenuto | Versione |
 | --- | --- | --- |
-| `studios` | Studio (tenant): nome, slug, logo, colore principale | v1.0 |
+| `studios` | Studio (tenant): nome, slug, logo, colore principale; nella 1.0 impostato da database, dalla 1.2 modificabile solo dall'area piattaforma | v1.0 |
 | `studio_members` | Professionisti dello studio con ruolo (titolare; collaboratore dalla 3.0) | v1.0 |
 | `clients` | Clienti: anagrafica, cellulare (obbligatorio), email, origine (importato o nuovo), stato account, fase del percorso, collegamento all'utente | v1.0 |
 | `client_stage_events` | Storico dei cambi di fase: cliente, fase precedente e nuova, data, autore o origine automatica | v1.0 |
@@ -272,6 +286,8 @@ Il cliente è un'entità dello studio separata dall'account di login: esiste dal
 | `client_metric_goals` | Obiettivi personali del cliente per le abitudini giornaliere (es. 2 L di acqua, 8.000 passi) | v1.0 |
 | `tracking_entries` | Registrazioni: cliente, misura, valore, data, nota | v1.0 |
 | `push_subscriptions` | Sottoscrizioni Web Push per utente | v1.0 |
+| `platform_admins` | Utenti con accesso all'area piattaforma (sviluppatrice) | v1.2 |
+| `studio_audit_log` | Registro delle modifiche agli studi: campo, valore precedente e nuovo, autore, data | v1.2 |
 | `appointments` | Appuntamenti: professionista, cliente, orari, tipo (incluso onboarding), stato, note | v2.0 |
 | `availability_rules` | Orario di lavoro settimanale per professionista: giorno, inizio, fine, durata degli slot | v2.0 |
 | `availability_overrides` | Eccezioni manuali: slot chiusi o aperti con data e ora | v2.0 |
