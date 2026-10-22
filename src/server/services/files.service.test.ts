@@ -85,7 +85,7 @@ vi.mock("@/server/repositories/files.repository", () => ({
 }));
 
 vi.mock("@/server/services/notifications.service", () => ({
-  notifyClient: vi.fn(async () => {}),
+  notifyClient: vi.fn(),
 }));
 
 const filesRepository = await import("@/server/repositories/files.repository");

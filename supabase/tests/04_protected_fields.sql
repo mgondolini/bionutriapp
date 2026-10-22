@@ -8,7 +8,7 @@ select tests.authenticate_as(tests.id('u1'));
 
 select throws_ok(
   $$ update public.clients set journey_stage = 'completed' where id = tests.id('c1') $$,
-  'P0001', 'Puoi modificare solo nome, cognome, data di nascita e preferenze di notifica',
+  'P0001', 'Puoi modificare solo nome, cognome e data di nascita',
   'il cliente non cambia la propria fase'
 );
 select throws_ok(
@@ -28,8 +28,8 @@ select throws_ok(
   'P0001', null, 'il cliente non cambia il collegamento all''account'
 );
 select lives_ok(
-  $$ update public.clients set first_name = 'Nuovo', last_name = 'Nome', push_enabled = true where id = tests.id('c1') $$,
-  'il cliente modifica nome, cognome e preferenza notifiche'
+  $$ update public.clients set first_name = 'Nuovo', last_name = 'Nome' where id = tests.id('c1') $$,
+  'il cliente modifica nome e cognome'
 );
 
 select is(

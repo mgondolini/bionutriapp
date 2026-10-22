@@ -59,6 +59,7 @@ export const ROUTES = {
     reports: "/app/report",
     tracking: "/app/tracking",
     profile: "/app/profilo",
+    install: "/app/installa",
   },
 } as const;
 
@@ -384,3 +385,34 @@ export function clientTrackingMetricPath(
 ): string {
   return `${clientDetailPath(clientId, "tracking")}/${metricKey}`;
 }
+
+// ---------------------------------------------------------------------
+// PWA e notifiche push (fase 8)
+// ---------------------------------------------------------------------
+
+/** Service worker: solo l'area cliente, mai /admin né le pagine di accesso. */
+export const SERVICE_WORKER_URL = "/sw.js";
+export const SERVICE_WORKER_SCOPE = "/app";
+/** Pagina mostrata dal service worker senza rete: statica, senza dati. */
+export const OFFLINE_PAGE_URL = "/offline.html";
+
+/** Icona delle notifiche: quella della PWA, con il branding dello studio del dominio. */
+export const NOTIFICATION_ICON_URL = "/icon/192";
+/** Pagina aperta dal tocco sulla notifica. */
+export const NOTIFICATION_TARGET_URL = ROUTES.client.home;
+/** Per quanto il servizio push conserva una notifica se il telefono è spento. */
+export const PUSH_TTL_SECONDS = 72 * 60 * 60;
+
+/**
+ * Servizi push a cui il server accetta di inviare (gli endpoint arrivano dal
+ * browser: senza questo elenco il server farebbe richieste a indirizzi
+ * scelti da altri). Un host vale anche per i suoi sottodomini.
+ */
+export const PUSH_SERVICE_HOSTS = [
+  "fcm.googleapis.com", // Chrome, Edge, Android
+  "push.apple.com", // Safari e PWA su iPhone (web.push.apple.com)
+  "push.services.mozilla.com", // Firefox
+  "notify.windows.com", // Edge legacy / Windows
+] as const;
+export const PUSH_ENDPOINT_MAX_LENGTH = 1024;
+export const PUSH_USER_AGENT_MAX_LENGTH = 256;

@@ -27,7 +27,6 @@ vi.mock("@/server/repositories/auth.repository", () => ({
 vi.mock("@/server/repositories/profile.repository", () => ({
   getOwnClient: vi.fn(),
   updateOwnClient: vi.fn(async () => true),
-  setOwnPushEnabled: vi.fn(async () => true),
   getOwnMember: vi.fn(),
   updateOwnMember: vi.fn(async () => true),
   isEmailAvailable: vi.fn(async () => true),

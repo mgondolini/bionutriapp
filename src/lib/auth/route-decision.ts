@@ -3,7 +3,11 @@
  * Il proxy fa SOLO smistamento: l'autorizzazione vera resta nei layout
  * (getSession), nelle Server Actions e nella RLS (DEV-03).
  */
-import { ROUTES } from "@/lib/constants/domain";
+import {
+  OFFLINE_PAGE_URL,
+  ROUTES,
+  SERVICE_WORKER_URL,
+} from "@/lib/constants/domain";
 
 export type RouteRole = "anonymous" | "staff" | "client" | "client_disabled";
 
@@ -63,9 +67,14 @@ const AREA: Partial<Record<RouteRole, string>> = {
   client_disabled: ROUTES.suspended,
 };
 
-/** Rotte sempre accessibili, senza leggere il ruolo (manifest, icone, attivazione). */
+/**
+ * Rotte sempre accessibili, senza leggere il ruolo (manifest, icone, service
+ * worker e pagina offline della PWA, attivazione).
+ */
 const ALWAYS_PUBLIC = [
   "/manifest.webmanifest",
+  SERVICE_WORKER_URL,
+  OFFLINE_PAGE_URL,
   "/icon",
   "/apple-icon",
   "/favicon.ico",

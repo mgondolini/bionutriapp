@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { BfcacheGuard } from "@/components/shared/bfcache-guard";
 import { MAIN_CONTENT_ID, SkipLink } from "@/components/shared/skip-link";
 import { PageLoading } from "@/components/shared/page-states";
+import { INSTALL_PROMPT_CAPTURE } from "@/features/cliente/pwa/install-prompt";
+import { PwaProvider } from "@/features/cliente/pwa/pwa-provider";
 import {
   ClientHeader,
   type ClientMenuItem,
@@ -52,11 +54,15 @@ async function ClientShell({ children }: { children: React.ReactNode }) {
 export default function ClientLayout({ children }: LayoutProps<"/app">) {
   return (
     <div className="flex min-h-full flex-1 flex-col">
+      {/* trattiene l'evento di installazione anche prima dell'idratazione */}
+      <script dangerouslySetInnerHTML={{ __html: INSTALL_PROMPT_CAPTURE }} />
       <SkipLink />
       <BfcacheGuard />
-      <Suspense fallback={<PageLoading />}>
-        <ClientShell>{children}</ClientShell>
-      </Suspense>
+      <PwaProvider>
+        <Suspense fallback={<PageLoading />}>
+          <ClientShell>{children}</ClientShell>
+        </Suspense>
+      </PwaProvider>
     </div>
   );
 }

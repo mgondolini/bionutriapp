@@ -99,9 +99,6 @@ export const changePasswordSchema = z
 export type ChangePasswordInput = z.output<typeof changePasswordSchema>;
 
 /** Preferenza delle notifiche push (C-07): il Web Push arriva nella fase 8. */
-export const pushPreferenceSchema = z.object({ enabled: z.boolean() });
-export type PushPreferenceInput = z.output<typeof pushPreferenceSchema>;
-
 /** Link di conferma della nuova email: solo la forma, la validità la decide Supabase. */
 export const confirmEmailSchema = z.object({
   tokenHash: z.string().trim().min(1).max(200),

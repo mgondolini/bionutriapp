@@ -132,7 +132,12 @@ test("Esci da tutti i dispositivi chiude anche la sessione in un altro contesto"
   const other = await newDevice(browser);
   await login(other.page, email, PASSWORD);
   await expect(other.page).toHaveURL(/\/app$/);
+  // sull'altro dispositivo un modulo resta aperto con una modifica da salvare
   await other.page.goto("/app/profilo");
+  await other.page
+    .getByRole("button", { name: "Modifica i dati personali" })
+    .click();
+  await other.page.getByLabel("Cognome").fill("Tuttissimi");
 
   await page.goto("/app/profilo");
   await page
@@ -147,7 +152,7 @@ test("Esci da tutti i dispositivi chiude anche la sessione in un altro contesto"
 
   // Sull'altro dispositivo la pagina è ancora aperta: la prima Server Action
   // risponde "unauthenticated" e l'interfaccia porta al login con il ritorno
-  await other.page.getByRole("switch").click();
+  await other.page.getByRole("button", { name: "Salva", exact: true }).click();
   await expect(other.page).toHaveURL(
     /\/login\?next=%2Fapp%2Fprofilo&motivo=sessione-scaduta$/,
   );

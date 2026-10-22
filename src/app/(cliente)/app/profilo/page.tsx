@@ -3,21 +3,26 @@ import { notFound } from "next/navigation";
 import { EmailCard } from "@/components/shared/profile/email-card";
 import { PasswordCard } from "@/components/shared/profile/password-card";
 import { SessionCard } from "@/components/shared/profile/session-card";
+import { InstallCard } from "@/features/cliente/profile/install-card";
 import { PersonalDataCard } from "@/features/cliente/profile/personal-data-card";
 import { ProfileHeader } from "@/features/cliente/profile/profile-header";
 import { PushPreference } from "@/features/cliente/profile/push-preference";
 import { copy } from "@/lib/copy/it";
 import { initialsOf } from "@/lib/studio/branding";
 import { getClientProfile } from "@/server/services/profile.service";
+import { listOwnEndpoints } from "@/server/services/push.service";
 import { requireClient } from "@/server/services/session.service";
 
 /**
  * Profilo del cliente (C13, C-07): dati personali, email, password,
- * notifiche e uscita. Disponibile anche in Onboarding (nessun `unlocked`).
+ * notifiche, installazione dell'app e uscita. Disponibile anche in Onboarding (nessun `unlocked`).
  */
 export default async function ProfilePage() {
   const session = await requireClient();
-  const profile = await getClientProfile(session.client.id);
+  const [profile, endpoints] = await Promise.all([
+    getClientProfile(session.client.id),
+    listOwnEndpoints(),
+  ]);
   if (!profile) notFound();
 
   const name = [profile.firstName, profile.lastName].filter(Boolean).join(" ");
@@ -37,7 +42,8 @@ export default async function ProfilePage() {
       />
       <EmailCard email={profile.email} hint={copy.profile.email.clientHint} />
       <PasswordCard />
-      <PushPreference enabled={profile.pushEnabled} />
+      <PushPreference registeredEndpoints={endpoints} />
+      <InstallCard />
       <SessionCard />
     </div>
   );

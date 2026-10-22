@@ -16,12 +16,10 @@ import {
   clientProfileSchema,
   confirmEmailSchema,
   emailChangeSchema,
-  pushPreferenceSchema,
   staffProfileSchema,
   type ClientProfileFormValues,
   type ConfirmEmailInput,
   type EmailChangeFormValues,
-  type PushPreferenceInput,
   type StaffProfileFormValues,
 } from "@/server/validation/profile.schema";
 import { fail, ok, type ActionResult } from "@/types/action-result";
@@ -141,26 +139,4 @@ export async function changePasswordAction(
     parsed.data.password,
   );
   return changed ? ok() : fail(t.password.failed);
-}
-
-/** Preferenza delle notifiche push (solo push_enabled; Web Push nella fase 8). */
-export async function setPushPreferenceAction(
-  input: PushPreferenceInput,
-): Promise<ActionResult> {
-  const session = await getSession();
-  if (session.kind !== "client") return authFailure();
-
-  const parsed = pushPreferenceSchema.safeParse(input);
-  if (!parsed.success) return fail(copy.common.invalidInput);
-
-  if (
-    !(await profileService.setPushPreference(
-      session.client.id,
-      parsed.data.enabled,
-    ))
-  ) {
-    return authFailure();
-  }
-  revalidatePath(ROUTES.client.profile);
-  return ok();
 }

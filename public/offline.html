@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Sei offline</title>
+    <!--
+      Pagina offline del service worker (fase 8): statica e senza dati. Non
+      contiene nome dello studio, del cliente né altro: è l'unica risorsa in
+      cache. Stili inline perché gli asset dell'app non sono in cache.
+    -->
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f6f2;
+        --fg: #18211d;
+        --muted: #5b6660;
+        --card: #ffffff;
+        --border: #e2e5df;
+        --primary: #2e6a4e;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px;
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+      }
+      main {
+        width: 100%;
+        max-width: 420px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 28px 24px;
+        text-align: center;
+      }
+      h1 {
+        font-size: 1.25rem;
+        margin: 0 0 8px;
+      }
+      p {
+        margin: 0 0 20px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0 20px;
+        border-radius: 10px;
+        background: var(--primary);
+        color: #fff;
+        font-weight: 600;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Sei offline</h1>
+      <p>
+        Non c'è connessione a internet. I tuoi documenti e le tue misure sono
+        disponibili solo online: controlla la connessione e riprova.
+      </p>
+      <a href="/app">Riprova</a>
+    </main>
+  </body>
+</html>

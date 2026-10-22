@@ -84,13 +84,6 @@ export function updateStaffProfile(input: StaffProfileInput) {
   return profileRepository.updateOwnMember(input);
 }
 
-export function setPushPreference(clientId: string, enabled: boolean) {
-  // TODO fase 8: collegare la sottoscrizione Web Push del dispositivo
-  // (register_push_subscription all'attivazione, eliminazione per endpoint
-  // alla disattivazione). Ora si salva solo la preferenza.
-  return profileRepository.setOwnPushEnabled(clientId, enabled);
-}
-
 export type EmailChangeOutcome =
   | { ok: true; email: string; confirmBoth: boolean }
   | { ok: false; reason: "same" | "unavailable" | "failed" };

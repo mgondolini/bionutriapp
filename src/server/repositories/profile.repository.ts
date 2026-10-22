@@ -40,21 +40,6 @@ export async function updateOwnClient(
   return true;
 }
 
-/** Preferenza delle notifiche del cliente corrente (consentita da guard_client). */
-export async function setOwnPushEnabled(
-  clientId: string,
-  enabled: boolean,
-): Promise<boolean> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("clients")
-    .update({ push_enabled: enabled })
-    .eq("id", clientId)
-    .select("id");
-  if (error) throw error;
-  return data.length > 0;
-}
-
 /** Riga del professionista corrente nello studio della sessione. */
 export async function getOwnMember(studioId: string, userId: string) {
   const supabase = await createClient();

@@ -92,7 +92,6 @@ update public.clients set journey_stage = 'completed' where id = 'bbbbbbbb-2222-
 update public.clients set account_status = 'disabled' where id = 'bbbbbbbb-2222-4000-8000-000000000002';
 -- Come fa l'app alla disattivazione: utente bloccato in Supabase Auth (ban)
 update auth.users set banned_until = now() + interval '100 years' where id = 'bbbbbbbb-0000-4000-8000-0000000000c2';
-update public.clients set push_enabled = true          where id = 'aaaaaaaa-2222-4000-8000-000000000001';
 update public.clients set birth_date = '1991-03-12'    where id = 'aaaaaaaa-2222-4000-8000-000000000001';
 
 -- File (solo metadati: i PDF di prova si caricano con `pnpm seed:files`).

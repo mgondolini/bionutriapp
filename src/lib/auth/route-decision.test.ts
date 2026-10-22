@@ -23,6 +23,8 @@ describe("decideRoute", () => {
     ] as const) {
       for (const path of [
         "/manifest.webmanifest",
+        "/sw.js",
+        "/offline.html",
         "/icon/192",
         "/apple-icon",
         "/attiva/abc",

@@ -6,7 +6,10 @@ import { StudioThemeStyle } from "@/components/shared/studio-theme-style";
 import { Toaster } from "@/components/ui/sonner";
 import { APP_BACKGROUND_COLOR } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
-import { resolveStudio } from "@/server/services/studio.service";
+import {
+  getPublicStudio,
+  resolveStudio,
+} from "@/server/services/studio.service";
 
 import "./globals.css";
 
@@ -15,10 +18,25 @@ const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: copy.app.fallbackName,
-  description: copy.app.description,
-};
+/**
+ * Meta per l'app installata su iPhone (C-06): nome sotto l'icona della
+ * schermata Home e barra di stato. L'icona `apple-touch-icon` arriva da
+ * `apple-icon.tsx`. Studio del dominio, come manifest e icone.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const studio = await getPublicStudio();
+  return {
+    title: copy.app.fallbackName,
+    description: copy.app.description,
+    applicationName: studio.name,
+    appleWebApp: {
+      capable: true,
+      title: studio.name,
+      statusBarStyle: "default",
+    },
+    formatDetection: { telephone: false },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: APP_BACKGROUND_COLOR,

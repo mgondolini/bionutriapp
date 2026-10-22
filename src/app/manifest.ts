@@ -20,6 +20,8 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
       : studio.name.slice(0, SHORT_NAME_MAX).trim();
 
   return {
+    // identità stabile dell'app installata, anche se cambia start_url
+    id: ROUTES.client.home,
     name: studio.name,
     short_name: shortName,
     description: copy.manifest.description(studio.name),
@@ -27,6 +29,7 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     start_url: ROUTES.client.home,
     scope: "/",
     display: "standalone",
+    orientation: "portrait",
     background_color: APP_BACKGROUND_COLOR,
     theme_color: studio.primaryColor,
     icons: [

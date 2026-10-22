@@ -207,17 +207,9 @@ export async function confirmUpload(
   // Doppio invio della conferma: il file c'è già, niente seconda notifica.
   if (inserted === "duplicate") return { ok: true };
 
-  if (input.notify) {
-    try {
-      await notifyClient(input.clientId, { type: "file_published" });
-    } catch (error) {
-      // la pubblicazione è riuscita: una notifica mancata non la annulla
-      console.error("[file] notifica non inviata", {
-        fileId: input.fileId,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
-  }
+  // L'invio parte dopo la risposta (after): un errore della push non
+  // annulla né rallenta la pubblicazione.
+  if (input.notify) notifyClient(input.clientId, { type: "file_published" });
   return { ok: true };
 }
 

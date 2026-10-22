@@ -250,10 +250,26 @@ export const copy = {
       title: "Notifiche",
       label: "Avvisi sul telefono",
       description: "Ricevi una notifica quando arriva un nuovo file.",
-      active: "Attive su questo dispositivo.",
-      inactive: "Non attive.",
+      status: {
+        loading: "Controllo in corso…",
+        active: "Attive su questo dispositivo.",
+        ask: "Non attive su questo dispositivo.",
+        "needs-install":
+          "Su iPhone funzionano solo con l'app installata nella schermata Home.",
+        denied:
+          "Bloccate nelle impostazioni del telefono: riattivale da lì (vedi sotto).",
+        unsupported: "Questo browser non supporta le notifiche.",
+      },
+      installLink: "Come installare l'app",
       saved: (enabled: boolean) =>
         enabled ? "Notifiche attivate." : "Notifiche disattivate.",
+    },
+    install: {
+      title: "App sul telefono",
+      description:
+        "Installala nella schermata Home: si apre come un'app e ricevi gli avvisi.",
+      open: "Installa l'app",
+      installed: "L'app è installata su questo dispositivo.",
     },
     session: {
       title: "Accesso",
@@ -1150,5 +1166,101 @@ export const copy = {
   },
   manifest: {
     description: (studioName: string) => `L'area riservata di ${studioName}`,
+  },
+  // Testo delle notifiche push (N-05): generico, mai dati del file
+  notifications: {
+    filePublished: "Hai un nuovo documento nella tua area riservata",
+  },
+  push: {
+    errors: {
+      invalidSubscription:
+        "Questo browser ha inviato dati non validi per le notifiche. Riprova.",
+      failed: "Non è stato possibile attivare le notifiche. Riprova.",
+      disableFailed: "Non è stato possibile disattivare le notifiche. Riprova.",
+    },
+    banner: {
+      ask: {
+        title: "Attiva le notifiche",
+        description: "Ti avvisiamo quando arriva un nuovo file.",
+        action: "Attiva",
+        pending: "Attivazione…",
+      },
+      install: {
+        title: "Installa l'app per ricevere gli avvisi",
+        description:
+          "Su iPhone le notifiche funzionano solo con l'app nella schermata Home.",
+        action: "Come fare",
+      },
+      denied: {
+        title: "Notifiche bloccate",
+        description: "Per ricevere gli avvisi riattivale dalle impostazioni:",
+      },
+    },
+    // Come riattivare il permesso negato, per piattaforma
+    deniedHelp: {
+      ios: [
+        "Apri Impostazioni › Notifiche.",
+        "Scegli l'app dello studio.",
+        'Attiva "Consenti notifiche".',
+      ],
+      android: [
+        "Tieni premuta l'icona dell'app e scegli \"Info app\" (o apri il lucchetto accanto all'indirizzo in Chrome).",
+        'Apri "Notifiche" (o "Autorizzazioni").',
+        "Consenti le notifiche e torna qui.",
+      ],
+      desktop: [
+        "Fai clic sul lucchetto accanto all'indirizzo.",
+        'Imposta "Notifiche" su "Consenti".',
+        "Ricarica la pagina.",
+      ],
+    },
+  },
+  install: {
+    title: "Installa l'app sul telefono",
+    description:
+      "Così ricevi un avviso quando arriva un nuovo file. Su iPhone le notifiche funzionano solo con l'app installata.",
+    tabs: { ios: "iPhone", android: "Android" },
+    ios: [
+      {
+        title: "Tocca Condividi in Safari",
+        description:
+          "Il quadrato con la freccia, in basso (o in alto su iPad).",
+      },
+      {
+        title: "Scegli Aggiungi alla schermata Home",
+        description:
+          "Se non la vedi, scorri l'elenco verso il basso. Poi tocca Aggiungi.",
+      },
+      {
+        title: "Apri l'app dall'icona e attiva le notifiche",
+        description:
+          "Entra con le tue credenziali e tocca Attiva quando te lo chiede.",
+      },
+    ],
+    iosOtherBrowser:
+      "Su iPhone l'app si installa da Safari: apri questa pagina in Safari e segui i passaggi.",
+    android: [
+      {
+        title: "Tocca il menu ⋮ di Chrome",
+        description: "In alto a destra.",
+      },
+      {
+        title: "Scegli Installa app (o Aggiungi a schermata Home)",
+        description: "Poi conferma con Installa.",
+      },
+      {
+        title: "Apri l'app dall'icona e attiva le notifiche",
+        description: "Tocca Attiva quando te lo chiede.",
+      },
+    ],
+    promptTitle: "Installa con un tocco",
+    promptDescription: "Il telefono ti chiede di confermare l'installazione.",
+    promptAction: "Installa",
+    desktopManual:
+      "Su computer puoi installarla dall'icona di installazione nella barra degli indirizzi, se il browser la mostra.",
+    alreadyInstalled: "L'app è già installata su questo dispositivo.",
+    done: "Ho installato l'app",
+    later: "Più tardi",
+    back: "Torna alla home",
   },
 } as const;

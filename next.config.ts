@@ -18,6 +18,22 @@ const nextConfig: NextConfig = {
       { source: "/app/:path*", headers: noStore },
       { source: "/admin/:path*", headers: noStore },
       { source: "/accesso-sospeso", headers: noStore },
+      // Service worker (fase 8): sempre la versione aggiornata, solo script
+      // dello stesso sito.
+      {
+        source: "/sw.js",
+        headers: [
+          {
+            key: "Content-Type",
+            value: "application/javascript; charset=utf-8",
+          },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          {
+            key: "Content-Security-Policy",
+            value: "default-src 'self'; script-src 'self'",
+          },
+        ],
+      },
       {
         source: "/attiva/:token*",
         headers: [
