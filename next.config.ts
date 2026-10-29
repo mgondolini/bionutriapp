@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   experimental: {
     // Il logo dello studio arriva fino a 2 MB (più l'overhead multipart).
     serverActions: { bodySizeLimit: "3mb" },
+    agentUpgrade: "security",
   },
   // Link di attivazione: il token è nel percorso. Nessun Referer verso altri
   // siti, nessuna indicizzazione, nessuna copia in cache intermedie.

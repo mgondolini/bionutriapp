@@ -771,6 +771,11 @@ export const copy = {
       previewBadge: "Nuovo",
       previewFileTitle: "Piano alimentare",
       previewButton: "Apri PDF",
+      readOnly: "Valori in sola lettura.",
+      managedTitle: "Queste impostazioni le gestisce l'assistenza",
+      managedBody: "Per cambiare nome, logo o colore scrivi all'assistenza",
+      managedNoEmail:
+        "Per cambiare nome, logo o colore contatta l'assistenza.",
       validation: {
         nameRequired: "Inserisci il nome dello studio.",
         nameTooLong: "Il nome può avere al massimo 120 caratteri.",
