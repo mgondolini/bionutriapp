@@ -8,7 +8,7 @@
  *
  * Cambiare VERSION a ogni modifica di questo file o di offline.html.
  */
-const VERSION = "v1";
+const VERSION = "v2";
 const CACHE = `offline-${VERSION}`;
 const OFFLINE_URL = "/offline.html";
 const DEFAULT_URL = "/app";
@@ -90,13 +90,14 @@ self.addEventListener("notificationclick", (event) => {
         type: "window",
         includeUncontrolled: true,
       });
-      // Una finestra dell'app già aperta: in primo piano e sulla pagina giusta
+      // Una finestra dell'app già aperta: in primo piano e ricaricata sulla
+      // pagina giusta, anche se è già lì (altrimenti il nuovo file non compare)
       const existing = windows.find(
         (client) => new URL(client.url).origin === self.location.origin,
       );
       if (existing) {
         const focused = await existing.focus();
-        if (focused.url !== target && "navigate" in focused) {
+        if ("navigate" in focused) {
           try {
             await focused.navigate(target);
           } catch {
