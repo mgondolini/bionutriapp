@@ -22,7 +22,7 @@ import {
 import { submitEntry, type EntryFormMode } from "./entry-form-mode";
 import { ScorePicker } from "./score-picker";
 
-const t = copy.client.tracking.workout;
+const t = copy.tracking.form;
 
 type WorkoutFormProps = {
   mode: EntryFormMode;

@@ -122,21 +122,26 @@ select 'aaaaaaaa-2222-4000-8000-000000000001', id, 2.5
   from public.metrics
  where studio_id = 'aaaaaaaa-1111-4000-8000-000000000000' and key = 'water';
 
--- Registrazioni di tracking di Anna
-insert into public.tracking_entries (client_id, metric_id, value, recorded_on, note)
-select 'aaaaaaaa-2222-4000-8000-000000000001', m.id, v.value, current_date - v.days_ago, v.note
+-- Registrazioni di tracking di Anna. Autore (fase 10): le circonferenze di
+-- 4 giorni fa le ha prese il nutrizionista in visita ("Inserita dal
+-- nutrizionista"); un allenamento di Anna è stato corretto dallo staff
+-- ("Modificata dal nutrizionista"). Senza sessione il trigger tiene i ruoli inviati.
+insert into public.tracking_entries
+  (client_id, metric_id, value, recorded_on, note, created_by_role, updated_by_role)
+select 'aaaaaaaa-2222-4000-8000-000000000001', m.id, v.value, current_date - v.days_ago, v.note,
+       v.created_by_role, v.updated_by_role
   from (values
-    ('circ_waist',  82.5, 35, null),
-    ('circ_waist',  80.0,  4, null),
-    ('circ_glutes', 98.0, 35, null),
-    ('circ_glutes', 97.0,  4, null),
+    ('circ_waist',  82.5, 35, null, 'client', 'client'),
+    ('circ_waist',  80.0,  4, null, 'staff', 'staff'),
+    ('circ_glutes', 98.0, 35, null, 'client', 'client'),
+    ('circ_glutes', 97.0,  4, null, 'staff', 'staff'),
     -- Braccio: ultima rilevazione oltre 30 giorni fa → "In ritardo"
-    ('circ_right_arm', 29.0, 40, null),
+    ('circ_right_arm', 29.0, 40, null, 'client', 'client'),
     -- Ombelicale e gamba mai registrate → "Da registrare"
-    ('workouts',     7,    6, 'Gambe, buona energia'),
-    ('workouts',     8,    3, null),
-    ('workouts',     6,    1, 'Stanca dopo il lavoro')
-  ) as v(key, value, days_ago, note)
+    ('workouts',     7,    6, 'Gambe, buona energia', 'client', 'client'),
+    ('workouts',     8,    3, null, 'client', 'staff'),
+    ('workouts',     6,    1, 'Stanca dopo il lavoro', 'client', 'client')
+  ) as v(key, value, days_ago, note, created_by_role, updated_by_role)
   join public.metrics m
     on m.studio_id = 'aaaaaaaa-1111-4000-8000-000000000000' and m.key = v.key;
 

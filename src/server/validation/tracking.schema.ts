@@ -13,7 +13,9 @@ import {
   HABIT_SCORE_RANGE,
   type HabitKey,
   MEASURE_DECIMALS,
+  METRIC_KIND_BY_FREQUENCY,
   TRACKING_NOTE_MAX,
+  type MetricFrequency,
   type MetricKind,
 } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
@@ -29,6 +31,21 @@ export type MetricLimits = {
   maxValue: number;
   unit: string | null;
 };
+
+/** Limiti di una misura dello studio, per gli schemi del form e del server. */
+export function metricLimits(metric: {
+  frequency: MetricFrequency;
+  minValue: number;
+  maxValue: number;
+  unit: string | null;
+}): MetricLimits {
+  return {
+    kind: METRIC_KIND_BY_FREQUENCY[metric.frequency],
+    minValue: metric.minValue,
+    maxValue: metric.maxValue,
+    unit: metric.unit,
+  };
+}
 
 const DECIMAL_PATTERN = /^\d+(?:[.,](\d+))?$/;
 
@@ -116,6 +133,15 @@ export function habitValueSchema(limits: MetricLimits) {
   return z.object({ value: scoreSchema(limits) });
 }
 
+/** Nuovo voto di un'abitudine inserito dallo staff (A-15): voto e giorno non futuro. */
+export function habitEntryFormSchema(limits: MetricLimits) {
+  return z.object({
+    value: scoreSchema(limits),
+    recordedOn: recordedOnSchema,
+  });
+}
+export type HabitEntryFormValues = { value: number | null; recordedOn: string };
+
 /** Valori normalizzati di una registrazione, per qualsiasi tipo di misura. */
 export type EntryValues = {
   value: number;
@@ -144,10 +170,32 @@ export function entryValuesSchema(
   }
 }
 
+/**
+ * Schema dei valori di una NUOVA registrazione: come la correzione, ma per le
+ * abitudini (solo staff, A-15) servono anche il giorno.
+ */
+export function newEntryValuesSchema(
+  limits: MetricLimits,
+): z.ZodType<EntryValues, unknown> {
+  return limits.kind === "habit"
+    ? habitEntryFormSchema(limits).transform((data) => ({
+        ...data,
+        note: null,
+      }))
+    : entryValuesSchema(limits);
+}
+
 const entryValuesInput = z.record(z.string(), z.unknown());
 
-/** Nuova registrazione (circonferenza o allenamento): i valori si validano poi con la misura. */
+/**
+ * Cliente della registrazione: lo invia solo lo staff (area admin); per il
+ * cliente vale sempre quello della sessione.
+ */
+const targetClientId = z.uuid().optional();
+
+/** Nuova registrazione: i valori si validano poi con la misura. */
 export const addEntrySchema = z.object({
+  clientId: targetClientId,
   metricId: z.uuid(),
   values: entryValuesInput,
 });
@@ -155,12 +203,16 @@ export type AddEntryInput = z.input<typeof addEntrySchema>;
 
 /** Correzione di una registrazione esistente. */
 export const updateEntrySchema = z.object({
+  clientId: targetClientId,
   entryId: z.uuid(),
   values: entryValuesInput,
 });
 export type UpdateEntryInput = z.input<typeof updateEntrySchema>;
 
-export const entryIdSchema = z.object({ entryId: z.uuid() });
+export const entryIdSchema = z.object({
+  clientId: targetClientId,
+  entryId: z.uuid(),
+});
 export type EntryIdInput = z.input<typeof entryIdSchema>;
 
 /** Chiave di una misura nell'URL del dettaglio (stesso formato del database). */

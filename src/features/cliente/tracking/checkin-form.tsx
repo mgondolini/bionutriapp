@@ -8,6 +8,8 @@ import { toast } from "sonner";
 
 import { FormMessage } from "@/components/shared/form-message";
 import { MetricIcon } from "@/components/shared/metric-icon";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { ScorePicker } from "@/components/shared/tracking/score-picker";
 import { Button } from "@/components/ui/button";
 import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { ROUTES } from "@/lib/constants/domain";
@@ -17,8 +19,6 @@ import { useHydrated } from "@/lib/use-hydrated";
 import { saveCheckinAction } from "@/server/actions/tracking.actions";
 import type { Checkin, CheckinHabit } from "@/server/services/tracking.service";
 import { checkinSchema } from "@/server/validation/tracking.schema";
-
-import { ScorePicker } from "./score-picker";
 
 const t = copy.client.tracking.checkin;
 const scale = copy.tracking.scale;
@@ -38,7 +38,8 @@ function scoreDescription(habit: CheckinHabit, score: number | null) {
  * Check-in giornaliero (C9, T-06): passi, sonno e acqua con un tocco
  * ciascuno; le descrizioni dei voti seguono l'obiettivo del cliente (T-07).
  * Si salvano insieme, con una sola Server Action e una sola operazione nel
- * database; i voti non scelti restano come sono.
+ * database; i voti non scelti restano come sono. Un voto del giorno inserito
+ * dal nutrizionista è bloccato (T-03) e non viene inviato.
  */
 export function CheckinForm({ checkin }: { checkin: Checkin }) {
   const router = useRouter();
@@ -57,9 +58,15 @@ export function CheckinForm({ checkin }: { checkin: Checkin }) {
 
   const onSubmit = form.handleSubmit(({ values }) => {
     setError(null);
+    const locked = new Set(
+      checkin.habits
+        .filter((habit) => habit.lockedByStaff)
+        .map((habit) => habit.key),
+    );
     const chosen = Object.fromEntries(
       Object.entries(values).filter(
-        (entry): entry is [string, number] => entry[1] !== null,
+        (entry): entry is [string, number] =>
+          entry[1] !== null && !locked.has(entry[0]),
       ),
     );
     const parsed = checkinSchema.safeParse({
@@ -132,8 +139,16 @@ export function CheckinForm({ checkin }: { checkin: Checkin }) {
                   onChange={field.onChange}
                   labelledBy={questionId}
                   describedBy={descriptionId}
-                  disabled={isPending}
+                  disabled={isPending || habit.lockedByStaff}
                 />
+                {habit.lockedByStaff ? (
+                  <div className="flex flex-col items-start gap-1">
+                    <StatusBadge status="staff_created" />
+                    <p className="text-xs text-muted-foreground">
+                      {t.lockedByStaff}
+                    </p>
+                  </div>
+                ) : null}
                 <p
                   id={descriptionId}
                   aria-live="polite"

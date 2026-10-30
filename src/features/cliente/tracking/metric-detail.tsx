@@ -1,6 +1,9 @@
 import { FormMessage } from "@/components/shared/form-message";
 import { goalAmountOf, HabitScale } from "@/components/shared/habit-summary";
 import { MetricChart } from "@/components/shared/metric-chart";
+import { CircumferenceForm } from "@/components/shared/tracking/circumference-form";
+import { EntryHistory } from "@/components/shared/tracking/entry-history";
+import { WorkoutForm } from "@/components/shared/tracking/workout-form";
 import { copy } from "@/lib/copy/it";
 import { averageText, measureText } from "@/lib/domain/tracking/labels";
 import type {
@@ -8,6 +11,7 @@ import type {
   MetricOverview,
   WorkoutOverview,
 } from "@/lib/domain/tracking/overview";
+import type { EntryViewer } from "@/lib/domain/tracking/permissions";
 import type { ScaleRow } from "@/lib/domain/tracking/score-scale";
 import {
   formatLongDate,
@@ -16,10 +20,7 @@ import {
 } from "@/lib/format";
 import type { MetricLimits } from "@/server/validation/tracking.schema";
 
-import { CircumferenceForm } from "./circumference-form";
-import { EntryHistory } from "./entry-history";
 import { HabitWeek } from "./habit-detail";
-import { WorkoutForm } from "./workout-form";
 
 const t = copy.client.tracking;
 const tt = copy.tracking;
@@ -211,12 +212,14 @@ export function ClientMetricDetail({
   scale,
   today,
   canWrite,
+  viewer,
 }: {
   item: MetricOverview;
   limits: MetricLimits;
   scale: ScaleRow[] | null;
   today: string;
   canWrite: boolean;
+  viewer: EntryViewer;
 }) {
   const goalAmount = item.kind === "habit" ? goalAmountOf(item) : null;
   return (
@@ -244,12 +247,7 @@ export function ClientMetricDetail({
           ) : null}
         </>
       )}
-      <EntryHistory
-        item={item}
-        limits={limits}
-        today={today}
-        canWrite={canWrite}
-      />
+      <EntryHistory item={item} limits={limits} today={today} viewer={viewer} />
     </div>
   );
 }

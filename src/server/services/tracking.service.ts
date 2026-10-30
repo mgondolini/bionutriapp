@@ -3,6 +3,7 @@ import "server-only";
 import {
   HABIT_KEYS,
   type CheckinDay,
+  type EntryAuthorRole,
   type HabitKey,
   type MetricFrequency,
   type MetricValueType,
@@ -20,27 +21,37 @@ import {
   type ToRecordItem,
   type TrackingEntry,
 } from "@/lib/domain/tracking/overview";
+import {
+  canEditEntry,
+  canWriteTracking,
+  type EntryViewer,
+} from "@/lib/domain/tracking/permissions";
 import { habitScale, type ScaleRow } from "@/lib/domain/tracking/score-scale";
 import * as clientsRepository from "@/server/repositories/clients.repository";
 import * as trackingRepository from "@/server/repositories/tracking.repository";
 import type { ClientProfile } from "@/server/services/session.service";
 import {
   entryValuesSchema,
+  metricLimits,
+  newEntryValuesSchema,
   type EntryValues,
-  type MetricLimits,
 } from "@/server/validation/tracking.schema";
 
 /**
  * Chi legge o scrive il tracking di un cliente. Nella parte cliente è il
  * cliente stesso: scrive solo In percorso (In pausa e Concluso = sola
- * lettura, T-03); in Onboarding le pagine non arrivano qui (C-09) e la RLS
- * non mostra nulla.
+ * lettura, T-03) e corregge solo ciò che ha inserito lui; in Onboarding le
+ * pagine non arrivano qui (C-09) e la RLS non mostra nulla. Lo staff scrive
+ * per i clienti del proprio studio in ogni fase (A-15).
  */
 export type TrackingActor = {
   clientId: string;
   studioId: string;
+  viewer: EntryViewer;
   canWrite: boolean;
 };
+
+const STAFF_VIEWER: EntryViewer = { role: "staff" };
 
 /** Attore della sessione del cliente; null se lo studio non è noto o il tracking è bloccato. */
 export function clientTrackingActor(session: {
@@ -48,11 +59,26 @@ export function clientTrackingActor(session: {
   studio: { id: string | null };
 }): TrackingActor | null {
   if (!session.studio.id || !session.client.unlocked) return null;
+  const viewer: EntryViewer = {
+    role: "client",
+    journeyStage: session.client.journeyStage,
+  };
   return {
     clientId: session.client.id,
     studioId: session.studio.id,
-    canWrite: session.client.journeyStage === "in_progress",
+    viewer,
+    canWrite: canWriteTracking(viewer),
   };
+}
+
+/** Attore dello staff (A-15); null se il cliente non è dello studio della sessione. */
+export async function staffTrackingActor(
+  studioId: string,
+  clientId: string,
+): Promise<TrackingActor | null> {
+  const client = await loadOwnedClient(studioId, clientId);
+  if (!client) return null;
+  return { clientId, studioId, viewer: STAFF_VIEWER, canWrite: true };
 }
 
 // ---------------------------------------------------------------------
@@ -92,15 +118,8 @@ function toEntry(row: EntryRow): TrackingEntry {
     recordedOn: row.recorded_on,
     note: row.note,
     createdAt: row.created_at,
-  };
-}
-
-export function metricLimits(metric: MetricConfig): MetricLimits {
-  return {
-    kind: metricKind(metric),
-    minValue: metric.minValue,
-    maxValue: metric.maxValue,
-    unit: metric.unit,
+    createdByRole: row.created_by_role as EntryAuthorRole,
+    updatedByRole: row.updated_by_role as EntryAuthorRole,
   };
 }
 
@@ -159,6 +178,8 @@ export type MetricDetail = {
   scale: ScaleRow[] | null;
   today: string;
   canWrite: boolean;
+  /** Per canEditEntry: pulsanti di correzione ed eliminazione per riga. */
+  viewer: EntryViewer;
 };
 
 function scaleFor(item: MetricOverview): ScaleRow[] | null {
@@ -174,7 +195,13 @@ export async function getClientMetricDetail(
   const { overview, today } = await getClientTracking(actor);
   const item = overview.find((entry) => entry.metric.key === metricKey);
   if (!item) return null;
-  return { item, scale: scaleFor(item), today, canWrite: actor.canWrite };
+  return {
+    item,
+    scale: scaleFor(item),
+    today,
+    canWrite: actor.canWrite,
+    viewer: actor.viewer,
+  };
 }
 
 /** Misure da registrare nella home (C-02); vuoto in sola lettura. */
@@ -199,6 +226,8 @@ export type CheckinHabit = {
   scale: ScaleRow[] | null;
   /** Voto già registrato per il giorno scelto (si precarica e si corregge). */
   value: number | null;
+  /** Voto del giorno inserito dal nutrizionista: il cliente non lo cambia (T-03). */
+  lockedByStaff: boolean;
 };
 
 export type Checkin = {
@@ -236,6 +265,10 @@ export async function getCheckin(
     .sort((a, b) => habitOrder(a) - habitOrder(b))
     .map((metric): CheckinHabit => {
       const goal = effectiveGoal(metric, goals);
+      const entry = entries.find(
+        (candidate) =>
+          candidate.metricId === metric.id && candidate.recordedOn === date,
+      );
       return {
         metricId: metric.id,
         key: metric.key,
@@ -246,11 +279,8 @@ export async function getCheckin(
         maxValue: metric.maxValue,
         goal,
         scale: goal ? habitScale(metric.key, goal.value, goal.unit) : null,
-        value:
-          entries.find(
-            (entry) =>
-              entry.metricId === metric.id && entry.recordedOn === date,
-          )?.value ?? null,
+        value: entry?.value ?? null,
+        lockedByStaff: entry ? !canEditEntry(entry, actor.viewer) : false,
       };
     });
   return {
@@ -270,7 +300,12 @@ export async function getCheckin(
 export type WriteFailure =
   | {
       ok: false;
-      reason: "read_only" | "not_found" | "out_of_range" | "duplicate";
+      reason:
+        | "read_only"
+        | "not_found"
+        | "not_editable"
+        | "out_of_range"
+        | "duplicate";
     }
   | {
       ok: false;
@@ -295,8 +330,9 @@ function fromRepository(
 function validateValues(
   metric: MetricConfig,
   values: unknown,
+  schemaFor = entryValuesSchema,
 ): { ok: true; data: EntryValues } | WriteFailure {
-  const parsed = entryValuesSchema(metricLimits(metric)).safeParse(values);
+  const parsed = schemaFor(metricLimits(metric)).safeParse(values);
   if (parsed.success) return { ok: true, data: parsed.data };
   const fieldErrors: Record<string, string[]> = {};
   for (const issue of parsed.error.issues) {
@@ -345,9 +381,10 @@ export async function saveCheckin(
 }
 
 /**
- * Nuova circonferenza o nuovo allenamento (T-02, T-04). Le abitudini passano
- * dal check-in. Valori validati con i limiti della misura; il trigger del
- * database resta l'ultimo controllo.
+ * Nuova registrazione (T-02, T-04, A-15). Il cliente inserisce circonferenze e
+ * allenamenti (le abitudini passano dal check-in); lo staff anche il voto di
+ * un'abitudine in un giorno qualsiasi non futuro. Valori validati con i
+ * limiti della misura; il trigger del database resta l'ultimo controllo.
  */
 export async function addEntry(
   actor: TrackingActor,
@@ -356,10 +393,13 @@ export async function addEntry(
 ): Promise<WriteOutcome<{ metricKey: string }>> {
   if (!actor.canWrite) return { ok: false, reason: "read_only" };
   const metric = await findMetric(actor.studioId, metricId);
-  if (!metric || metricKind(metric) === "habit") {
+  if (
+    !metric ||
+    (metricKind(metric) === "habit" && actor.viewer.role !== "staff")
+  ) {
     return { ok: false, reason: "not_found" };
   }
-  const validated = validateValues(metric, values);
+  const validated = validateValues(metric, values, newEntryValuesSchema);
   if (!validated.ok) return validated;
   const { value, recordedOn, note } = validated.data;
   const failure = fromRepository(
@@ -375,23 +415,35 @@ export async function addEntry(
   return failure ?? { ok: true, metricKey: metric.key };
 }
 
-/** La registrazione esiste, è del cliente e la sua misura è dello studio. */
-async function loadOwnEntry(actor: TrackingActor, entryId: string) {
+/**
+ * La registrazione esiste, è del cliente dell'attore e la sua misura è dello
+ * studio; `not_editable` se l'attore non può correggerla (canEditEntry).
+ */
+async function loadEditableEntry(
+  actor: TrackingActor,
+  entryId: string,
+): Promise<{ ok: true; metric: MetricConfig } | WriteFailure> {
   const entry = await trackingRepository.getEntry(entryId);
-  if (!entry || entry.client_id !== actor.clientId) return null;
+  if (!entry || entry.client_id !== actor.clientId) {
+    return { ok: false, reason: "not_found" };
+  }
   const metric = await findMetric(actor.studioId, entry.metric_id);
-  return metric ? { entry, metric } : null;
+  if (!metric) return { ok: false, reason: "not_found" };
+  const author = { createdByRole: entry.created_by_role as EntryAuthorRole };
+  return canEditEntry(author, actor.viewer)
+    ? { ok: true, metric }
+    : { ok: false, reason: "not_editable" };
 }
 
-/** Correzione (T-03): per le abitudini solo il voto, il giorno resta quello. */
+/** Correzione (T-03, A-15): per le abitudini solo il voto, il giorno resta quello. */
 export async function updateEntry(
   actor: TrackingActor,
   entryId: string,
   values: unknown,
 ): Promise<WriteOutcome<{ metricKey: string }>> {
   if (!actor.canWrite) return { ok: false, reason: "read_only" };
-  const owned = await loadOwnEntry(actor, entryId);
-  if (!owned) return { ok: false, reason: "not_found" };
+  const owned = await loadEditableEntry(actor, entryId);
+  if (!owned.ok) return owned;
   const validated = validateValues(owned.metric, values);
   if (!validated.ok) return validated;
   const failure = fromRepository(
@@ -400,20 +452,20 @@ export async function updateEntry(
   return failure ?? { ok: true, metricKey: owned.metric.key };
 }
 
-/** Eliminazione con conferma (T-03). */
+/** Eliminazione con conferma (T-03, A-15). */
 export async function deleteEntry(
   actor: TrackingActor,
   entryId: string,
 ): Promise<WriteOutcome<{ metricKey: string }>> {
   if (!actor.canWrite) return { ok: false, reason: "read_only" };
-  const owned = await loadOwnEntry(actor, entryId);
-  if (!owned) return { ok: false, reason: "not_found" };
+  const owned = await loadEditableEntry(actor, entryId);
+  if (!owned.ok) return owned;
   const failure = fromRepository(await trackingRepository.deleteEntry(entryId));
   return failure ?? { ok: true, metricKey: owned.metric.key };
 }
 
 // ---------------------------------------------------------------------
-// Area admin: consultazione (A-12, A-13) e obiettivi personali (T-07)
+// Area admin: consultazione (A-12, A-13), registrazioni (A-15) e obiettivi (T-07)
 // ---------------------------------------------------------------------
 
 /** Il cliente esiste ed è dello studio della sessione (RLS + controllo esplicito). */
@@ -476,7 +528,7 @@ export async function getStaffTracking(
   };
 }
 
-/** Dettaglio di una misura per lo staff (A10, A11); null se cliente o misura non esistono. */
+/** Dettaglio di una misura per lo staff (A10, A11, A-15); null se cliente o misura non esistono. */
 export async function getStaffMetricDetail(
   studioId: string,
   clientId: string,
@@ -491,7 +543,8 @@ export async function getStaffMetricDetail(
     item,
     scale: scaleFor(item),
     today: tracking.today,
-    canWrite: false,
+    canWrite: true,
+    viewer: STAFF_VIEWER,
     clientName: tracking.clientName,
   };
 }

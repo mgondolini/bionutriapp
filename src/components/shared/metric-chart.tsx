@@ -8,6 +8,7 @@ import {
   LabelList,
   Line,
   LineChart,
+  Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
@@ -23,12 +24,42 @@ import {
   formatWeekdayLong,
   formatWeekdayShort,
 } from "@/lib/format";
+import { PHONE_MEDIA_QUERY, useMediaQuery } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 
 const t = copy.tracking.chart;
 
-/** Oltre questo numero di punti le etichette dei valori si sovrapporrebbero. */
+/**
+ * Oltre questo numero di punti le etichette dei valori si sovrapporrebbero:
+ * restano il tooltip (tocco o passaggio del mouse) e la tabella.
+ */
 const MAX_LABELS = 12;
+const MAX_LABELS_PHONE = 6;
+
+/** Mouse o trackpad: tooltip al passaggio; altrimenti (touch) al tocco. */
+const FINE_POINTER_QUERY = "(hover: hover) and (pointer: fine)";
+
+/** Valore e data del punto toccato (A-17). */
+function PointTooltip({
+  active,
+  point,
+  text,
+}: {
+  active?: boolean;
+  point?: ChartPoint;
+  text: (point: ChartPoint) => string;
+}) {
+  if (!active || !point) return null;
+  return (
+    <div
+      data-testid="chart-tooltip"
+      className="flex flex-col gap-0.5 rounded-lg border bg-background px-3 py-2 text-xs shadow-md"
+    >
+      <span className="text-muted-foreground">{formatLongDate(point.day)}</span>
+      <span className="text-sm font-semibold tabular-nums">{text(point)}</span>
+    </div>
+  );
+}
 
 const RANGES = {
   months6: 183,
@@ -120,10 +151,16 @@ function inRange(points: ChartPoint[], range: Range, today: string) {
  * Grafico di una misura (DEV-02: usato da cliente e staff). Accessibile:
  * titolo visibile, valori scritti sulle barre e sui punti (leggibili anche
  * senza colore), SVG nascosto agli screen reader e tabella equivalente.
+ * Su schermi stretti (A-17): meno etichette su assi e punti, punti più
+ * grandi e valore con la data al tocco (tooltip con trigger "click" sui
+ * dispositivi touch, al passaggio con il mouse).
  */
 export function MetricChart(props: ChartProps) {
   const titleId = useId();
   const [range, setRange] = useState<Range>("all");
+  const phone = useMediaQuery(PHONE_MEDIA_QUERY);
+  const finePointer = useMediaQuery(FINE_POINTER_QUERY);
+  const tooltipTrigger = finePointer ? "hover" : "click";
 
   const header = (
     <div className="flex flex-wrap items-center justify-between gap-2">
@@ -151,7 +188,7 @@ export function MetricChart(props: ChartProps) {
       >
         {header}
         {hasValues ? (
-          <div aria-hidden="true" inert>
+          <div aria-hidden="true">
             <ChartContainer
               config={weekConfig}
               className="aspect-[2/1] max-h-72 w-full"
@@ -237,7 +274,25 @@ export function MetricChart(props: ChartProps) {
   );
   const decimals = props.variant === "line" ? (props.decimals ?? 1) : 0;
   const format = (value: unknown) => formatDecimal(Number(value), decimals);
-  const showLabels = points.length <= MAX_LABELS;
+  const showLabels = points.length <= (phone ? MAX_LABELS_PHONE : MAX_LABELS);
+  const pointText = (point: ChartPoint) =>
+    props.variant === "line"
+      ? copy.tracking.valueWithUnit(format(point.value), props.unit)
+      : copy.tracking.score(point.value, props.max);
+  const tooltip = (
+    <Tooltip
+      trigger={tooltipTrigger}
+      cursor={props.variant === "line" ? { strokeDasharray: "3 3" } : false}
+      isAnimationActive={false}
+      content={({ active, payload }) => (
+        <PointTooltip
+          active={active}
+          point={payload?.[0]?.payload as ChartPoint | undefined}
+          text={pointText}
+        />
+      )}
+    />
+  );
 
   return (
     <figure
@@ -246,7 +301,7 @@ export function MetricChart(props: ChartProps) {
     >
       {header}
       {points.length > 0 ? (
-        <div aria-hidden="true" inert>
+        <div aria-hidden="true">
           <ChartContainer
             config={lineConfig}
             className="aspect-[2/1] max-h-72 w-full"
@@ -263,15 +318,22 @@ export function MetricChart(props: ChartProps) {
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={formatDayMonthShort}
-                  minTickGap={16}
+                  interval="preserveStartEnd"
+                  minTickGap={phone ? 32 : 16}
                 />
                 <YAxis hide domain={["dataMin - 1", "dataMax + 1"]} />
+                {tooltip}
                 <Line
                   dataKey="value"
                   type="monotone"
                   stroke="var(--color-value)"
                   strokeWidth={2}
-                  dot={{ r: 4, fill: "var(--color-value)" }}
+                  dot={{ r: 5, fill: "var(--color-value)" }}
+                  activeDot={{
+                    r: 8,
+                    strokeWidth: 3,
+                    stroke: "var(--background)",
+                  }}
                   isAnimationActive={false}
                 >
                   {showLabels ? (
@@ -296,9 +358,11 @@ export function MetricChart(props: ChartProps) {
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={formatDayMonthShort}
-                  minTickGap={8}
+                  interval="preserveStartEnd"
+                  minTickGap={phone ? 24 : 8}
                 />
                 <YAxis hide domain={[0, props.max]} />
+                {tooltip}
                 <Bar
                   dataKey="value"
                   fill="var(--color-value)"
@@ -334,14 +398,7 @@ export function MetricChart(props: ChartProps) {
             {points.map((point, index) => (
               <tr key={`${point.day}-${index}`}>
                 <th scope="row">{formatLongDate(point.day)}</th>
-                <td>
-                  {props.variant === "line"
-                    ? copy.tracking.valueWithUnit(
-                        format(point.value),
-                        props.unit,
-                      )
-                    : copy.tracking.score(point.value, props.max)}
-                </td>
+                <td>{pointText(point)}</td>
               </tr>
             ))}
           </tbody>

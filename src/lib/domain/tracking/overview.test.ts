@@ -53,6 +53,7 @@ const entry = (
   value: number,
   recordedOn: string,
   createdAt = `2026-10-01T00:00:${String(seq++).padStart(2, "0")}Z`,
+  author: TrackingEntry["createdByRole"] = "client",
 ): TrackingEntry => ({
   id: `e${seq}`,
   metricId: `m-${key}`,
@@ -60,7 +61,11 @@ const entry = (
   recordedOn,
   note: null,
   createdAt,
+  createdByRole: author,
+  updatedByRole: author,
 });
+const byStaff = (key: string, value: number, recordedOn: string) =>
+  entry(key, value, recordedOn, undefined, "staff");
 
 describe("effectiveGoal", () => {
   const water = METRICS[1]!;
@@ -187,5 +192,46 @@ describe("buildTrackingOverview", () => {
       today: TODAY,
     });
     expect(waist!.entries[0]!.value).toBe(79.5);
+  });
+});
+
+describe("registrazioni miste di cliente e staff (A-15)", () => {
+  // mercoledì 14: questa settimana 12–14, la scorsa 5–11
+  const overview = buildTrackingOverview({
+    metrics: METRICS,
+    goals: [],
+    entries: [
+      entry("water", 4, "2026-10-12"),
+      byStaff("water", 2, "2026-10-13"),
+      entry("water", 3, "2026-10-06"),
+      byStaff("water", 5, "2026-10-07"),
+      byStaff("circ_waist", 78, "2026-10-10"),
+      entry("circ_waist", 80, "2026-08-01"),
+      byStaff("workouts", 7, TODAY),
+    ],
+    today: TODAY,
+  });
+  const byKey = new Map(overview.map((item) => [item.metric.key, item]));
+
+  it("le medie settimanali contano i voti dello staff come quelli del cliente", () => {
+    const water = byKey.get("water")!;
+    expect(water.kind === "habit" && water.stats).toMatchObject({
+      filledDays: 2,
+      average: 3,
+      previousAverage: 4,
+      delta: -1,
+    });
+  });
+
+  it("una circonferenza dello staff toglie il ritardo e vale come ultima rilevazione", () => {
+    const waist = byKey.get("circ_waist")!;
+    expect(
+      waist.kind === "circumference" && waist.summary.schedule.status,
+    ).toBe("ok");
+    expect(waist.kind === "circumference" && waist.summary.delta).toBe(-2);
+  });
+
+  it("un allenamento dello staff dà la spunta di oggi", () => {
+    expect(byKey.get("workouts")!.recordedInPeriod).toBe(true);
   });
 });

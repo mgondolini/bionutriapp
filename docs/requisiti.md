@@ -66,6 +66,9 @@ L'area admin è desktop-first, con sidebar, e si compone di elenco clienti e sch
 
 - **A-12** Card per ogni misura con ultimo valore, data, variazione rispetto alla rilevazione precedente e indicatore di misura in ritardo.
 - **A-13** Dettaglio di una misura con grafico dell'andamento e storico; per gli allenamenti, voto medio ed elenco con data, voto e nota.
+- **A-15** Il nutrizionista può inserire nuove registrazioni per il cliente (per esempio le circonferenze misurate durante la visita) e modificare o eliminare qualsiasi registrazione, con la stessa validazione usata nell'area cliente.
+- **A-16** Ogni registrazione indica chi l'ha inserita o modificata per ultimo (cliente o nutrizionista); nello storico, cliente e nutrizionista vedono un'etichetta "Inserita dal nutrizionista".
+- **A-17** La scheda Tracking, con card, grafici, storico e form di inserimento, è pienamente utilizzabile anche da smartphone: grafici leggibili su schermi stretti, con valori consultabili toccando i punti.
 
 **Impostazioni studio**
 
@@ -130,7 +133,7 @@ Il voto di passi, sonno e acqua è ancorato all'obiettivo personale del cliente,
 
 - **T-01** Il cliente vede la lista delle misure con icona, istruzione, numero di registrazioni e una spunta se la misura è già registrata nel periodo corrente.
 - **T-02** Il cliente inserisce un valore con data precompilata a oggi (non futura); per gli allenamenti sceglie il voto con pulsanti 1–10 e può aggiungere una nota.
-- **T-03** Il cliente vede grafico e storico di ogni misura e può correggere o eliminare le proprie registrazioni.
+- **T-03** Il cliente vede grafico e storico di ogni misura e può correggere o eliminare le registrazioni inserite da lui, ma non quelle inserite dal nutrizionista.
 - **T-04** Ogni valore viene validato sia nell'interfaccia sia nel database rispetto ai limiti della misura.
 - **T-05** Una circonferenza è "in ritardo" quando dall'ultima registrazione sono passati più di 30 giorni; per le abitudini giornaliere il nutrizionista vede invece quanti giorni sono stati compilati nella settimana.
 - **T-06** Check-in giornaliero in una sola schermata: passi, sonno e acqua, un tocco ciascuno sulla scala 1–5 con la descrizione del voto. Si può compilare anche il giorno precedente, e i giorni saltati non vengono penalizzati.
@@ -207,7 +210,7 @@ Le diete e le misure sono dati relativi alla salute (art. 9 GDPR): sicurezza e r
 **Design e accessibilità**
 
 - **NF-07** Design system: font Plus Jakarta Sans; sfondo #F5F6F2, superfici #FFFFFF, testo #18211D e #55605A, bordi #DDE2DB, primario #2E6A4E (sovrascrivibile per studio), stati info #E2ECF7/#1F4E80 e attenzione #FBEBD9/#8A4513.
-- **NF-08** Area admin desktop-first e responsive; area cliente mobile-first.
+- **NF-08** Area admin desktop-first ma completamente utilizzabile da smartphone, inclusi tracking e grafici; area cliente mobile-first.
 - **NF-09** Contrasto testo almeno WCAG AA, touch target di almeno 44 px, componenti navigabili da tastiera.
 - **NF-10** Interfaccia interamente in italiano.
 
@@ -284,7 +287,7 @@ Il cliente è un'entità dello studio separata dall'account di login: esiste dal
 | `client_files` | File dei clienti: categoria, titolo, percorso, validità, nota, data di lettura | v1.0 |
 | `metrics` | Misure configurabili per studio: unità, tipo, frequenza, limiti, icona, obiettivo predefinito | v1.0 |
 | `client_metric_goals` | Obiettivi personali del cliente per le abitudini giornaliere (es. 2 L di acqua, 8.000 passi) | v1.0 |
-| `tracking_entries` | Registrazioni: cliente, misura, valore, data, nota | v1.0 |
+| `tracking_entries` | Registrazioni: cliente, misura, valore, data, nota, autore dell'inserimento e dell'ultima modifica | v1.0 |
 | `push_subscriptions` | Sottoscrizioni Web Push per utente | v1.0 |
 | `platform_admins` | Utenti con accesso all'area piattaforma (sviluppatrice) | v1.2 |
 | `studio_audit_log` | Registro delle modifiche agli studi: campo, valore precedente e nuovo, autore, data | v1.2 |

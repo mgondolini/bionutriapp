@@ -4,33 +4,20 @@ import {
   HabitWeekSummary,
 } from "@/components/shared/habit-summary";
 import { MetricChart } from "@/components/shared/metric-chart";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { HISTORY_LIMIT } from "@/lib/constants/domain";
+import { EntryHistory } from "@/components/shared/tracking/entry-history";
 import { copy } from "@/lib/copy/it";
-import { measureHistory } from "@/lib/domain/tracking/circumferences";
-import {
-  averageText,
-  measureText,
-  scoreText,
-} from "@/lib/domain/tracking/labels";
+import { averageText, measureText } from "@/lib/domain/tracking/labels";
 import type {
   CircumferenceOverview,
   MetricOverview,
   WorkoutOverview,
 } from "@/lib/domain/tracking/overview";
+import type { EntryViewer } from "@/lib/domain/tracking/permissions";
 import type { ScaleRow } from "@/lib/domain/tracking/score-scale";
-import {
-  formatLongDate,
-  formatSignedDelta,
-  formatWeekdayShort,
-} from "@/lib/format";
+import { formatLongDate, formatSignedDelta } from "@/lib/format";
+import { metricLimits } from "@/server/validation/tracking.schema";
+
+import { AddEntryDialog } from "./add-entry-dialog";
 
 const t = copy.admin.clients.tracking.detail;
 const tt = copy.tracking;
@@ -67,64 +54,6 @@ function Stat({
   );
 }
 
-function HistoryTable({
-  title,
-  columns,
-  rows,
-  total,
-}: {
-  title: string;
-  columns: string[];
-  rows: { id: string; cells: string[] }[];
-  total: number;
-}) {
-  return (
-    <section aria-labelledby="staff-history" className="flex flex-col gap-3">
-      <h2 id="staff-history" className="text-base font-semibold">
-        {title}
-      </h2>
-      {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{tt.noEntries}</p>
-      ) : (
-        <div className="rounded-xl border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {columns.map((column) => (
-                  <TableHead key={column}>{column}</TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.cells.map((cell, index) => (
-                    <TableCell
-                      key={index}
-                      className={
-                        index === row.cells.length - 1
-                          ? "whitespace-normal"
-                          : undefined
-                      }
-                    >
-                      {cell}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-      {total > HISTORY_LIMIT ? (
-        <p className="text-xs text-muted-foreground">
-          {t.limited(HISTORY_LIMIT)}
-        </p>
-      ) : null}
-    </section>
-  );
-}
-
 function CircumferenceDetail({
   item,
   today,
@@ -135,7 +64,6 @@ function CircumferenceDetail({
   const { summary, metric } = item;
   const { schedule } = summary;
   const unit = metric.unit;
-  const history = measureHistory(item.entries).slice(0, HISTORY_LIMIT);
   return (
     <>
       <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -196,7 +124,7 @@ function CircumferenceDetail({
           }
         />
       </dl>
-      <section className="rounded-xl border bg-card p-5">
+      <section className="rounded-xl border bg-card p-4 sm:p-5">
         <MetricChart
           variant="line"
           title={tt.chartTitle}
@@ -208,21 +136,6 @@ function CircumferenceDetail({
           today={today}
         />
       </section>
-      <HistoryTable
-        title={t.historyTitle}
-        columns={[t.columns.date, t.columns.value, t.columns.delta]}
-        rows={history.map((row) => ({
-          id: row.id,
-          cells: [
-            formatLongDate(row.recordedOn),
-            measureText(row.value, unit),
-            row.delta === null
-              ? t.initialValue
-              : formatSignedDelta(row.delta, unit),
-          ],
-        }))}
-        total={item.entries.length}
-      />
     </>
   );
 }
@@ -268,7 +181,7 @@ function WorkoutDetail({
           hint={average(stats.recent.average)}
         />
       </dl>
-      <section className="rounded-xl border bg-card p-5">
+      <section className="rounded-xl border bg-card p-4 sm:p-5">
         <MetricChart
           variant="bars"
           title={tt.chartTitle}
@@ -280,61 +193,59 @@ function WorkoutDetail({
           today={today}
         />
       </section>
-      <HistoryTable
-        title={t.diaryTitle}
-        columns={[t.columns.date, t.columns.score, t.columns.note]}
-        rows={item.entries.slice(0, HISTORY_LIMIT).map((entry) => ({
-          id: entry.id,
-          cells: [
-            formatLongDate(entry.recordedOn),
-            scoreText(entry.value, max),
-            entry.note ?? tt.chart.notRecorded,
-          ],
-        }))}
-        total={item.entries.length}
-      />
     </>
   );
 }
 
 /**
- * Dettaglio di una misura per lo staff, in sola consultazione: circonferenze
- * (A10) con andamento e storico, allenamenti (A11) con voto medio e diario,
- * abitudini con la settimana, la scala dei voti e i giorni compilati.
+ * Dettaglio di una misura per lo staff: circonferenze (A10) con andamento,
+ * allenamenti (A11) con voto medio, abitudini con la settimana e la scala dei
+ * voti; poi lo storico condiviso con l'area cliente, dove lo staff corregge
+ * ed elimina qualsiasi registrazione (A-15) e vede l'autore (A-16).
  */
 export function StaffMetricDetail({
   item,
   scale,
   today,
+  clientId,
+  clientName,
+  viewer,
 }: {
   item: MetricOverview;
   scale: ScaleRow[] | null;
   today: string;
+  clientId: string;
+  clientName: string;
+  viewer: EntryViewer;
 }) {
-  if (item.kind === "circumference") {
-    return <CircumferenceDetail item={item} today={today} />;
-  }
-  if (item.kind === "workout") {
-    return <WorkoutDetail item={item} today={today} />;
-  }
-  const goalAmount = goalAmountOf(item);
+  const goalAmount = item.kind === "habit" ? goalAmountOf(item) : null;
   return (
     <>
-      <HabitWeekSummary item={item} today={today} />
-      {scale && goalAmount ? (
-        <HabitScale scale={scale} goalAmount={goalAmount} />
-      ) : null}
-      <HistoryTable
-        title={t.daysTitle}
-        columns={[t.columns.date, t.columns.score]}
-        rows={item.entries.slice(0, HISTORY_LIMIT).map((entry) => ({
-          id: entry.id,
-          cells: [
-            `${formatWeekdayShort(entry.recordedOn)} ${formatLongDate(entry.recordedOn)}`,
-            scoreText(entry.value, item.metric.maxValue),
-          ],
-        }))}
-        total={item.entries.length}
+      <AddEntryDialog
+        item={item}
+        clientId={clientId}
+        clientName={clientName}
+        today={today}
+        className="w-full sm:w-auto sm:self-start"
+      />
+      {item.kind === "circumference" ? (
+        <CircumferenceDetail item={item} today={today} />
+      ) : item.kind === "workout" ? (
+        <WorkoutDetail item={item} today={today} />
+      ) : (
+        <>
+          <HabitWeekSummary item={item} today={today} />
+          {scale && goalAmount ? (
+            <HabitScale scale={scale} goalAmount={goalAmount} />
+          ) : null}
+        </>
+      )}
+      <EntryHistory
+        item={item}
+        limits={metricLimits(item.metric)}
+        today={today}
+        viewer={viewer}
+        clientId={clientId}
       />
     </>
   );

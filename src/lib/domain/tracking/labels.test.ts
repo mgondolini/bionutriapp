@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  entryAuthorBadge,
   habitDeltaText,
   measureText,
   scoreText,
@@ -27,5 +28,25 @@ describe("weekRangeText", () => {
   it("stesso mese o due mesi", () => {
     expect(weekRangeText("2026-10-12", "2026-10-18")).toBe("12–18 ott");
     expect(weekRangeText("2026-09-28", "2026-10-04")).toBe("28 set – 4 ott");
+  });
+});
+
+describe("entryAuthorBadge", () => {
+  it("registrazione inserita dallo staff, modificata o no", () => {
+    expect(
+      entryAuthorBadge({ createdByRole: "staff", updatedByRole: "staff" }),
+    ).toBe("staff_created");
+  });
+
+  it("registrazione del cliente modificata per ultimo dallo staff", () => {
+    expect(
+      entryAuthorBadge({ createdByRole: "client", updatedByRole: "staff" }),
+    ).toBe("staff_edited");
+  });
+
+  it("registrazione del cliente, nessuna etichetta", () => {
+    expect(
+      entryAuthorBadge({ createdByRole: "client", updatedByRole: "client" }),
+    ).toBeNull();
   });
 });

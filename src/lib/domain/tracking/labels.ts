@@ -2,7 +2,7 @@
  * Testi composti del tracking (valori con unità, confronti), condivisi da
  * cliente e staff. Funzioni pure: i testi vengono da copy (DEV-14).
  */
-import { MEASURE_DECIMALS } from "@/lib/constants/domain";
+import { MEASURE_DECIMALS, type EntryAuthorRole } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import {
   formatDayMonthShort,
@@ -49,4 +49,20 @@ export function weekRangeText(from: string, to: string): string {
   return startMonth === end.split(" ")[1]
     ? `${startDay}–${end}`
     : `${start} – ${end}`;
+}
+
+/**
+ * Etichetta dell'autore nello storico (A-16): "Inserita dal nutrizionista"
+ * se l'ha creata lo staff, "Modificata dal nutrizionista" se è del cliente ma
+ * lo staff l'ha modificata per ultimo; null se è tutta del cliente.
+ */
+export type EntryAuthorBadge = "staff_created" | "staff_edited";
+
+export function entryAuthorBadge(entry: {
+  createdByRole: EntryAuthorRole;
+  updatedByRole: EntryAuthorRole;
+}): EntryAuthorBadge | null {
+  if (entry.createdByRole === "staff") return "staff_created";
+  if (entry.updatedByRole === "staff") return "staff_edited";
+  return null;
 }

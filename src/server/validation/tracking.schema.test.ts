@@ -7,6 +7,7 @@ import {
   parseGoalInput,
   circumferenceFormSchema,
   entryValuesSchema,
+  newEntryValuesSchema,
   parseDecimalInput,
   workoutFormSchema,
   type MetricLimits,
@@ -152,6 +153,40 @@ describe("entryValuesSchema", () => {
     expect(entryValuesSchema(WATER).safeParse({ value: 6 }).success).toBe(
       false,
     );
+  });
+});
+
+describe("newEntryValuesSchema", () => {
+  it("un nuovo voto di un'abitudine (staff) richiede anche il giorno, non futuro", () => {
+    expect(
+      newEntryValuesSchema(WATER).parse({ value: 4, recordedOn: "2026-09-30" }),
+    ).toEqual({ value: 4, recordedOn: "2026-09-30", note: null });
+    expect(newEntryValuesSchema(WATER).safeParse({ value: 4 }).success).toBe(
+      false,
+    );
+    expect(
+      firstError(
+        newEntryValuesSchema(WATER).safeParse({
+          value: 4,
+          recordedOn: "2026-10-15",
+        }),
+      ),
+    ).toBe("La data non può essere futura.");
+    expect(
+      newEntryValuesSchema(WATER).safeParse({
+        value: 2.5,
+        recordedOn: "2026-10-14",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("circonferenze e allenamenti come nella correzione", () => {
+    expect(
+      newEntryValuesSchema(WAIST).safeParse({
+        value: "300",
+        recordedOn: "2026-10-14",
+      }).success,
+    ).toBe(false);
   });
 });
 

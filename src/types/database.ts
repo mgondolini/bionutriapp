@@ -587,6 +587,7 @@ export type Database = {
           client_id: string;
           created_at: string;
           created_by: string | null;
+          created_by_role: string;
           id: string;
           is_daily: boolean;
           metric_id: string;
@@ -594,6 +595,8 @@ export type Database = {
           recorded_on: string;
           studio_id: string;
           updated_at: string;
+          updated_by: string | null;
+          updated_by_role: string;
           value: number;
         };
         ComputedFields: never;
@@ -601,6 +604,7 @@ export type Database = {
           client_id: string;
           created_at?: string;
           created_by?: string | null;
+          created_by_role?: string;
           id?: string;
           is_daily?: boolean;
           metric_id: string;
@@ -608,12 +612,15 @@ export type Database = {
           recorded_on: string;
           studio_id: string;
           updated_at?: string;
+          updated_by?: string | null;
+          updated_by_role?: string;
           value: number;
         };
         Update: {
           client_id?: string;
           created_at?: string;
           created_by?: string | null;
+          created_by_role?: string;
           id?: string;
           is_daily?: boolean;
           metric_id?: string;
@@ -621,6 +628,8 @@ export type Database = {
           recorded_on?: string;
           studio_id?: string;
           updated_at?: string;
+          updated_by?: string | null;
+          updated_by_role?: string;
           value?: number;
         };
         Relationships: [

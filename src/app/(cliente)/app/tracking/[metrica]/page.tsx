@@ -8,9 +8,11 @@ import { requireClient } from "@/server/services/session.service";
 import {
   clientTrackingActor,
   getClientMetricDetail,
-  metricLimits,
 } from "@/server/services/tracking.service";
-import { metricKeySchema } from "@/server/validation/tracking.schema";
+import {
+  metricKeySchema,
+  metricLimits,
+} from "@/server/validation/tracking.schema";
 
 /**
  * Dettaglio di una misura (C10, C11, C12, T-03): registrazione, andamento e
@@ -47,6 +49,7 @@ export default async function MetricPage({
         scale={detail.scale}
         today={detail.today}
         canWrite={detail.canWrite}
+        viewer={detail.viewer}
       />
     </div>
   );

@@ -55,6 +55,8 @@ const db = {
     recorded_on: string;
     note: string | null;
     created_at: string;
+    created_by_role: "client" | "staff";
+    updated_by_role: "client" | "staff";
   }[],
 };
 
@@ -86,8 +88,23 @@ vi.mock("@/server/repositories/clients.repository", () => ({
 const repository = await import("@/server/repositories/tracking.repository");
 const service = await import("./tracking.service");
 
-const ACTOR = { clientId: CLIENT, studioId: STUDIO, canWrite: true };
-const READ_ONLY = { ...ACTOR, canWrite: false };
+const ACTOR = {
+  clientId: CLIENT,
+  studioId: STUDIO,
+  viewer: { role: "client", journeyStage: "in_progress" },
+  canWrite: true,
+} as const;
+const READ_ONLY = {
+  ...ACTOR,
+  viewer: { role: "client", journeyStage: "paused" },
+  canWrite: false,
+} as const;
+const STAFF = {
+  clientId: CLIENT,
+  studioId: STUDIO,
+  viewer: { role: "staff" },
+  canWrite: true,
+} as const;
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -103,6 +120,19 @@ beforeEach(() => {
       recorded_on: "2026-10-13",
       note: null,
       created_at: "2026-10-13T20:00:00Z",
+      created_by_role: "client",
+      updated_by_role: "client",
+    },
+    {
+      id: "e-staff",
+      client_id: CLIENT,
+      metric_id: "m-steps",
+      value: 4,
+      recorded_on: "2026-10-13",
+      note: null,
+      created_at: "2026-10-13T09:00:00Z",
+      created_by_role: "staff",
+      updated_by_role: "staff",
     },
     {
       id: "e-other",
@@ -112,6 +142,8 @@ beforeEach(() => {
       recorded_on: "2026-10-10",
       note: null,
       created_at: "2026-10-10T20:00:00Z",
+      created_by_role: "client",
+      updated_by_role: "client",
     },
   ];
 });
@@ -298,12 +330,84 @@ describe("updateEntry e deleteEntry", () => {
     });
   });
 
+  it("il cliente non corregge né elimina una registrazione dello staff (T-03)", async () => {
+    expect(await service.updateEntry(ACTOR, "e-staff", { value: 5 })).toEqual({
+      ok: false,
+      reason: "not_editable",
+    });
+    expect(await service.deleteEntry(ACTOR, "e-staff")).toEqual({
+      ok: false,
+      reason: "not_editable",
+    });
+    expect(repository.updateEntry).not.toHaveBeenCalled();
+    expect(repository.deleteEntry).not.toHaveBeenCalled();
+  });
+
   it("la RLS che nasconde la riga diventa sola lettura", async () => {
     vi.mocked(repository.deleteEntry).mockResolvedValueOnce("forbidden");
     expect(await service.deleteEntry(ACTOR, "e-water")).toEqual({
       ok: false,
       reason: "read_only",
     });
+  });
+});
+
+describe("registrazioni dello staff (A-15)", () => {
+  it("staffTrackingActor solo per i clienti dello studio", async () => {
+    expect(await service.staffTrackingActor(STUDIO, CLIENT)).toEqual(STAFF);
+    expect(await service.staffTrackingActor("altro-studio", CLIENT)).toBeNull();
+    expect(await service.staffTrackingActor(STUDIO, OTHER_CLIENT)).toBeNull();
+  });
+
+  it("lo staff corregge ed elimina qualsiasi registrazione del cliente", async () => {
+    expect(await service.updateEntry(STAFF, "e-water", { value: 5 })).toEqual({
+      ok: true,
+      metricKey: "water",
+    });
+    expect(await service.deleteEntry(STAFF, "e-staff")).toEqual({
+      ok: true,
+      metricKey: "steps",
+    });
+  });
+
+  it("lo staff non tocca le registrazioni di un altro cliente", async () => {
+    expect(await service.deleteEntry(STAFF, "e-other")).toEqual({
+      ok: false,
+      reason: "not_found",
+    });
+  });
+
+  it("lo staff inserisce il voto di un'abitudine con il giorno", async () => {
+    expect(
+      await service.addEntry(STAFF, "m-water", {
+        value: 4,
+        recordedOn: "2026-10-01",
+      }),
+    ).toEqual({ ok: true, metricKey: "water" });
+    expect(repository.insertEntry).toHaveBeenCalledWith({
+      studioId: STUDIO,
+      clientId: CLIENT,
+      metricId: "m-water",
+      value: 4,
+      recordedOn: "2026-10-01",
+      note: null,
+    });
+  });
+
+  it("stessa validazione del cliente: fuori limite e data futura rifiutati", async () => {
+    expect(
+      await service.addEntry(STAFF, "m-circ_waist", {
+        value: "300",
+        recordedOn: "2026-10-14",
+      }),
+    ).toMatchObject({ ok: false, reason: "invalid" });
+    expect(
+      await service.addEntry(STAFF, "m-water", {
+        value: 3,
+        recordedOn: "2026-10-15",
+      }),
+    ).toMatchObject({ ok: false, reason: "invalid" });
+    expect(repository.insertEntry).not.toHaveBeenCalled();
   });
 });
 
@@ -320,6 +424,14 @@ describe("getCheckin", () => {
     );
     const today = await service.getCheckin(ACTOR, "today");
     expect(today.habits.every((habit) => habit.value === null)).toBe(true);
+  });
+
+  it("il voto inserito dallo staff è bloccato per il cliente", async () => {
+    const checkin = await service.getCheckin(ACTOR, "yesterday");
+    const locked = Object.fromEntries(
+      checkin.habits.map((habit) => [habit.key, habit.lockedByStaff]),
+    );
+    expect(locked).toEqual({ steps: true, water: false });
   });
 
   it("la scala dei voti segue l'obiettivo personale, se c'è", async () => {
@@ -401,9 +513,10 @@ describe("area admin", () => {
     expect(repository.deleteGoals).toHaveBeenCalledWith(CLIENT, ["m-water"]);
   });
 
-  it("dettaglio di una misura in sola consultazione", async () => {
+  it("dettaglio di una misura con le scritture dello staff", async () => {
     const detail = await service.getStaffMetricDetail(STUDIO, CLIENT, "water");
-    expect(detail?.canWrite).toBe(false);
+    expect(detail?.canWrite).toBe(true);
+    expect(detail?.viewer).toEqual({ role: "staff" });
     expect(detail?.scale?.[0]?.amount).toBe("2 L o più");
     expect(await service.getStaffMetricDetail(STUDIO, CLIENT, "x")).toBeNull();
   });

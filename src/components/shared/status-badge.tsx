@@ -2,9 +2,10 @@ import { cva } from "class-variance-authority";
 
 import type { AccountStatus, JourneyStage } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import type { EntryAuthorBadge } from "@/lib/domain/tracking/labels";
 import { cn } from "@/lib/utils";
 
-export type BadgeStatus = AccountStatus | JourneyStage;
+export type BadgeStatus = AccountStatus | JourneyStage | EntryAuthorBadge;
 
 const statusBadgeVariants = cva(
   "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap",
@@ -20,6 +21,9 @@ const statusBadgeVariants = cva(
         in_progress: "bg-success text-success-foreground",
         paused: "bg-info text-info-foreground",
         completed: "bg-muted text-muted-foreground",
+        // autore di una registrazione del tracking (A-16)
+        staff_created: "bg-info text-info-foreground",
+        staff_edited: "bg-muted text-muted-foreground",
       } satisfies Record<BadgeStatus, string>,
     },
   },
@@ -28,9 +32,13 @@ const statusBadgeVariants = cva(
 const LABELS: Record<BadgeStatus, string> = {
   ...copy.domain.accountStatus,
   ...copy.domain.journeyStage,
+  ...copy.tracking.author,
 };
 
-/** Stato dell'account o fase del percorso, con colore ed etichetta dal dominio. */
+/**
+ * Stato dell'account, fase del percorso o autore di una registrazione, con
+ * colore ed etichetta dal dominio.
+ */
 export function StatusBadge({
   status,
   className,

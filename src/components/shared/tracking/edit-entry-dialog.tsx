@@ -5,15 +5,8 @@ import { useId, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { FormMessage } from "@/components/shared/form-message";
+import { ResponsiveDialog } from "@/components/shared/responsive-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { MEASURE_DECIMALS, type MetricKind } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
@@ -25,7 +18,7 @@ import { CircumferenceForm } from "./circumference-form";
 import { ScorePicker } from "./score-picker";
 import { WorkoutForm } from "./workout-form";
 
-const t = copy.client.tracking.edit;
+const t = copy.tracking.edit;
 
 export type EditableEntry = {
   id: string;
@@ -37,10 +30,12 @@ export type EditableEntry = {
 /** Correzione del voto di un'abitudine: il giorno resta quello (un valore al giorno). */
 function HabitScoreForm({
   entry,
+  clientId,
   limits,
   onDone,
 }: {
   entry: EditableEntry;
+  clientId?: string;
   limits: MetricLimits;
   onDone: () => void;
 }) {
@@ -52,6 +47,7 @@ function HabitScoreForm({
     setError(null);
     startTransition(async () => {
       const result = await updateEntryAction({
+        clientId,
         entryId: entry.id,
         values: { value },
       });
@@ -86,10 +82,14 @@ function HabitScoreForm({
   );
 }
 
-/** Correzione di una registrazione (T-03) con lo stesso form della registrazione. */
+/**
+ * Correzione di una registrazione (T-03, A-15) con lo stesso form della
+ * registrazione, nelle due aree; `clientId` solo per lo staff.
+ */
 export function EditEntryDialog({
   kind,
   entry,
+  clientId,
   limits,
   today,
   question,
@@ -97,6 +97,7 @@ export function EditEntryDialog({
 }: {
   kind: MetricKind;
   entry: EditableEntry;
+  clientId?: string;
   limits: MetricLimits;
   today: string;
   question: string;
@@ -105,58 +106,60 @@ export function EditEntryDialog({
 }) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
-  const mode = { kind: "edit", entryId: entry.id } as const;
+  const mode = { kind: "edit", entryId: entry.id, clientId } as const;
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label={t.editAria(dateLabel)}
-          />
-        }
-      >
-        <Pencil aria-hidden="true" />
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t.title}</DialogTitle>
-          <DialogDescription>{dateLabel}</DialogDescription>
-        </DialogHeader>
-        {kind === "circumference" ? (
-          <CircumferenceForm
-            mode={mode}
-            limits={limits}
-            today={today}
-            defaultValues={{
-              value: formatDecimal(entry.value, MEASURE_DECIMALS),
-              recordedOn: entry.recordedOn,
-            }}
-            submitLabel={t.save}
-            successMessage={t.saved}
-            onDone={close}
-          />
-        ) : kind === "workout" ? (
-          <WorkoutForm
-            mode={mode}
-            limits={limits}
-            question={question}
-            today={today}
-            defaultValues={{
-              value: entry.value,
-              recordedOn: entry.recordedOn,
-              note: entry.note ?? "",
-            }}
-            submitLabel={t.save}
-            successMessage={t.saved}
-            onDone={close}
-          />
-        ) : (
-          <HabitScoreForm entry={entry} limits={limits} onDone={close} />
-        )}
-      </DialogContent>
-    </Dialog>
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={setOpen}
+      title={t.title}
+      description={dateLabel}
+      trigger={
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={t.editAria(dateLabel)}
+        >
+          <Pencil aria-hidden="true" />
+        </Button>
+      }
+    >
+      {kind === "circumference" ? (
+        <CircumferenceForm
+          mode={mode}
+          limits={limits}
+          today={today}
+          defaultValues={{
+            value: formatDecimal(entry.value, MEASURE_DECIMALS),
+            recordedOn: entry.recordedOn,
+          }}
+          submitLabel={t.save}
+          successMessage={t.saved}
+          onDone={close}
+        />
+      ) : kind === "workout" ? (
+        <WorkoutForm
+          mode={mode}
+          limits={limits}
+          question={question}
+          today={today}
+          defaultValues={{
+            value: entry.value,
+            recordedOn: entry.recordedOn,
+            note: entry.note ?? "",
+          }}
+          submitLabel={t.save}
+          successMessage={t.saved}
+          onDone={close}
+        />
+      ) : (
+        <HabitScoreForm
+          entry={entry}
+          clientId={clientId}
+          limits={limits}
+          onDone={close}
+        />
+      )}
+    </ResponsiveDialog>
   );
 }

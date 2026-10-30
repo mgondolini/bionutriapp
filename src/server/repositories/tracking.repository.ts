@@ -5,15 +5,17 @@ import type { PostgrestError } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 
 /*
- * Tracking (T-01…T-09, A-12, A-13). Si usa sempre il client dell'utente:
- * la RLS limita lo staff al proprio studio e il cliente alle proprie
- * registrazioni (scrittura solo In percorso); il trigger
- * validate_tracking_entry controlla limiti, interi, data non futura a Roma.
+ * Tracking (T-01…T-09, A-12, A-13, A-15). Si usa sempre il client
+ * dell'utente: la RLS limita lo staff al proprio studio e il cliente alle
+ * proprie registrazioni (scrittura solo In percorso, modifica solo di quelle
+ * inserite da lui); il trigger validate_tracking_entry controlla limiti,
+ * interi, data non futura a Roma e scrive l'autore dalla sessione.
  */
 
 const METRIC_COLUMNS =
   "id, key, name, unit, value_type, frequency, min_value, max_value, icon, instructions, sort_order, default_goal, goal_unit";
-const ENTRY_COLUMNS = "id, metric_id, value, recorded_on, note, created_at";
+const ENTRY_COLUMNS =
+  "id, metric_id, value, recorded_on, note, created_at, created_by_role, updated_by_role";
 
 /** Misure attive dello studio, nell'ordine dello studio. */
 export async function listMetrics(studioId: string) {
@@ -73,8 +75,8 @@ export async function getEntry(entryId: string) {
  * Esito di una scrittura:
  * - `out_of_range`: rifiutata dal trigger (limiti, interi, data futura);
  * - `duplicate`: esiste già il valore del giorno di un'abitudine;
- * - `forbidden`: la RLS non consente la scrittura (fase non In percorso)
- *   oppure la riga non è visibile.
+ * - `forbidden`: la RLS non consente la scrittura (fase non In percorso,
+ *   registrazione dello staff per il cliente) oppure la riga non è visibile.
  */
 export type WriteResult = "ok" | "out_of_range" | "duplicate" | "forbidden";
 

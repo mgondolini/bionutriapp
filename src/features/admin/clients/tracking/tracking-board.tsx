@@ -26,6 +26,7 @@ import { formatGoalAmount } from "@/lib/domain/tracking/score-scale";
 import { formatDayMonthShort, formatSignedDelta } from "@/lib/format";
 import type { StaffGoal } from "@/server/services/tracking.service";
 
+import { AddEntryDialog } from "./add-entry-dialog";
 import { GoalsDialog } from "./goals-dialog";
 
 const t = copy.admin.clients.tracking;
@@ -52,13 +53,18 @@ function CardFooter({ children }: { children: React.ReactNode }) {
   );
 }
 
+type CardProps<T> = {
+  item: T;
+  href: string;
+  /** "Aggiungi registrazione" (A-15), in fondo alla card. */
+  action: React.ReactNode;
+};
+
 function CircumferenceCard({
   item,
   href,
-}: {
-  item: CircumferenceOverview;
-  href: string;
-}) {
+  action,
+}: CardProps<CircumferenceOverview>) {
   const { summary, metric } = item;
   const { schedule } = summary;
   return (
@@ -108,11 +114,12 @@ function CircumferenceCard({
           {t.circumference.noEntries}
         </p>
       )}
+      {action}
     </MetricCard>
   );
 }
 
-function HabitCard({ item, href }: { item: HabitOverview; href: string }) {
+function HabitCard({ item, href, action }: CardProps<HabitOverview>) {
   const { stats, metric, goal } = item;
   const delta = habitDeltaText(stats.delta);
   return (
@@ -148,11 +155,12 @@ function HabitCard({ item, href }: { item: HabitOverview; href: string }) {
           <span>{t.habit.goal(formatGoalAmount(goal.value, goal.unit))}</span>
         ) : null}
       </CardFooter>
+      {action}
     </MetricCard>
   );
 }
 
-function WorkoutCard({ item, href }: { item: WorkoutOverview; href: string }) {
+function WorkoutCard({ item, href, action }: CardProps<WorkoutOverview>) {
   const { stats, metric } = item;
   return (
     <MetricCard
@@ -197,6 +205,7 @@ function WorkoutCard({ item, href }: { item: WorkoutOverview; href: string }) {
       ) : (
         <p className="text-sm text-muted-foreground">{t.workout.noSessions}</p>
       )}
+      {action}
     </MetricCard>
   );
 }
@@ -205,11 +214,13 @@ function Section({
   kind,
   items,
   clientId,
+  clientName,
   today,
 }: {
   kind: MetricKind;
   items: MetricOverview[];
   clientId: string;
+  clientName: string;
   today: string;
 }) {
   if (items.length === 0) return null;
@@ -230,14 +241,23 @@ function Section({
       <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {items.map((item) => {
           const href = clientTrackingMetricPath(clientId, item.metric.key);
+          const action = (
+            <AddEntryDialog
+              item={item}
+              clientId={clientId}
+              clientName={clientName}
+              today={today}
+              className="w-full"
+            />
+          );
           return (
-            <li key={item.metric.id} className="flex">
+            <li key={item.metric.id} className="flex min-w-0">
               {item.kind === "circumference" ? (
-                <CircumferenceCard item={item} href={href} />
+                <CircumferenceCard item={item} href={href} action={action} />
               ) : item.kind === "habit" ? (
-                <HabitCard item={item} href={href} />
+                <HabitCard item={item} href={href} action={action} />
               ) : (
-                <WorkoutCard item={item} href={href} />
+                <WorkoutCard item={item} href={href} action={action} />
               )}
             </li>
           );
@@ -303,9 +323,9 @@ function GoalsSection({
 }
 
 /**
- * Scheda Tracking del cliente (A9, A-12, T-05, T-08): avviso delle
- * circonferenze in ritardo, obiettivi personali e una card per misura.
- * Lo staff consulta soltanto i valori; modifica solo gli obiettivi.
+ * Scheda Tracking del cliente (A9, A-12, A-15, A-17, T-05, T-08): avviso
+ * delle circonferenze in ritardo, obiettivi personali e una card per misura,
+ * su una colonna sotto `sm`; ogni card ha "Aggiungi registrazione".
  */
 export function TrackingBoard({
   clientId,
@@ -363,6 +383,7 @@ export function TrackingBoard({
           kind={kind}
           items={overview.filter((item) => item.kind === kind)}
           clientId={clientId}
+          clientName={clientName}
           today={today}
         />
       ))}

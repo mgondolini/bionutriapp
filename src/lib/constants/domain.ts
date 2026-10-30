@@ -310,6 +310,10 @@ export const METRIC_KIND_BY_FREQUENCY: Record<MetricFrequency, MetricKind> = {
   per_session: "workout",
 };
 
+/** Chi ha inserito o modificato per ultimo una registrazione (A-16). */
+export const ENTRY_AUTHOR_ROLES = ["client", "staff"] as const;
+export type EntryAuthorRole = (typeof ENTRY_AUTHOR_ROLES)[number];
+
 /** Abitudini giornaliere del check-in (T-06), nell'ordine della schermata C9. */
 export const HABIT_KEYS = ["steps", "sleep", "water"] as const;
 export type HabitKey = (typeof HABIT_KEYS)[number];

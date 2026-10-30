@@ -19,15 +19,17 @@ import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { copy } from "@/lib/copy/it";
 import { deleteEntryAction } from "@/server/actions/tracking.actions";
 
-const t = copy.client.tracking.edit;
+const t = copy.tracking.edit;
 
-/** Eliminazione di una registrazione con conferma (T-03). */
+/** Eliminazione di una registrazione con conferma (T-03, A-15); `clientId` solo per lo staff. */
 export function DeleteEntryDialog({
   entryId,
+  clientId,
   dateLabel,
   valueLabel,
 }: {
   entryId: string;
+  clientId?: string;
   /** "8 settembre 2026" */
   dateLabel: string;
   /** "77,0 cm", "4/5" */
@@ -40,7 +42,7 @@ export function DeleteEntryDialog({
   const confirm = () => {
     setError(null);
     startTransition(async () => {
-      const result = await deleteEntryAction({ entryId });
+      const result = await deleteEntryAction({ clientId, entryId });
       if (redirectIfSignedOut(result)) return;
       if (result.ok) {
         toast.success(t.deleted);

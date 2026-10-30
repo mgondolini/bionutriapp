@@ -6,6 +6,7 @@
  */
 import {
   METRIC_KIND_BY_FREQUENCY,
+  type EntryAuthorRole,
   type MetricFrequency,
   type MetricKind,
   type MetricValueType,
@@ -45,6 +46,9 @@ export type TrackingEntry = {
   recordedOn: string;
   note: string | null;
   createdAt: string;
+  /** Chi l'ha inserita e chi l'ha modificata per ultimo (A-16). */
+  createdByRole: EntryAuthorRole;
+  updatedByRole: EntryAuthorRole;
 };
 
 /** Obiettivo personale del cliente (tabella client_metric_goals). */

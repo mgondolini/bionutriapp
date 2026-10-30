@@ -28,6 +28,7 @@ import {
 import type { LoginReason } from "@/lib/auth/route-decision";
 import type { JourneyAction } from "@/lib/domain/journey";
 import type { CircumferenceStatus } from "@/lib/domain/tracking/circumferences";
+import type { EntryAuthorBadge } from "@/lib/domain/tracking/labels";
 
 const accountStatus: Record<AccountStatus, string> = {
   to_invite: "Da invitare",
@@ -532,11 +533,9 @@ export const copy = {
         detail: {
           backAria: "Torna alla scheda Tracking",
           subtitle: {
-            circumference: `Centimetri · una rilevazione ogni ${CIRCUMFERENCE_INTERVAL_DAYS} giorni · registrata dal cliente`,
-            habit:
-              "Voto da 1 a 5 rispetto all'obiettivo · registrato dal cliente",
-            workout:
-              "Voto da 1 a 10 alla qualità di ogni sessione · registrato dal cliente a ogni allenamento",
+            circumference: `Centimetri · una rilevazione ogni ${CIRCUMFERENCE_INTERVAL_DAYS} giorni`,
+            habit: "Voto da 1 a 5 rispetto all'obiettivo",
+            workout: "Voto da 1 a 10 alla qualità di ogni sessione",
           } satisfies Record<MetricKind, string>,
           lastValue: "Ultimo valore",
           fromPrevious: "Variazione dalla precedente",
@@ -549,15 +548,6 @@ export const copy = {
             `prevista il ${date}, ${days === 1 ? "1 giorno" : `${days} giorni`} fa`,
           dueOn: (date: string) => `entro il ${date}`,
           neverRecorded: "Nessuna registrazione",
-          historyTitle: "Storico",
-          initialValue: "Valore iniziale",
-          columns: {
-            date: "Data",
-            value: "Valore",
-            delta: "Variazione",
-            score: "Voto",
-            note: "Nota del cliente",
-          },
           workoutAverage: "Voto medio",
           workoutAverageOf: (sessions: string) => `su ${sessions}`,
           lastWorkout: "Ultimo allenamento",
@@ -566,10 +556,6 @@ export const copy = {
           sessionsUnit: (count: number) =>
             count === 1 ? "sessione" : "sessioni",
           averageLine: (average: string) => `voto medio ${average}`,
-          diaryTitle: "Diario degli allenamenti",
-          daysTitle: "Ultimi giorni",
-          limited: (count: number) =>
-            `Sono mostrate le ultime ${count} registrazioni.`,
         },
       },
       files: {
@@ -855,15 +841,11 @@ export const copy = {
           "Puoi saltare un giorno: i giorni senza voto non vengono penalizzati.",
         alreadyFilled:
           "Hai già compilato questo giorno: puoi correggere i voti.",
+        lockedByStaff: "Voto inserito dal nutrizionista: non puoi modificarlo.",
         notChosen: "Nessun voto scelto",
       },
       circumference: {
         newTitle: "Nuova misura",
-        value: "Valore",
-        valuePlaceholder: "76,4",
-        date: "Data",
-        limits: (min: string, max: string, unit: string) =>
-          `Valori ammessi: da ${min} a ${max} ${unit}. La data non può essere futura.`,
         save: "Salva misura",
         saved: "Misura salvata.",
         overdue: (days: number, date: string) =>
@@ -875,10 +857,6 @@ export const copy = {
       },
       workout: {
         newTitle: "Registra un allenamento",
-        date: "Data",
-        note: "Nota",
-        noteOptional: "(facoltativa)",
-        notePlaceholder: "Com'è andata?",
         save: "Salva allenamento",
         saved: "Allenamento salvato.",
         diaryTitle: "Il tuo diario",
@@ -890,28 +868,6 @@ export const copy = {
         todayCta: "Compila oggi",
       },
       chartTitle: "Andamento",
-      history: {
-        title: "Storico",
-        editHint: "correggi o elimina una registrazione",
-        diaryTitle: "Ultime sessioni",
-        editHintShort: "correggi o elimina",
-        daysTitle: "Ultimi giorni",
-        limited: (count: number) =>
-          `Sono mostrate le ultime ${count} registrazioni.`,
-      },
-      edit: {
-        title: "Correggi la registrazione",
-        editAria: (date: string) => `Correggi la registrazione del ${date}`,
-        deleteAria: (date: string) => `Elimina la registrazione del ${date}`,
-        save: "Salva correzione",
-        saved: "Registrazione corretta.",
-        deleteTitle: "Eliminare questa registrazione?",
-        deleteDescription:
-          "La registrazione verrà eliminata definitivamente, anche dai grafici.",
-        deleteConfirm: "Elimina",
-        deleted: "Registrazione eliminata.",
-        cancel: "Annulla",
-      },
       readOnly:
         "Il tuo percorso è in pausa o concluso: puoi consultare i dati, ma non registrarne di nuovi.",
       toRecord: {
@@ -1015,6 +971,58 @@ export const copy = {
       scaleGoal: (amount: string) => `obiettivo: ${amount}`,
     },
     noEntries: "Nessuna registrazione.",
+    /** Form di registrazione e correzione, uguali nelle due aree (A-15). */
+    form: {
+      value: "Valore",
+      valuePlaceholder: "76,4",
+      date: "Data",
+      limits: (min: string, max: string, unit: string) =>
+        `Valori ammessi: da ${min} a ${max} ${unit}. La data non può essere futura.`,
+      note: "Nota",
+      noteOptional: "(facoltativa)",
+      notePlaceholder: "Com'è andata?",
+      score: "Voto",
+    },
+    history: {
+      title: "Storico",
+      editHint: "correggi o elimina una registrazione",
+      diaryTitle: "Ultime sessioni",
+      editHintShort: "correggi o elimina",
+      daysTitle: "Ultimi giorni",
+      limited: (count: number) =>
+        `Sono mostrate le ultime ${count} registrazioni.`,
+    },
+    edit: {
+      title: "Correggi la registrazione",
+      editAria: (date: string) => `Correggi la registrazione del ${date}`,
+      deleteAria: (date: string) => `Elimina la registrazione del ${date}`,
+      save: "Salva correzione",
+      saved: "Registrazione corretta.",
+      deleteTitle: "Eliminare questa registrazione?",
+      deleteDescription:
+        "La registrazione verrà eliminata definitivamente, anche dai grafici.",
+      deleteConfirm: "Elimina",
+      deleted: "Registrazione eliminata.",
+      cancel: "Annulla",
+    },
+    /** Registrazioni inserite dal nutrizionista (A-15). */
+    add: {
+      cta: "Aggiungi registrazione",
+      ctaAria: (name: string) => `Aggiungi registrazione: ${name}`,
+      title: (name: string) => `Nuova registrazione · ${name}`,
+      description: (client: string) => `Per ${client}`,
+      save: "Salva registrazione",
+      saved: "Registrazione salvata.",
+      existingDay: (date: string, score: string) =>
+        `Il ${date} c'è già un voto (${score}): salvando lo sostituisci, perché si registra un solo valore al giorno.`,
+      replace: "Sostituisci il voto",
+      replaced: "Voto aggiornato.",
+    },
+    /** Autore nello storico (A-16). */
+    author: {
+      staff_created: "Inserita dal nutrizionista",
+      staff_edited: "Modificata dal nutrizionista",
+    } satisfies Record<EntryAuthorBadge, string>,
     firstValue: "Prima rilevazione",
     noNote: "Nessuna nota",
     valueWithUnit: (value: string, unit: string | null) =>
@@ -1071,6 +1079,8 @@ export const copy = {
         "Il percorso è in pausa o concluso: non si possono registrare nuovi valori.",
       metricNotFound: "Misura non trovata.",
       entryNotFound: "Registrazione non trovata.",
+      notEditable:
+        "Questa registrazione è stata inserita dal nutrizionista: non puoi modificarla.",
       outOfRange: "Il valore è fuori dai limiti ammessi.",
       duplicateDay:
         "Per questo giorno c'è già un voto: correggi quello esistente.",

@@ -26,7 +26,7 @@ import {
 
 import { submitEntry, type EntryFormMode } from "./entry-form-mode";
 
-const t = copy.client.tracking.circumference;
+const t = copy.tracking.form;
 
 type CircumferenceFormProps = {
   mode: EntryFormMode;

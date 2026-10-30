@@ -16,7 +16,7 @@ import { metricKeySchema } from "@/server/validation/tracking.schema";
 
 const t = copy.admin.clients.tracking.detail;
 
-/** Dettaglio di una misura (A10, A11, A-13): il nutrizionista consulta soltanto. */
+/** Dettaglio di una misura (A10, A11, A-13, A-15): consultazione, inserimento e correzioni. */
 async function MetricContent({
   params,
 }: Pick<PageProps<"/admin/clienti/[id]/tracking/[metrica]">, "params">) {
@@ -57,6 +57,9 @@ async function MetricContent({
         item={item}
         scale={detail.scale}
         today={detail.today}
+        clientId={clientId.data}
+        clientName={detail.clientName}
+        viewer={detail.viewer}
       />
     </div>
   );

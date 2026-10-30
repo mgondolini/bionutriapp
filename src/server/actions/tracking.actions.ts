@@ -42,12 +42,39 @@ async function clientActor(): Promise<TrackingActor | null> {
   return trackingService.clientTrackingActor(session);
 }
 
+/**
+ * Chi scrive una registrazione (A-15, T-03): il cliente per sé (un `clientId`
+ * inviato dal browser viene rifiutato), lo staff per un cliente del proprio
+ * studio, sempre preso dalla sessione.
+ */
+async function entryActor(
+  clientId: string | undefined,
+): Promise<ActionResult<TrackingActor>> {
+  const session = await getSession();
+  if (session.kind === "client" && !clientId) {
+    const actor = trackingService.clientTrackingActor(session);
+    if (actor) return ok(actor);
+  }
+  if (session.kind === "staff" && clientId && session.studio.id) {
+    const actor = await trackingService.staffTrackingActor(
+      session.studio.id,
+      clientId,
+    );
+    return actor
+      ? ok(actor)
+      : fail(copy.admin.clients.detail.notFoundDescription);
+  }
+  return authFailure();
+}
+
 function failureResult(failure: WriteFailure): ActionResult<never> {
   switch (failure.reason) {
     case "invalid":
       return fail(copy.common.invalidInput, failure.fieldErrors);
     case "read_only":
       return fail(e.readOnly);
+    case "not_editable":
+      return fail(e.notEditable);
     case "not_found":
       return fail(e.metricNotFound);
     case "out_of_range":
@@ -63,6 +90,17 @@ function revalidateClientTracking(metricKey?: string) {
   revalidatePath(ROUTES.client.tracking);
   revalidatePath(CHECKIN_PATH);
   if (metricKey) revalidatePath(trackingMetricPath(metricKey));
+}
+
+/**
+ * Dopo una registrazione, di chiunque sia: le pagine del cliente, la scheda
+ * Tracking dello staff (card, medie, "In ritardo", dettaglio) e l'elenco
+ * clienti ("ultima misura").
+ */
+function revalidateEntry(actor: TrackingActor, metricKey: string) {
+  revalidateClientTracking(metricKey);
+  revalidatePath(clientDetailPath(actor.clientId, "tracking"), "layout");
+  revalidatePath(ROUTES.admin.clients);
 }
 
 /** Check-in giornaliero (T-06): i voti scelti di oggi o di ieri, in un'unica operazione. */
@@ -87,15 +125,18 @@ export async function saveCheckinAction(
   return ok();
 }
 
-/** Nuova circonferenza (C10) o nuovo allenamento (C11). */
+/**
+ * Nuova circonferenza (C10) o nuovo allenamento (C11) del cliente; per lo
+ * staff anche il voto di un'abitudine (A-15).
+ */
 export async function addEntryAction(
   input: AddEntryInput,
 ): Promise<ActionResult> {
-  const actor = await clientActor();
-  if (!actor) return authFailure();
-
   const parsed = addEntrySchema.safeParse(input);
   if (!parsed.success) return fail(copy.common.invalidInput);
+  const resolved = await entryActor(parsed.data.clientId);
+  if (!resolved.ok) return resolved;
+  const actor = resolved.data;
 
   const result = await trackingService.addEntry(
     actor,
@@ -103,19 +144,19 @@ export async function addEntryAction(
     parsed.data.values,
   );
   if (!result.ok) return failureResult(result);
-  revalidateClientTracking(result.metricKey);
+  revalidateEntry(actor, result.metricKey);
   return ok();
 }
 
-/** Correzione di una registrazione (T-03). */
+/** Correzione di una registrazione (T-03, A-15). */
 export async function updateEntryAction(
   input: UpdateEntryInput,
 ): Promise<ActionResult> {
-  const actor = await clientActor();
-  if (!actor) return authFailure();
-
   const parsed = updateEntrySchema.safeParse(input);
   if (!parsed.success) return fail(copy.common.invalidInput);
+  const resolved = await entryActor(parsed.data.clientId);
+  if (!resolved.ok) return resolved;
+  const actor = resolved.data;
 
   const result = await trackingService.updateEntry(
     actor,
@@ -127,19 +168,19 @@ export async function updateEntryAction(
       ? fail(e.entryNotFound)
       : failureResult(result);
   }
-  revalidateClientTracking(result.metricKey);
+  revalidateEntry(actor, result.metricKey);
   return ok();
 }
 
-/** Eliminazione con conferma (T-03). */
+/** Eliminazione con conferma (T-03, A-15). */
 export async function deleteEntryAction(
   input: EntryIdInput,
 ): Promise<ActionResult> {
-  const actor = await clientActor();
-  if (!actor) return authFailure();
-
   const parsed = entryIdSchema.safeParse(input);
   if (!parsed.success) return fail(copy.common.invalidInput);
+  const resolved = await entryActor(parsed.data.clientId);
+  if (!resolved.ok) return resolved;
+  const actor = resolved.data;
 
   const result = await trackingService.deleteEntry(actor, parsed.data.entryId);
   if (!result.ok) {
@@ -147,7 +188,7 @@ export async function deleteEntryAction(
       ? fail(e.entryNotFound)
       : failureResult(result);
   }
-  revalidateClientTracking(result.metricKey);
+  revalidateEntry(actor, result.metricKey);
   return ok();
 }
 
