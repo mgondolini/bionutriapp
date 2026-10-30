@@ -6,6 +6,27 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Non rilasciato]
 
+## [1.1.0] - 2026-10-30
+
+Il nutrizionista può inserire e correggere le registrazioni del tracking dei clienti.
+
+### Aggiunto
+
+- Inserimento di circonferenze, allenamenti e voti delle abitudini dalla scheda Tracking del cliente ("Aggiungi registrazione"), in ogni fase e anche prima dell'attivazione dell'account (A-15).
+- Correzione ed eliminazione di qualsiasi registrazione da parte dello staff (T-03).
+- Autore di ogni registrazione salvato dal database (cliente o nutrizionista) ed etichette "Inserita dal nutrizionista" / "Modificata dal nutrizionista" visibili in entrambe le aree (A-16).
+- Pannelli dal basso su smartphone per inserimento e correzioni; grafici con tooltip al tocco e assi leggibili su schermi stretti (A-17, NF-08).
+
+### Modificato
+
+- Il cliente modifica ed elimina solo le registrazioni inserite da lui; nel check-in i voti inseriti dal nutrizionista compaiono bloccati.
+- Lo storico delle registrazioni usa lo stesso elenco nelle due aree (la tabella dello storico admin è stata rimossa).
+
+### Sviluppo
+
+- Migrazione `20261030000000_tracking_autore.sql` (colonne dell'autore, policy aggiornate, `save_daily_checkin` rispetta le registrazioni dello staff) e test pgTAP `18_tracking_autore.sql`.
+- Regola unica dei permessi in `src/lib/domain/tracking/permissions.ts`; test e2e `e2e/tracking-staff.spec.ts` su viewport da smartphone.
+
 ## [1.0.0] - 2026-10-30
 
 Prima versione completa: area del nutrizionista, area del cliente installabile come app, notifiche push, strumenti GDPR e preparazione alla produzione.
@@ -84,5 +105,6 @@ Il codice della 1.0 è completo, ma prima di usarlo con clienti e dati sanitari 
 - checklist su iPhone e Android reali (`docs/checklist-dispositivi.md`);
 - valori `DA CONFERMARE` (limiti delle circonferenze, obiettivi predefiniti e limiti degli obiettivi personali).
 
-[Non rilasciato]: https://github.com/mgondolini/bionutriapp/compare/v1.0.0...HEAD
+[Non rilasciato]: https://github.com/mgondolini/bionutriapp/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/mgondolini/bionutriapp/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/mgondolini/bionutriapp/releases/tag/v1.0.0

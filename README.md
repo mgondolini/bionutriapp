@@ -4,7 +4,7 @@ Web app per biologi nutrizionisti. Il nutrizionista carica i file PDF (diete, pi
 
 L'app è **multi-tenant** e **white label**: oggi serve un solo studio, ma nome, logo e colori di ogni studio stanno nel database e non sono mai scritti nel codice. L'interfaccia è in italiano.
 
-Versione attuale: **1.0.0**. Le novità sono in [CHANGELOG.md](CHANGELOG.md).
+Versione attuale: **1.1.0**. Le novità sono in [CHANGELOG.md](CHANGELOG.md).
 
 ## Funzionalità
 
