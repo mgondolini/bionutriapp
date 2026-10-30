@@ -4,6 +4,7 @@
  * (getSession), nelle Server Actions e nella RLS (DEV-03).
  */
 import {
+  CRON_PATH,
   OFFLINE_PAGE_URL,
   ROUTES,
   SERVICE_WORKER_URL,
@@ -69,7 +70,8 @@ const AREA: Partial<Record<RouteRole, string>> = {
 
 /**
  * Rotte sempre accessibili, senza leggere il ruolo (manifest, icone, service
- * worker e pagina offline della PWA, attivazione).
+ * worker e pagina offline della PWA, attivazione, informativa privacy).
+ * Il cron si autorizza con il proprio segreto (Route Handler).
  */
 const ALWAYS_PUBLIC = [
   "/manifest.webmanifest",
@@ -81,6 +83,8 @@ const ALWAYS_PUBLIC = [
   ROUTES.activate,
   ROUTES.newPassword,
   ROUTES.confirmEmail,
+  ROUTES.privacy,
+  CRON_PATH,
 ];
 
 /** Pagine per chi non ha ancora una sessione: un utente autenticato va alla propria area. */

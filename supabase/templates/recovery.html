@@ -1,13 +1,51 @@
-<h2>Reimposta la password</h2>
-<p>
-  Abbiamo ricevuto una richiesta per reimpostare la password del tuo account.
-</p>
-<p>
-  <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=recovery"
-    >Scegli una nuova password</a
+<!doctype html>
+<html lang="it">
+  <body
+    style="
+      margin: 0;
+      padding: 24px;
+      font-family: Arial, sans-serif;
+      color: #18211d;
+      background: #f5f6f2;
+    "
   >
-</p>
-<p>
-  Il link è valido per un'ora. Se non hai fatto tu la richiesta, ignora questa
-  email.
-</p>
+    <div
+      style="
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 24px;
+        background: #ffffff;
+        border-radius: 12px;
+      "
+    >
+      <p style="margin: 0 0 16px; font-size: 14px; color: #5b665f">
+        {{ with .Data.studio_name }}{{ . }}{{ else }}Il tuo studio{{ end }}
+      </p>
+      <h1 style="margin: 0 0 16px; font-size: 20px">Reimposta la password</h1>
+      <p style="line-height: 1.5">
+        Abbiamo ricevuto una richiesta per reimpostare la password del tuo
+        account nell'area riservata di {{ with .Data.studio_name }}{{ . }}{{
+        else }}del tuo studio{{ end }}.
+      </p>
+      <p style="margin: 24px 0">
+        <a
+          href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=recovery"
+          style="
+            display: inline-block;
+            padding: 12px 20px;
+            background: #18211d;
+            color: #ffffff;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+          "
+          >Scegli una nuova password</a
+        >
+      </p>
+      <p style="line-height: 1.5; font-size: 14px">
+        Il link è valido per un'ora. Se non hai fatto tu la richiesta, ignora
+        questa email: la password resta quella di prima.
+      </p>
+    </div>
+  </body>
+</html>

@@ -41,7 +41,7 @@ export function HabitScale({
       <dl className="flex flex-col divide-y rounded-xl border bg-card">
         {scale.map((row) => (
           <div key={row.score} className="flex items-center gap-3 px-4 py-2">
-            <dt className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 font-semibold text-primary">
+            <dt className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 font-semibold text-primary-ink">
               {row.score}
             </dt>
             <dd className="flex flex-1 flex-wrap items-baseline justify-between gap-x-3">
@@ -81,7 +81,9 @@ export function HabitWeekSummary({
             {t.thisWeek}
           </h2>
           {delta ? (
-            <span className="text-xs font-medium text-primary">{delta}</span>
+            <span className="text-xs font-medium text-primary-ink">
+              {delta}
+            </span>
           ) : null}
         </div>
         {stats.average !== null ? (

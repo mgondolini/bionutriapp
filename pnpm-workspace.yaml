@@ -1,3 +1,9 @@
 allowBuilds:
+  esbuild: false
   supabase: true
   unrs-resolver: true
+
+# Versioni minime di dipendenze indirette con vulnerabilità note (fase 9,
+# `pnpm audit`). Da rimuovere quando le dipendenze dirette le includono.
+overrides:
+  fast-uri: ">=3.1.9"

@@ -61,7 +61,10 @@ async function Activation({
         >
           <div className="flex flex-col gap-6">
             <p className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm">
-              <ShieldCheck aria-hidden="true" className="size-4 text-primary" />
+              <ShieldCheck
+                aria-hidden="true"
+                className="size-4 text-primary-ink"
+              />
               {t.verifiedPhone(formatPhone(client.phone))}
             </p>
             <ActivationForm

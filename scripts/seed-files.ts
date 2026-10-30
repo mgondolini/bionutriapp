@@ -5,7 +5,8 @@
  *
  * Uso: pnpm seed:files [--env .env.local]
  *
- * Usa la secret key e rifiuta qualsiasi URL che non sia locale.
+ * Usa la secret key e rifiuta qualsiasi URL che non sia locale o del
+ * progetto di prova indicato in E2E_SUPABASE_TEST_PROJECT.
  */
 import { existsSync } from "node:fs";
 import { parseArgs } from "node:util";
@@ -31,9 +32,16 @@ if (!url || !secretKey) {
   process.exit(1);
 }
 const host = new URL(url).hostname;
-if (host !== "127.0.0.1" && host !== "localhost") {
+// Oltre al locale, solo il progetto di PROVA indicato esplicitamente (e2e
+// sul deploy di anteprima): mai la produzione.
+const testProject = process.env.E2E_SUPABASE_TEST_PROJECT;
+if (
+  host !== "127.0.0.1" &&
+  host !== "localhost" &&
+  !(testProject && host === `${testProject}.supabase.co`)
+) {
   console.error(
-    `Errore: lo script funziona solo con Supabase locale (trovato ${host})`,
+    `Errore: lo script funziona solo con Supabase locale o con il progetto di prova di E2E_SUPABASE_TEST_PROJECT (trovato ${host})`,
   );
   process.exit(1);
 }

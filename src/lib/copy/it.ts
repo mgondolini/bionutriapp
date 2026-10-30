@@ -165,7 +165,6 @@ export const copy = {
       description:
         "I tuoi dati e l'accesso. Nome, logo e colore dello studio sono in Impostazioni studio.",
       menuLabel: "Menu utente",
-      openMenu: (name: string) => `Menu utente di ${name}`,
       profileLink: "Profilo",
     },
     personal: {
@@ -338,8 +337,8 @@ export const copy = {
         invite: "Invia invito su WhatsApp",
         reinvite: "Reinvia invito",
         detail: "Dettaglio",
-        detailFor: (name: string) => `Dettaglio di ${name}`,
-        inviteFor: (name: string) => `Invia invito su WhatsApp a ${name}`,
+        detailFor: (name: string) => `Dettaglio ${name}`,
+        inviteFor: (label: string, name: string) => `${label} a ${name}`,
       },
       invite: {
         sending: "Preparazione del link…",
@@ -774,8 +773,7 @@ export const copy = {
       readOnly: "Valori in sola lettura.",
       managedTitle: "Queste impostazioni le gestisce l'assistenza",
       managedBody: "Per cambiare nome, logo o colore scrivi all'assistenza",
-      managedNoEmail:
-        "Per cambiare nome, logo o colore contatta l'assistenza.",
+      managedNoEmail: "Per cambiare nome, logo o colore contatta l'assistenza.",
       validation: {
         nameRequired: "Inserisci il nome dello studio.",
         nameTooLong: "Il nome può avere al massimo 120 caratteri.",
@@ -1083,8 +1081,8 @@ export const copy = {
     openShort: "Apri",
     download: "Scarica",
     opening: "Apertura…",
-    openAria: (title: string) => `Apri ${title}`,
-    downloadAria: (title: string) => `Scarica ${title}`,
+    // Il nome accessibile comincia con il testo visibile (WCAG 2.5.3)
+    actionAria: (label: string, title: string) => `${label} ${title}`,
     popupBlocked:
       "Il browser ha bloccato la nuova finestra: tocca di nuovo per aprire il file.",
     popupRetry: "Apri il file",
@@ -1143,8 +1141,11 @@ export const copy = {
     passwordRequirements: "Almeno 8 caratteri.",
     showPassword: "Mostra la password",
     hidePassword: "Nascondi la password",
-    consent:
-      "Ho letto l'informativa privacy e acconsento al trattamento dei miei dati sulla salute.",
+    consentTitle: "Privacy",
+    privacyNotice: "Ho letto l'informativa privacy",
+    privacyNoticeLink: "Leggi l'informativa (si apre in una nuova scheda)",
+    healthData:
+      "Acconsento al trattamento dei miei dati sulla salute (misure, abitudini, piani alimentari) per il percorso con lo studio.",
     submit: "Attiva il mio account",
     submitting: "Attivazione…",
     validUntil: (date: string) => `Link personale, valido fino al ${date}.`,
@@ -1166,8 +1167,86 @@ export const copy = {
       nameTooLong: "Massimo 80 caratteri.",
       emailInvalid: "Inserisci un indirizzo email valido.",
       birthDateInvalid: "Data di nascita non valida.",
-      consentRequired: "Per attivare l'account serve il consenso.",
+      privacyNoticeRequired:
+        "Per attivare l'account conferma di aver letto l'informativa.",
+      healthDataRequired:
+        "Per attivare l'account serve il consenso al trattamento dei dati sulla salute.",
     },
+  },
+  // Informativa privacy (NF-06): struttura e testi segnaposto, da far
+  // verificare al consulente prima del rilascio.
+  privacy: {
+    metaTitle: "Informativa privacy",
+    title: "Informativa sul trattamento dei dati personali",
+    reviewBanner: "DA FAR VERIFICARE AL CONSULENTE PRIVACY",
+    reviewNote:
+      "Bozza con testi segnaposto: non è ancora l'informativa definitiva dello studio.",
+    version: (version: string) => `Versione ${version}`,
+    placeholder: "Segnaposto",
+    sections: (studioName: string) => [
+      {
+        title: "1. Titolare del trattamento",
+        body: [
+          `Il titolare del trattamento è ${studioName}, [indirizzo della sede, partita IVA, email e PEC da completare].`,
+          "[Eventuale responsabile della protezione dei dati (DPO): indicare se nominato e i suoi contatti.]",
+        ],
+      },
+      {
+        title: "2. Dati trattati",
+        body: [
+          "Dati identificativi e di contatto: nome, cognome, numero di cellulare, email (facoltativa), data di nascita (facoltativa).",
+          "Dati relativi alla salute (art. 9 GDPR): piani alimentari e altri documenti caricati dallo studio, misure delle circonferenze, abitudini (acqua, passi, sonno), allenamenti e note inserite da te.",
+          "Dati tecnici: credenziali di accesso (la password è conservata solo in forma cifrata), sessioni e, se le attivi, l'indirizzo tecnico per le notifiche del tuo dispositivo.",
+        ],
+      },
+      {
+        title: "3. Finalità e basi giuridiche",
+        body: [
+          "Gestione del percorso nutrizionale e del rapporto con lo studio: esecuzione del contratto (art. 6, par. 1, lett. b GDPR).",
+          "Trattamento dei dati sulla salute: consenso esplicito (art. 9, par. 2, lett. a GDPR) [oppure altra base da indicare: verificare con il consulente].",
+          "Invio di notifiche sul dispositivo: solo se le attivi; il testo non contiene mai dati sulla salute.",
+          "[Eventuali obblighi di legge, ad esempio fiscali e contabili.]",
+        ],
+      },
+      {
+        title: "4. Destinatari e fornitori",
+        body: [
+          "I dati sono accessibili solo allo studio. Alcuni fornitori trattano i dati per conto dello studio come responsabili del trattamento (art. 28 GDPR):",
+          "Supabase (database, archivio dei documenti, autenticazione), server nell'Unione Europea (Francoforte).",
+          "Netlify (hosting dell'applicazione) [regione dei server e garanzie per l'eventuale trasferimento negli Stati Uniti da verificare].",
+          "[Brevo] (invio delle email di recupero password e di conferma dell'indirizzo).",
+          "Servizi di notifica dei produttori di browser e sistemi operativi (Apple, Google, Mozilla, Microsoft): ricevono solo un messaggio generico, senza dati sulla salute.",
+          "Il link di attivazione ti arriva tramite WhatsApp dal telefono dello studio.",
+        ],
+      },
+      {
+        title: "5. Trasferimenti fuori dall'Unione Europea",
+        body: [
+          "[Indicare se alcuni fornitori trasferiscono dati fuori dall'UE e con quali garanzie, ad esempio le clausole contrattuali standard.]",
+        ],
+      },
+      {
+        title: "6. Conservazione",
+        body: [
+          "[Per tutta la durata del percorso e per X anni dalla sua conclusione: periodo da definire.]",
+          "Gli inviti scaduti vengono eliminati automaticamente dopo 90 giorni.",
+        ],
+      },
+      {
+        title: "7. I tuoi diritti",
+        body: [
+          "Puoi chiedere allo studio l'accesso ai tuoi dati e una loro copia, la rettifica, la cancellazione, la limitazione del trattamento, la portabilità e opporti al trattamento (artt. 15–22 GDPR).",
+          "Puoi revocare in qualsiasi momento il consenso al trattamento dei dati sulla salute, senza pregiudicare la liceità del trattamento svolto prima della revoca; senza consenso lo studio non potrà più seguirti tramite l'app.",
+          "Puoi proporre reclamo al Garante per la protezione dei dati personali (www.garanteprivacy.it).",
+        ],
+      },
+      {
+        title: "8. Contatti",
+        body: [
+          `Per esercitare i tuoi diritti scrivi a ${studioName}: [email dello studio da completare].`,
+        ],
+      },
+    ],
   },
   manifest: {
     description: (studioName: string) => `L'area riservata di ${studioName}`,

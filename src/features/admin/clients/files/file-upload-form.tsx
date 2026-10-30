@@ -285,7 +285,7 @@ export function FileUploadForm({ clientId }: { clientId: string }) {
                 aria-describedby={fieldId("file-status")}
                 onChange={(event) => void selectFile(event.target.files?.[0])}
               />
-              <Upload aria-hidden="true" className="size-7 text-primary" />
+              <Upload aria-hidden="true" className="size-7 text-primary-ink" />
               <span className="font-medium">{t.dropzone}</span>
               <span className="text-sm text-muted-foreground">
                 {t.dropzoneHint}
@@ -303,7 +303,7 @@ export function FileUploadForm({ clientId }: { clientId: string }) {
                 <div className="flex items-center gap-3 rounded-lg bg-muted px-3 py-2 text-sm">
                   <FileText
                     aria-hidden="true"
-                    className="size-5 shrink-0 text-primary"
+                    className="size-5 shrink-0 text-primary-ink"
                   />
                   <div className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate font-medium">{file.name}</span>

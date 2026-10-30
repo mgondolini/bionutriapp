@@ -17,11 +17,28 @@ export function randomMobile() {
   return { typed: `345 ${rest}`, e164: `+39345${rest}` };
 }
 
-/** Client con secret key, solo per preparare e ripulire i dati del database LOCALE. */
+/** Vero se i test usano il Supabase locale (Mailpit disponibile). */
+export function isLocalSupabase() {
+  return /^http:\/\/(127\.0\.0\.1|localhost)/.test(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+  );
+}
+
+/**
+ * Client con secret key, solo per preparare e ripulire i dati dei test: il
+ * Supabase LOCALE oppure il progetto di PROVA indicato esplicitamente con
+ * E2E_SUPABASE_TEST_PROJECT=<ref> (deploy di anteprima, docs/operativita.md).
+ * Mai il progetto di produzione.
+ */
 export function adminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  if (!/^http:\/\/(127\.0\.0\.1|localhost)/.test(url)) {
-    throw new Error("I test e2e girano solo sul Supabase locale");
+  if (!isLocalSupabase()) {
+    const ref = new URL(url).hostname.split(".")[0];
+    if (!ref || ref !== process.env.E2E_SUPABASE_TEST_PROJECT) {
+      throw new Error(
+        "I test e2e girano solo sul Supabase locale o sul progetto di prova indicato in E2E_SUPABASE_TEST_PROJECT",
+      );
+    }
   }
   return createClient(url, process.env.SUPABASE_SECRET_KEY!, {
     auth: { persistSession: false, autoRefreshToken: false },

@@ -1,0 +1,44 @@
+# Manutenzione giornaliera di Nutrify (fase 9): chiama il Route Handler
+# /api/cron/manutenzione con il segreto. Nessun dato viene salvato qui: la
+# risposta contiene solo conteggi.
+#
+# Secret del repository (Settings > Secrets and variables > Actions):
+#   APP_URL      URL di produzione, senza "/" finale (es. https://app.esempio.it)
+#   CRON_SECRET  stesso valore della variabile CRON_SECRET su Netlify
+#
+# Nota: GitHub sospende i workflow pianificati dopo 60 giorni senza attività
+# nel repository; in quel caso va riattivato da Actions (vedi docs/operativita.md).
+name: Manutenzione
+
+on:
+  schedule:
+    # ogni giorno alle 03:17 UTC (minuto non tondo: meno ritardi di GitHub)
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: manutenzione
+  cancel-in-progress: false
+
+jobs:
+  manutenzione:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Chiama il cron
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "::error::Secret APP_URL o CRON_SECRET mancanti"
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error \
+            --retry 3 --retry-delay 30 --retry-all-errors \
+            --max-time 60 \
+            -X POST \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$APP_URL/api/cron/manutenzione"

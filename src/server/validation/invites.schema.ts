@@ -46,7 +46,10 @@ export const activationSchema = z.object({
   email: optionalEmail,
   birthDate: optionalBirthDate,
   password: passwordSchema,
-  consent: z.literal(true, { error: v.consentRequired }),
+  // Due dichiarazioni distinte (NF-06): presa visione dell'informativa e
+  // consenso esplicito al trattamento dei dati sanitari (art. 9 GDPR).
+  privacyNotice: z.literal(true, { error: v.privacyNoticeRequired }),
+  healthData: z.literal(true, { error: v.healthDataRequired }),
 });
 export type ActivationInput = z.output<typeof activationSchema>;
 
@@ -58,7 +61,8 @@ export type ActivationFormValues = {
   email: string;
   birthDate: string;
   password: string;
-  consent: boolean;
+  privacyNotice: boolean;
+  healthData: boolean;
 };
 
 /** Nuovo link a un cliente già attivo (N-02): solo la nuova password. */

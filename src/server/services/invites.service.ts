@@ -1,6 +1,9 @@
 import "server-only";
 
-import type { ClientOrigin } from "@/lib/constants/domain";
+import {
+  PRIVACY_POLICY_VERSION,
+  type ClientOrigin,
+} from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import {
   evaluateInvite,
@@ -197,7 +200,9 @@ export async function activate(
         last_name: input.lastName,
         email: input.email,
         birth_date: input.birthDate,
-        privacy_consent: input.consent,
+        privacy_notice: input.privacyNotice,
+        health_data: input.healthData,
+        policy_version: PRIVACY_POLICY_VERSION,
       },
     );
   } catch (error) {

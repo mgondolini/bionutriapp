@@ -18,7 +18,7 @@ export function InstallCard() {
   return (
     <ProfileSection title={t.title}>
       <div className="flex flex-wrap items-center gap-4">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-ink">
           <Smartphone aria-hidden="true" className="size-5" />
         </span>
         <p className="min-w-0 flex-1 text-sm text-muted-foreground">

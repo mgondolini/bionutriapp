@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
+import { securityHeaders } from "./src/lib/security/headers";
+
+// Deploy di anteprima su Netlify: senza NEXT_PUBLIC_APP_URL (impostata solo
+// per la produzione) i link di invito ed email usano l'URL dell'anteprima.
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.DEPLOY_PRIME_URL;
+
 const nextConfig: NextConfig = {
+  ...(appUrl ? { env: { NEXT_PUBLIC_APP_URL: appUrl } } : {}),
   cacheComponents: true,
   partialPrefetching: true,
   experimental: {
@@ -8,14 +15,22 @@ const nextConfig: NextConfig = {
     serverActions: { bodySizeLimit: "3mb" },
     agentUpgrade: "security",
   },
-  // Link di attivazione: il token è nel percorso. Nessun Referer verso altri
-  // siti, nessuna indicizzazione, nessuna copia in cache intermedie.
   async headers() {
     // Aree autenticate: nessuna copia in cache (browser, proxy, CDN), così
     // dopo il logout Indietro o la riapertura della PWA non mostrano dati
     // (fase 7). Vale anche per le risposte RSC della navigazione client.
     const noStore = [{ key: "Cache-Control", value: "private, no-store" }];
+    // Ordine: a parità di chiave vale l'ultima regola che corrisponde
+    // (le regole specifiche di /sw.js e /attiva vengono dopo quella generale).
     return [
+      // Header di sicurezza (fase 9) su tutte le risposte
+      {
+        source: "/:path*",
+        headers: securityHeaders({
+          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+          dev: process.env.NODE_ENV === "development",
+        }),
+      },
       { source: "/app/:path*", headers: noStore },
       { source: "/admin/:path*", headers: noStore },
       { source: "/accesso-sospeso", headers: noStore },
@@ -28,13 +43,18 @@ const nextConfig: NextConfig = {
             key: "Content-Type",
             value: "application/javascript; charset=utf-8",
           },
-          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          {
+            key: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
+          },
           {
             key: "Content-Security-Policy",
             value: "default-src 'self'; script-src 'self'",
           },
         ],
       },
+      // Link di attivazione: il token è nel percorso. Nessun Referer verso
+      // altri siti, nessuna indicizzazione, nessuna copia in cache intermedie.
       {
         source: "/attiva/:token*",
         headers: [

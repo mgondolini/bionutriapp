@@ -103,7 +103,7 @@ export function CheckinForm({ checkin }: { checkin: Checkin }) {
             render={({ field }) => (
               <fieldset className="flex flex-col gap-3 rounded-xl border bg-card p-4">
                 <div className="flex items-start gap-3">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-ink">
                     <MetricIcon name={habit.icon} />
                   </span>
                   <div className="flex flex-col gap-0.5">

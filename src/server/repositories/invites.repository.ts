@@ -70,7 +70,9 @@ export type ActivationProfile = {
   last_name: string | null;
   email: string | null;
   birth_date: string | null;
-  privacy_consent: boolean;
+  privacy_notice: boolean;
+  health_data: boolean;
+  policy_version: string;
 };
 
 export type ActivateResult =

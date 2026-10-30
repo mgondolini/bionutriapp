@@ -85,7 +85,7 @@ export function OpenFileButton({
       size={size}
       onClick={open}
       disabled={isPending}
-      aria-label={mode === "view" ? t.openAria(title) : t.downloadAria(title)}
+      aria-label={t.actionAria(label, title)}
       className={className}
     >
       <Icon aria-hidden="true" />

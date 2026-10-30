@@ -35,7 +35,7 @@ export function NotificationsCard({
   return (
     <ProfileSection title={t.title}>
       <div className="flex items-center gap-4">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-ink">
           <BellRing aria-hidden="true" className="size-5" />
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -60,7 +60,7 @@ export function NotificationsCard({
       {state === "needs-install" ? (
         <Link
           href={ROUTES.client.install}
-          className="inline-flex min-h-11 items-center text-sm font-medium text-primary underline-offset-4 hover:underline"
+          className="inline-flex min-h-11 items-center text-sm font-medium text-primary-ink underline-offset-4 hover:underline"
         >
           {t.installLink}
         </Link>

@@ -4,6 +4,7 @@
 import {
   DARK_TEXT_COLOR,
   DEFAULT_PRIMARY_COLOR,
+  LIGHT_SURFACE_COLOR,
   LIGHT_TEXT_COLOR,
   MIN_TEXT_CONTRAST,
 } from "@/lib/constants/domain";
@@ -82,16 +83,69 @@ export function formatRatio(ratio: number): string {
   });
 }
 
+function toHex(channels: number[]): string {
+  return `#${channels
+    .map((c) => Math.round(c).toString(16).padStart(2, "0"))
+    .join("")}`.toUpperCase();
+}
+
+/** Mescola il colore con il nero (`amount` da 0 a 1). */
+function darken(hex: string, amount: number): string {
+  const color = normalizeHexColor(hex);
+  return toHex(
+    [1, 3, 5].map((i) => parseInt(color.slice(i, i + 2), 16) * (1 - amount)),
+  );
+}
+
+/** Colore sovrapposto al 10% su una superficie (le "pillole" bg-primary/10). */
+function tint(hex: string, surface: string, alpha: number): string {
+  const a = normalizeHexColor(hex);
+  const b = normalizeHexColor(surface);
+  return toHex(
+    [1, 3, 5].map(
+      (i) =>
+        parseInt(a.slice(i, i + 2), 16) * alpha +
+        parseInt(b.slice(i, i + 2), 16) * (1 - alpha),
+    ),
+  );
+}
+
+/**
+ * Colore dello studio per testi, icone e anelli del focus su sfondo chiaro
+ * (--primary-ink, NF-09): il colore stesso se ha già contrasto AA con lo
+ * sfondo e con le pillole bg-primary/10, altrimenti scurito quanto basta.
+ * Con un colore chiaro (es. giallo) text-primary sarebbe illeggibile.
+ */
+export function inkColor(primaryColor: string | null | undefined): string {
+  const primary = normalizeHexColor(primaryColor);
+  const surfaces = [
+    LIGHT_SURFACE_COLOR,
+    tint(primary, LIGHT_SURFACE_COLOR, 0.1),
+  ];
+  for (let step = 0; step <= 20; step++) {
+    const candidate = darken(primary, step * 0.05);
+    if (
+      surfaces.every((s) => contrastRatio(candidate, s) >= MIN_TEXT_CONTRAST)
+    ) {
+      return candidate;
+    }
+  }
+  return DARK_TEXT_COLOR;
+}
+
 /** Variabili CSS del tema derivate dal colore principale dello studio. */
 export function themeVariables(
   primaryColor: string | null | undefined,
 ): Record<string, string> {
   const primary = normalizeHexColor(primaryColor);
   const foreground = pickForeground(primary).color;
+  const ink = inkColor(primary);
   return {
     "--primary": primary,
     "--primary-foreground": foreground,
-    "--ring": primary,
+    "--primary-ink": ink,
+    // anello del focus sempre visibile (contrasto 3:1 anche con colori chiari)
+    "--ring": ink,
     "--sidebar-primary": primary,
     "--sidebar-primary-foreground": foreground,
   };

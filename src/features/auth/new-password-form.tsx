@@ -27,7 +27,7 @@ import { FormMessage } from "@/components/shared/form-message";
 const t = copy.auth.newPassword;
 
 const linkClassName =
-  "inline-flex min-h-11 items-center justify-center text-sm font-medium text-primary underline-offset-4 hover:underline";
+  "inline-flex min-h-11 items-center justify-center text-sm font-medium text-primary-ink underline-offset-4 hover:underline";
 
 /**
  * Nuova password dal link di recupero: il token viene verificato solo

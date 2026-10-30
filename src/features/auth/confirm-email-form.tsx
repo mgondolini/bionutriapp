@@ -13,7 +13,7 @@ import { confirmEmailChangeAction } from "@/server/actions/profile.actions";
 const t = copy.profile.confirmEmail;
 
 const linkClassName =
-  "inline-flex min-h-11 items-center justify-center text-sm font-medium text-primary underline-offset-4 hover:underline";
+  "inline-flex min-h-11 items-center justify-center text-sm font-medium text-primary-ink underline-offset-4 hover:underline";
 
 type Outcome = "done" | "partial" | { error: string } | null;
 

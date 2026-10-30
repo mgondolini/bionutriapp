@@ -128,7 +128,9 @@ test("il titolare carica un PDF, la cliente lo apre, il titolare vede Letto ilâ€
 
   // "Apri PDF": finestra aperta al clic, URL firmato di 60 secondi
   const popupPromise = anna.page.waitForEvent("popup");
-  await latest.getByRole("button", { name: `Apri ${TITLE}` }).click();
+  await latest
+    .getByRole("button", { name: new RegExp(`^Apri( PDF)? ${TITLE}$`) })
+    .click();
   const popup = await popupPromise;
   await expect.poll(() => signedUrls.length).toBeGreaterThan(0);
   const signed = new URL(signedUrls[0]!);

@@ -57,7 +57,7 @@ const iconVariants = cva(
     variants: {
       kind: {
         circumference: "bg-muted text-foreground",
-        habit: "bg-primary/10 text-primary",
+        habit: "bg-primary/10 text-primary-ink",
         workout: "bg-accent text-accent-foreground",
       } satisfies Record<MetricKind, string>,
     },

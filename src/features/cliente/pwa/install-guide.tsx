@@ -55,7 +55,7 @@ function Steps({
             </div>
             <Icon
               aria-hidden="true"
-              className="mt-1 size-5 shrink-0 text-primary"
+              className="mt-1 size-5 shrink-0 text-primary-ink"
             />
           </li>
         );
@@ -93,7 +93,7 @@ export function InstallGuide() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-3">
-        <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+        <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary-ink">
           <Smartphone aria-hidden="true" className="size-6" />
         </span>
         <h1 className="text-2xl font-bold tracking-tight">{t.title}</h1>

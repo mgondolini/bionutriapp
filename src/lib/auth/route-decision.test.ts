@@ -29,6 +29,8 @@ describe("decideRoute", () => {
         "/apple-icon",
         "/attiva/abc",
         "/nuova-password",
+        "/privacy",
+        "/api/cron/manutenzione",
       ]) {
         expect(decide(path, role)).toEqual({ type: "next" });
       }

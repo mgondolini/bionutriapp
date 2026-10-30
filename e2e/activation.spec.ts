@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { PRIVACY_POLICY_VERSION } from "../src/lib/constants/domain";
+
 import {
   adminClient,
   cleanup,
@@ -70,7 +72,7 @@ async function createClient(
 async function openProfile(page: Page, search: string, name: string) {
   await page.goto(`/admin/clienti?q=${encodeURIComponent(search)}`);
   await page
-    .getByRole("link", { name: `Dettaglio di ${name}` })
+    .getByRole("link", { name: `Dettaglio ${name}` })
     .first()
     .click();
   await expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
@@ -89,7 +91,11 @@ test("cliente già nel database: invito, link scaduto, nuovo invito, attivazione
   await page.goto(`/admin/clienti?q=${encodeURIComponent(imported.lastName)}`);
   const first = await inviteLinkFrom(page, () =>
     page
-      .getByRole("button", { name: `Invia invito su WhatsApp a ${name}` })
+      .getByRole("button", {
+        name: new RegExp(
+          `^(Invia invito su WhatsApp|Reinvia invito) a ${name}$`,
+        ),
+      })
       .click(),
   );
   expect(first.phoneDigits).toBe(imported.e164.slice(1));
@@ -98,7 +104,9 @@ test("cliente già nel database: invito, link scaduto, nuovo invito, attivazione
   );
   // la riga si aggiorna senza ricaricare: ora c'è "Reinvia invito"
   await expect(
-    page.getByRole("button", { name: `Invia invito su WhatsApp a ${name}` }),
+    page.getByRole("button", {
+      name: new RegExp(`^(Invia invito su WhatsApp|Reinvia invito) a ${name}$`),
+    }),
   ).toContainText("Reinvia invito");
 
   // Link oltre i 14 giorni → messaggio generico
@@ -140,7 +148,12 @@ test("cliente già nel database: invito, link scaduto, nuovo invito, attivazione
     .getByLabel("Email (facoltativa)")
     .fill(`ilaria.${run}@example.test`);
   await device.page.getByLabel("Password", { exact: true }).fill(PASSWORD);
-  await device.page.getByRole("checkbox").check();
+  await device.page
+    .getByRole("checkbox", { name: "Ho letto l'informativa privacy" })
+    .check();
+  await device.page
+    .getByRole("checkbox", { name: /Acconsento al trattamento/ })
+    .check();
   await device.page
     .getByRole("button", { name: "Attiva il mio account" })
     .click();
@@ -152,6 +165,18 @@ test("cliente già nel database: invito, link scaduto, nuovo invito, attivazione
   ).toBeVisible();
   await device.page.goto("/app/diete");
   await expect(device.page).toHaveURL(/\/app\/diete$/);
+
+  // Consensi (NF-06): presa visione e dati sanitari, con la versione
+  const { data: consents } = await adminClient()
+    .from("privacy_consents")
+    .select("kind, policy_version, clients!inner(phone)")
+    .eq("clients.phone", imported.e164)
+    .order("kind");
+  expect(consents?.map((row) => row.kind)).toEqual([
+    "health_data",
+    "privacy_notice",
+  ]);
+  expect(consents?.[0]?.policy_version).toBe(PRIVACY_POLICY_VERSION);
 
   // Link già usato → messaggio generico
   await device.page.goto(second.link);
@@ -209,10 +234,22 @@ test("cliente nuovo: il secondo invito annulla il primo, attivazione in Onboardi
     device.page.getByText("La password deve avere almeno 8 caratteri."),
   ).toBeVisible();
   await expect(
-    device.page.getByText("Per attivare l'account serve il consenso."),
+    device.page.getByText(
+      "Per attivare l'account conferma di aver letto l'informativa.",
+    ),
+  ).toBeVisible();
+  await expect(
+    device.page.getByText(
+      "Per attivare l'account serve il consenso al trattamento dei dati sulla salute.",
+    ),
   ).toBeVisible();
   await device.page.getByLabel("Password", { exact: true }).fill(PASSWORD);
-  await device.page.getByRole("checkbox").check();
+  await device.page
+    .getByRole("checkbox", { name: "Ho letto l'informativa privacy" })
+    .check();
+  await device.page
+    .getByRole("checkbox", { name: /Acconsento al trattamento/ })
+    .check();
   await device.page
     .getByRole("button", { name: "Attiva il mio account" })
     .click();

@@ -40,7 +40,7 @@ export function ClientRowActions({
           clientId={clientId}
           name={name}
           label={inviteLabel}
-          ariaLabel={t.inviteFor(name)}
+          ariaLabel={t.inviteFor(inviteLabel, name)}
         />
       ) : null}
       <Link

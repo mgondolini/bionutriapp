@@ -5,6 +5,7 @@ import {
   formatRatio,
   normalizeHexColor,
   pickForeground,
+  inkColor,
   themeVariables,
 } from "./color";
 
@@ -74,5 +75,26 @@ describe("normalizeHexColor e themeVariables", () => {
       "--primary-foreground": "#18211D",
     });
     expect(themeVariables(undefined)["--primary"]).toBe("#2E6A4E");
+  });
+});
+
+describe("inkColor", () => {
+  it("lascia invariato un colore già leggibile su sfondo chiaro", () => {
+    expect(inkColor("#2E6A4E")).toBe("#2E6A4E");
+    expect(inkColor("#1F2A44")).toBe("#1F2A44");
+  });
+
+  it("scurisce un colore chiaro fino al contrasto AA con sfondo e pillole", () => {
+    const ink = inkColor("#F2C94C");
+    expect(ink).not.toBe("#F2C94C");
+    expect(contrastRatio(ink, "#F5F6F2")).toBeGreaterThanOrEqual(4.5);
+    expect(themeVariables("#F2C94C")["--primary-ink"]).toBe(ink);
+    expect(themeVariables("#F2C94C")["--ring"]).toBe(ink);
+  });
+
+  it("anche il bianco diventa un colore leggibile", () => {
+    expect(
+      contrastRatio(inkColor("#FFFFFF"), "#F5F6F2"),
+    ).toBeGreaterThanOrEqual(4.5);
   });
 });

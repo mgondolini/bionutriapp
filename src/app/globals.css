@@ -35,6 +35,7 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-primary-ink: var(--primary-ink);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -65,6 +66,8 @@
   --popover-foreground: #18211d;
   --primary: #2e6a4e;
   --primary-foreground: #ffffff;
+  /* primario per testi e icone su sfondo chiaro (inkColor in src/lib/color.ts) */
+  --primary-ink: #2e6a4e;
   --secondary: #eef1ec;
   --secondary-foreground: #18211d;
   --muted: #eef1ec;
@@ -106,6 +109,7 @@
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
+  --primary-ink: oklch(0.922 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);

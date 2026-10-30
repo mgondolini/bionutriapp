@@ -65,7 +65,7 @@ function MenuLink({ item, active }: { item: ClientMenuItem; active: boolean }) {
       }
       className={cn(itemClassName, active && "font-semibold")}
     >
-      <Icon aria-hidden="true" className="size-5 text-primary" />
+      <Icon aria-hidden="true" className="size-5 text-primary-ink" />
       <span className="flex flex-col">
         <span>{item.label}</span>
         <span className="text-xs text-muted-foreground">
@@ -104,11 +104,10 @@ export function ClientHeader({
         </Link>
 
         <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label={copy.client.openMenu}
-            className="flex min-h-11 items-center gap-1 rounded-full p-1 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            <Avatar>
+          <DropdownMenuTrigger className="flex min-h-11 items-center gap-1 rounded-full p-1 outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+            {/* nome dal testo, non da aria-label: le iniziali visibili sono decorative (WCAG 2.5.3) */}
+            <span className="sr-only">{copy.client.openMenu}</span>
+            <Avatar aria-hidden="true">
               <AvatarFallback className="bg-primary font-semibold text-primary-foreground">
                 {initials}
               </AvatarFallback>

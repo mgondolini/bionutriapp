@@ -66,10 +66,7 @@ function UserMenu({
   const { signOut, isPending } = useSignOut();
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        aria-label={copy.profile.staff.openMenu(user.displayName)}
-        className="flex min-h-11 w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors outline-none hover:bg-sidebar-accent focus-visible:ring-3 focus-visible:ring-ring/50"
-      >
+      <DropdownMenuTrigger className="flex min-h-11 w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors outline-none hover:bg-sidebar-accent focus-visible:ring-3 focus-visible:ring-ring/50">
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="truncate text-sm font-semibold">
             {user.displayName}

@@ -17,6 +17,7 @@ import {
   FieldSet,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { useHydrated } from "@/lib/use-hydrated";
 import { activateAccountAction } from "@/server/actions/invites.actions";
@@ -55,10 +56,16 @@ const DATA_FIELDS: {
   { name: "birthDate", label: t.birthDate, type: "date", autoComplete: "bday" },
 ];
 
+/** Presa visione dell'informativa e consenso ai dati sanitari, separati (NF-06). */
+const CONSENTS: { name: "privacyNotice" | "healthData"; label: string }[] = [
+  { name: "privacyNotice", label: t.privacyNotice },
+  { name: "healthData", label: t.healthData },
+];
+
 /**
  * Attivazione (C-08): un solo form per i due percorsi. Cliente già nel
  * database (C1) = dati precompilati da verificare; nuovo cliente (C2) = dati
- * da completare. In entrambi i casi password e consenso. Lo schema Zod è lo
+ * da completare. In entrambi i casi password e consensi. Lo schema Zod è lo
  * stesso della Server Action, che rivalida tutto.
  */
 export function ActivationForm({
@@ -87,7 +94,8 @@ export function ActivationForm({
       email: initial.email ?? "",
       birthDate: initial.birthDate ?? "",
       password: "",
-      consent: false,
+      privacyNotice: false,
+      healthData: false,
     },
   });
 
@@ -174,28 +182,45 @@ export function ActivationForm({
               </Field>
             )}
           />
-          <Controller
-            name="consent"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <label className="flex min-h-11 items-start gap-3 text-sm">
-                  <input
-                    type="checkbox"
-                    name={field.name}
-                    ref={field.ref}
-                    checked={field.value}
-                    onChange={(event) => field.onChange(event.target.checked)}
-                    onBlur={field.onBlur}
-                    aria-invalid={fieldState.invalid}
-                    className="mt-0.5 size-5 shrink-0 accent-(--primary)"
-                  />
-                  <span>{t.consent}</span>
-                </label>
-                <FieldError errors={[fieldState.error]} />
-              </Field>
-            )}
-          />
+        </FieldGroup>
+      </FieldSet>
+
+      <FieldSet>
+        <FieldLegend>{t.consentTitle}</FieldLegend>
+        <a
+          href={ROUTES.privacy}
+          target="_blank"
+          rel="noopener"
+          className="text-sm font-medium text-primary-ink underline underline-offset-4"
+        >
+          {t.privacyNoticeLink}
+        </a>
+        <FieldGroup className="gap-3">
+          {CONSENTS.map(({ name, label }) => (
+            <Controller
+              key={name}
+              name={name}
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <label className="flex min-h-11 items-start gap-3 text-sm">
+                    <input
+                      type="checkbox"
+                      name={field.name}
+                      ref={field.ref}
+                      checked={field.value}
+                      onChange={(event) => field.onChange(event.target.checked)}
+                      onBlur={field.onBlur}
+                      aria-invalid={fieldState.invalid}
+                      className="mt-0.5 size-5 shrink-0 accent-(--primary)"
+                    />
+                    <span>{label}</span>
+                  </label>
+                  <FieldError errors={[fieldState.error]} />
+                </Field>
+              )}
+            />
+          ))}
         </FieldGroup>
       </FieldSet>
 

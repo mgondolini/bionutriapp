@@ -418,6 +418,63 @@ export type Database = {
           },
         ];
       };
+      privacy_consents: {
+        Row: {
+          accepted_at: string;
+          client_id: string;
+          id: string;
+          kind: string;
+          policy_version: string;
+          studio_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          accepted_at?: string;
+          client_id: string;
+          id?: string;
+          kind: string;
+          policy_version: string;
+          studio_id: string;
+        };
+        Update: {
+          accepted_at?: string;
+          client_id?: string;
+          id?: string;
+          kind?: string;
+          policy_version?: string;
+          studio_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "privacy_consents_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "client_list";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "privacy_consents_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "privacy_consents_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients_with_status";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "privacy_consents_studio_id_fkey";
+            columns: ["studio_id"];
+            isOneToOne: false;
+            referencedRelation: "studios";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       push_subscriptions: {
         Row: {
           auth: string;
@@ -730,6 +787,10 @@ export type Database = {
           slug: string;
         }[];
       };
+      list_orphan_client_files: {
+        Args: { p_limit?: number; p_older_than_hours?: number };
+        Returns: string[];
+      };
       mark_file_read: { Args: { p_file_id: string }; Returns: string };
       my_context: {
         Args: Record<PropertyKey, never>;
@@ -741,6 +802,10 @@ export type Database = {
         }[];
       };
       my_email_available: { Args: { p_email: string }; Returns: boolean };
+      purge_expired_invites: {
+        Args: { p_older_than_days?: number };
+        Returns: number;
+      };
       register_push_subscription: {
         Args: {
           p_auth: string;

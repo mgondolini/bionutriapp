@@ -6,6 +6,7 @@ import {
   cleanup,
   createActiveClient,
   emailLinkPath,
+  isLocalSupabase,
   login,
   newDevice,
 } from "./helpers";
@@ -165,6 +166,9 @@ test("cliente senza email: la aggiunge, la conferma da Mailpit e recupera la pas
   page,
   browser,
 }) => {
+  // Mailpit esiste solo con Supabase locale: sul progetto di prova le email
+  // partono davvero (SMTP) e si verificano a mano (docs/operativita.md).
+  test.skip(!isLocalSupabase(), "email leggibili solo da Mailpit (locale)");
   const email = `profilo.email.${stamp}@example.test`;
   const client = await createActiveClient({
     firstName: "Elsa",

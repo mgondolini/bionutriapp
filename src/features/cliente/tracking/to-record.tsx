@@ -27,7 +27,7 @@ export function ToRecord({ items }: { items: ToRecordItem[] }) {
       </div>
       {items.length === 0 ? (
         <p className="flex items-center gap-2 rounded-xl border bg-card px-4 py-3 text-sm">
-          <CircleCheck aria-hidden="true" className="size-5 text-primary" />
+          <CircleCheck aria-hidden="true" className="size-5 text-primary-ink" />
           {t.allDone}
         </p>
       ) : (
@@ -39,7 +39,7 @@ export function ToRecord({ items }: { items: ToRecordItem[] }) {
                   href={checkinUrl()}
                   className="flex items-center gap-3 rounded-xl border bg-card px-4 py-3 transition-colors hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
                 >
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-ink">
                     <CalendarCheck aria-hidden="true" className="size-5" />
                   </span>
                   <span className="flex min-w-0 flex-1 flex-col">

@@ -106,7 +106,7 @@ export function LoginForm({ next }: { next?: string }) {
         </Button>
         <Link
           href={ROUTES.recoverPassword}
-          className="inline-flex min-h-11 items-center justify-center text-sm font-medium text-primary underline-offset-4 hover:underline"
+          className="inline-flex min-h-11 items-center justify-center text-sm font-medium text-primary-ink underline-offset-4 hover:underline"
         >
           {t.forgotPassword}
         </Link>

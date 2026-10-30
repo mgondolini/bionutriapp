@@ -148,7 +148,8 @@ function input(token: string) {
     email: null,
     birthDate: null,
     password: "password123",
-    consent: true as const,
+    privacyNotice: true as const,
+    healthData: true as const,
   };
 }
 

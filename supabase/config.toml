@@ -249,6 +249,21 @@ otp_expiry = 3600
 # Recupero password: il link porta direttamente alla pagina /nuova-password con il
 # token_hash, verificato solo all'invio del modulo (i client di posta che aprono i
 # link in anticipo non consumano il token).
+# SMTP dedicato (N-07, fase 9). In locale le email restano in Mailpit
+# (http://127.0.0.1:54324): il blocco è commentato. Per provare l'invio reale
+# con Brevo da locale, togliere i commenti e impostare SMTP_BREVO_USER e
+# SMTP_BREVO_KEY nell'ambiente prima di `supabase start` (mai nel file).
+# In produzione gli stessi valori si inseriscono dal pannello di Supabase
+# (Authentication > Emails > SMTP Settings): vedi docs/operativita.md.
+# [auth.email.smtp]
+# enabled = true
+# host = "smtp-relay.brevo.com"
+# port = 587
+# user = "env(SMTP_BREVO_USER)"
+# pass = "env(SMTP_BREVO_KEY)"
+# admin_email = "no-reply@dominio-dello-studio.it"
+# sender_name = "Nome dello studio"
+
 [auth.email.template.recovery]
 subject = "Reimposta la password"
 content_path = "./supabase/templates/recovery.html"

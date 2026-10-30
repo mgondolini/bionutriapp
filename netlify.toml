@@ -1,0 +1,10 @@
+# Netlify (NF-04, NF-12): build di Next.js con l'adattatore ufficiale, rilevato
+# automaticamente. Variabili d'ambiente e segreti NON vanno qui: si impostano
+# dal pannello (Site configuration > Environment variables), per contesto
+# (Production / Deploy previews). Vedi docs/operativita.md.
+[build]
+  command = "pnpm build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"

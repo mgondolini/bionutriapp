@@ -46,6 +46,7 @@ export const ROUTES = {
   activate: "/attiva",
   confirmEmail: "/conferma-email",
   suspended: "/accesso-sospeso",
+  privacy: "/privacy",
   admin: {
     home: "/admin",
     clients: "/admin/clienti",
@@ -62,6 +63,13 @@ export const ROUTES = {
     install: "/app/installa",
   },
 } as const;
+
+/**
+ * Versione dell'informativa privacy (NF-06), salvata con i consensi
+ * dell'attivazione (privacy_consents). Va cambiata a ogni modifica sostanziale
+ * del testo della pagina /privacy.
+ */
+export const PRIVACY_POLICY_VERSION = "1.0-bozza";
 
 /** Voci del menu del cliente (C-01); `locked` = nascosta in Onboarding. */
 export const CLIENT_NAV = [
@@ -86,6 +94,8 @@ export const LIGHT_TEXT_COLOR = "#FFFFFF";
 export const APP_BACKGROUND_COLOR = "#F5F6F2";
 /** Contrasto minimo per il testo normale (WCAG AA). */
 export const MIN_TEXT_CONTRAST = 4.5;
+/** Sfondo chiaro più scuro su cui compare il testo nel colore dello studio (--background). */
+export const LIGHT_SURFACE_COLOR = "#F5F6F2";
 
 /** Logo dello studio (bucket studio-assets). */
 export const STUDIO_ASSETS_BUCKET = "studio-assets";
@@ -389,6 +399,14 @@ export function clientTrackingMetricPath(
 // ---------------------------------------------------------------------
 // PWA e notifiche push (fase 8)
 // ---------------------------------------------------------------------
+
+/** Attività programmate (fase 9): unico Route Handler, protetto da CRON_SECRET (DEV-05). */
+export const CRON_PATH = "/api/cron";
+export const CRON_MAINTENANCE_PATH = `${CRON_PATH}/manutenzione`;
+/** Oggetti caricati ma mai confermati: eliminati dopo 24 ore. */
+export const ORPHAN_UPLOAD_MAX_AGE_HOURS = 24;
+/** Inviti scaduti da più di 90 giorni: eliminati. */
+export const EXPIRED_INVITE_RETENTION_DAYS = 90;
 
 /** Service worker: solo l'area cliente, mai /admin né le pagine di accesso. */
 export const SERVICE_WORKER_URL = "/sw.js";

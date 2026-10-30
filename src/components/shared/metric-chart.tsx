@@ -151,12 +151,16 @@ export function MetricChart(props: ChartProps) {
       >
         {header}
         {hasValues ? (
-          <div aria-hidden="true">
+          <div aria-hidden="true" inert>
             <ChartContainer
               config={weekConfig}
               className="aspect-[2/1] max-h-72 w-full"
             >
-              <BarChart data={data} margin={{ top: 20, left: 0, right: 0 }}>
+              <BarChart
+                accessibilityLayer={false}
+                data={data}
+                margin={{ top: 20, left: 0, right: 0 }}
+              >
                 <CartesianGrid vertical={false} />
                 <XAxis dataKey="label" tickLine={false} axisLine={false} />
                 <YAxis hide domain={[0, props.max]} />
@@ -242,13 +246,14 @@ export function MetricChart(props: ChartProps) {
     >
       {header}
       {points.length > 0 ? (
-        <div aria-hidden="true">
+        <div aria-hidden="true" inert>
           <ChartContainer
             config={lineConfig}
             className="aspect-[2/1] max-h-72 w-full"
           >
             {props.variant === "line" ? (
               <LineChart
+                accessibilityLayer={false}
                 data={points}
                 margin={{ top: 24, left: 28, right: 28, bottom: 4 }}
               >
@@ -280,7 +285,11 @@ export function MetricChart(props: ChartProps) {
                 </Line>
               </LineChart>
             ) : (
-              <BarChart data={points} margin={{ top: 20, left: 0, right: 0 }}>
+              <BarChart
+                accessibilityLayer={false}
+                data={points}
+                margin={{ top: 20, left: 0, right: 0 }}
+              >
                 <CartesianGrid vertical={false} />
                 <XAxis
                   dataKey="day"

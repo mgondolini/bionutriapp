@@ -2,9 +2,14 @@ import { loadEnvConfig } from "@next/env";
 import { defineConfig, devices } from "@playwright/test";
 
 // Stesse variabili dell'app (.env.local): URL e chiavi del Supabase LOCALE.
+// Per un deploy di anteprima: E2E_ENV_FILE=.env.test.local (progetto Supabase
+// di PROVA) e PLAYWRIGHT_BASE_URL=<url dell'anteprima>; nessun server locale.
+if (process.env.E2E_ENV_FILE) process.loadEnvFile(process.env.E2E_ENV_FILE);
 loadEnvConfig(process.cwd());
 
-const baseURL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const remoteBaseURL = process.env.PLAYWRIGHT_BASE_URL;
+const baseURL =
+  remoteBaseURL ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
 /**
  * Test end-to-end dei flussi critici (DEV-18). Richiedono il database locale
@@ -28,10 +33,12 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
-  webServer: {
-    command: "pnpm dev",
-    url: `${baseURL}/login`,
-    reuseExistingServer: true,
-    timeout: 180_000,
-  },
+  webServer: remoteBaseURL
+    ? undefined
+    : {
+        command: "pnpm dev",
+        url: `${baseURL}/login`,
+        reuseExistingServer: true,
+        timeout: 180_000,
+      },
 });
