@@ -1,3 +1,4 @@
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 import { buttonVariants } from "@/components/ui/button";
@@ -46,9 +47,10 @@ export function ClientRowActions({
       <Link
         href={clientDetailPath(clientId)}
         aria-label={t.detailFor(name)}
-        className={buttonVariants({ variant: "outline" })}
+        className={buttonVariants({ variant: "outline", size: "sm" })}
       >
         {t.detail}
+        <ChevronRight aria-hidden="true" className="size-3.5" />
       </Link>
     </div>
   );

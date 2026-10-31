@@ -1,10 +1,9 @@
-import { PageHeader } from "@/components/shared/page-header";
+import { ClientHomeHeader } from "@/features/cliente/client-header";
 import { LatestFile } from "@/features/cliente/files/latest-file";
 import { OnboardingHome } from "@/features/cliente/onboarding-home";
 import { InstallGuideAutoOpen } from "@/features/cliente/pwa/install-guide";
 import { PushBanner } from "@/features/cliente/pwa/push-banner";
 import { ToRecord } from "@/features/cliente/tracking/to-record";
-import { copy } from "@/lib/copy/it";
 import { getClientLatestFile } from "@/server/services/files.service";
 import { listOwnEndpoints } from "@/server/services/push.service";
 import { requireClient } from "@/server/services/session.service";
@@ -12,8 +11,6 @@ import {
   clientTrackingActor,
   getHomeToRecord,
 } from "@/server/services/tracking.service";
-
-const t = copy.client.home;
 
 /**
  * Home del cliente: in Onboarding il benvenuto con i prossimi passi (C-09),
@@ -34,7 +31,8 @@ export default async function ClientHomePage() {
   );
   if (!client.unlocked) {
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
+        <ClientHomeHeader />
         {pwa}
         <OnboardingHome studioName={studio.name} />
       </div>
@@ -46,8 +44,8 @@ export default async function ClientHomePage() {
     actor?.canWrite ? getHomeToRecord(actor) : null,
   ]);
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader title={t.title} />
+    <div className="flex flex-col gap-4">
+      <ClientHomeHeader />
       {pwa}
       <LatestFile file={latest} />
       {toRecord ? <ToRecord items={toRecord} /> : null}

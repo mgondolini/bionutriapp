@@ -14,15 +14,16 @@ const t = copy.client.home;
 export function LatestFile({ file }: { file: FileItem | null }) {
   return (
     <section aria-labelledby="latest-file" className="flex flex-col gap-3">
-      <h2 id="latest-file" className="text-sm font-semibold">
+      <h2 id="latest-file" className="sr-only">
         {t.latestFile}
       </h2>
       {file ? (
         <FileCard
           variant="featured"
           title={file.title}
-          badge={file.firstReadAt ? null : "new"}
-          eyebrow={`${copy.domain.fileCategory[file.category]} · ${formatLongDate(file.uploadedAt)}`}
+          badge={file.firstReadAt ? "current" : "new"}
+          eyebrow={copy.domain.fileCategory[file.category]}
+          meta={formatLongDate(file.uploadedAt)}
           note={file.note}
         >
           <FileButtons id={file.id} title={file.title} />

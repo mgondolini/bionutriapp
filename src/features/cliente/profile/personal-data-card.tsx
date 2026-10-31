@@ -175,7 +175,7 @@ export function PersonalDataCard({
           </div>
         </form>
       ) : (
-        <dl className="grid gap-4">
+        <dl className="grid gap-3.5">
           <ProfileItem label={t.name}>
             {[firstName, lastName].filter(Boolean).join(" ")}
           </ProfileItem>
@@ -184,7 +184,7 @@ export function PersonalDataCard({
           </ProfileItem>
         </dl>
       )}
-      <dl className="grid gap-4 border-t pt-4">
+      <dl className="grid gap-3.5 border-t pt-4">
         <div className="flex flex-col gap-0.5">
           <dt className="text-xs font-medium text-muted-foreground">
             {t.phone}

@@ -100,7 +100,7 @@ export function EmailCard({
         )
       }
     >
-      <dl className="grid gap-4">
+      <dl className="grid gap-3.5">
         <ProfileItem label={t.current}>{email.current ?? t.none}</ProfileItem>
       </dl>
       {sent ? (

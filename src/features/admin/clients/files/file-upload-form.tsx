@@ -1,7 +1,15 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FileText, Upload, X } from "lucide-react";
+import {
+  ChartColumn,
+  Dumbbell,
+  FileText,
+  Upload,
+  Utensils,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import { useId, useState, useTransition, type DragEvent } from "react";
 import { Controller, useForm, useWatch, type Resolver } from "react-hook-form";
 import { toast } from "sonner";
@@ -21,6 +29,7 @@ import {
   FILE_MIME_TYPE,
   FILE_NOTE_MAX,
   PDF_MAGIC,
+  type FileCategory,
   type FileUploadError,
 } from "@/lib/constants/domain";
 import { redirectIfSignedOut } from "@/lib/auth/session-expired";
@@ -210,9 +219,12 @@ export function FileUploadForm({ clientId }: { clientId: string }) {
   return (
     <section
       aria-labelledby={fieldId("title")}
-      className="flex flex-col gap-5 rounded-xl border bg-card p-5 text-card-foreground"
+      className="flex flex-col gap-5 rounded-[14px] border bg-card p-5 text-card-foreground sm:px-6 sm:py-[22px]"
     >
-      <h2 id={fieldId("title")} className="text-base font-semibold">
+      <h2
+        id={fieldId("title")}
+        className="text-[17px] font-bold tracking-tight"
+      >
         {t.title}
       </h2>
 
@@ -224,42 +236,45 @@ export function FileUploadForm({ clientId }: { clientId: string }) {
       >
         {error ? <FormMessage>{error}</FormMessage> : null}
 
-        <Controller
-          name="category"
-          control={form.control}
-          render={({ field }) => (
-            <fieldset className="flex flex-col gap-2">
-              <legend className="mb-2 text-sm font-medium">{t.category}</legend>
-              <div className="flex flex-wrap gap-2">
-                {FILE_CATEGORIES.map((category) => (
-                  <label
-                    key={category}
-                    className={cn(
-                      "flex h-11 cursor-pointer items-center gap-2 rounded-lg border px-4 text-sm font-medium transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
-                      field.value === category
-                        ? "border-primary bg-primary/5"
-                        : "hover:bg-muted",
-                    )}
-                  >
-                    <input
-                      type="radio"
-                      name={field.name}
-                      value={category}
-                      checked={field.value === category}
-                      onChange={() => field.onChange(category)}
-                      disabled={busy}
-                      className="size-4 accent-(--primary)"
-                    />
-                    {copy.domain.fileCategory[category]}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-          )}
-        />
+        <div className="grid gap-5 lg:grid-cols-2 lg:items-start lg:gap-7">
+          <div className="flex flex-col gap-4">
+            <Controller
+              name="category"
+              control={form.control}
+              render={({ field }) => (
+                <fieldset className="flex flex-col gap-2">
+                  <legend className="mb-2 text-[13px] font-semibold">
+                    {t.category}
+                  </legend>
+                  <div className="grid gap-2.5 sm:grid-cols-3">
+                    {FILE_CATEGORIES.map((category) => (
+                      <label
+                        key={category}
+                        className={cn(
+                          "flex h-11 cursor-pointer items-center gap-2.5 rounded-[10px] border border-line-strong bg-card px-3.5 text-sm font-semibold transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
+                          field.value === category
+                            ? "border-foreground ring-3 ring-primary/20"
+                            : "hover:bg-muted",
+                        )}
+                      >
+                        <input
+                          type="radio"
+                          name={field.name}
+                          value={category}
+                          checked={field.value === category}
+                          onChange={() => field.onChange(category)}
+                          disabled={busy}
+                          className="sr-only"
+                        />
+                        <CategoryIcon category={category} />
+                        {copy.domain.fileCategory[category]}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              )}
+            />
 
-        <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
-          <div className="flex flex-col gap-2">
             {/* L'input è dentro l'etichetta: si attiva con clic, Invio o Spazio, e accetta il trascinamento. */}
             <label
               onDragOver={(event) => {
@@ -269,7 +284,7 @@ export function FileUploadForm({ clientId }: { clientId: string }) {
               onDragLeave={() => setDragging(false)}
               onDrop={onDrop}
               className={cn(
-                "flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed px-6 py-8 text-center transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
+                "flex cursor-pointer flex-col items-center gap-1.5 rounded-xl border-2 border-dashed border-line-strong bg-subtle p-[22px] text-center text-muted-foreground transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
                 dragging ? "border-primary bg-primary/5" : "hover:bg-muted/60",
                 fileError ? "border-destructive" : null,
                 busy ? "pointer-events-none opacity-60" : null,
@@ -285,14 +300,14 @@ export function FileUploadForm({ clientId }: { clientId: string }) {
                 aria-describedby={fieldId("file-status")}
                 onChange={(event) => void selectFile(event.target.files?.[0])}
               />
-              <Upload aria-hidden="true" className="size-7 text-primary-ink" />
-              <span className="font-medium">{t.dropzone}</span>
-              <span className="text-sm text-muted-foreground">
-                {t.dropzoneHint}
+              <Upload aria-hidden="true" className="size-6 text-foreground" />
+              <span className="text-sm font-bold text-foreground">
+                {t.dropzone}
               </span>
+              <span className="text-[13px]">{t.dropzoneHint}</span>
               <span
                 aria-hidden="true"
-                className={buttonVariants({ variant: "outline" })}
+                className={cn(buttonVariants({ variant: "outline" }), "mt-2")}
               >
                 {file ? t.changeFile : t.chooseFile}
               </span>
@@ -300,20 +315,19 @@ export function FileUploadForm({ clientId }: { clientId: string }) {
 
             <div id={fieldId("file-status")} aria-live="polite">
               {file ? (
-                <div className="flex items-center gap-3 rounded-lg bg-muted px-3 py-2 text-sm">
-                  <FileText
-                    aria-hidden="true"
-                    className="size-5 shrink-0 text-primary-ink"
-                  />
+                <div className="flex items-center gap-3 rounded-xl border bg-card px-3.5 py-3 text-sm">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-primary-tint text-primary-ink">
+                    <FileText aria-hidden="true" className="size-5" />
+                  </span>
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate font-medium">{file.name}</span>
-                    <span className="text-muted-foreground">
+                    <span className="truncate font-semibold">{file.name}</span>
+                    <span className="text-xs text-muted-foreground">
                       {t.ready(formatFileSize(file.size))}
                     </span>
                   </div>
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     size="icon"
                     onClick={clearFile}
                     disabled={busy}
@@ -332,7 +346,7 @@ export function FileUploadForm({ clientId }: { clientId: string }) {
           </div>
 
           <FieldGroup>
-            <div className="grid gap-5 sm:grid-cols-[1fr_12rem]">
+            <div className="grid gap-4 sm:grid-cols-[1fr_13rem]">
               <Controller
                 name="title"
                 control={form.control}
@@ -389,7 +403,7 @@ export function FileUploadForm({ clientId }: { clientId: string }) {
                     disabled={busy}
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldId("note-count")}
-                    className="min-h-20 w-full rounded-lg border border-input bg-transparent px-3 py-2 text-base outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 aria-invalid:border-destructive md:text-sm"
+                    className="min-h-21 w-full rounded-[10px] border border-input bg-card px-3.5 py-2.5 text-base outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/25 disabled:opacity-50 aria-invalid:border-warning-foreground md:text-sm"
                   />
                   <FieldDescription id={fieldId("note-count")}>
                     {t.noteCount(note.length, FILE_NOTE_MAX)}
@@ -403,7 +417,7 @@ export function FileUploadForm({ clientId }: { clientId: string }) {
               name="notify"
               control={form.control}
               render={({ field }) => (
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-3 has-focus-visible:ring-3 has-focus-visible:ring-ring/50">
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl has-focus-visible:ring-3 has-focus-visible:ring-ring/50">
                   <input
                     type="checkbox"
                     name={field.name}
@@ -411,13 +425,13 @@ export function FileUploadForm({ clientId }: { clientId: string }) {
                     onChange={(event) => field.onChange(event.target.checked)}
                     disabled={busy}
                     aria-describedby={fieldId("notify-hint")}
-                    className="mt-0.5 size-4 accent-(--primary)"
+                    className="mt-0.5 size-[22px] shrink-0 accent-(--primary)"
                   />
                   <span className="flex flex-col gap-0.5 text-sm">
-                    <span className="font-medium">{t.notify}</span>
+                    <span className="font-semibold">{t.notify}</span>
                     <span
                       id={fieldId("notify-hint")}
-                      className="text-muted-foreground"
+                      className="text-[12.5px] text-muted-foreground"
                     >
                       {t.notifyHint}
                     </span>
@@ -425,41 +439,51 @@ export function FileUploadForm({ clientId }: { clientId: string }) {
                 </label>
               )}
             />
+            {progress ? (
+              <div className="flex flex-col gap-1.5">
+                <div
+                  role="progressbar"
+                  aria-label={t.progressLabel}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={percent}
+                  className="h-2 overflow-hidden rounded-full bg-muted"
+                >
+                  <div
+                    className="h-full rounded-full bg-primary transition-[width]"
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground" aria-live="polite">
+                  {progress.phase === "uploading"
+                    ? t.uploading(progress.percent)
+                    : t.verifying}
+                </p>
+              </div>
+            ) : null}
+
+            <Button
+              type="submit"
+              disabled={!hydrated || busy}
+              className="self-end"
+            >
+              <Upload aria-hidden="true" />
+              {t.submit}
+            </Button>
           </FieldGroup>
         </div>
-
-        {progress ? (
-          <div className="flex flex-col gap-1.5">
-            <div
-              role="progressbar"
-              aria-label={t.progressLabel}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={percent}
-              className="h-2 overflow-hidden rounded-full bg-muted"
-            >
-              <div
-                className="h-full rounded-full bg-primary transition-[width]"
-                style={{ width: `${percent}%` }}
-              />
-            </div>
-            <p className="text-sm text-muted-foreground" aria-live="polite">
-              {progress.phase === "uploading"
-                ? t.uploading(progress.percent)
-                : t.verifying}
-            </p>
-          </div>
-        ) : null}
-
-        <Button
-          type="submit"
-          disabled={!hydrated || busy}
-          className="self-start"
-        >
-          <Upload aria-hidden="true" />
-          {t.submit}
-        </Button>
       </form>
     </section>
   );
+}
+
+const CATEGORY_ICONS: Record<FileCategory, LucideIcon> = {
+  diet: Utensils,
+  workout: Dumbbell,
+  report: ChartColumn,
+};
+
+function CategoryIcon({ category }: { category: FileCategory }) {
+  const Icon = CATEGORY_ICONS[category];
+  return <Icon aria-hidden="true" className="size-[18px]" />;
 }

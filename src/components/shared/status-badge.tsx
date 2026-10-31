@@ -8,19 +8,19 @@ import { cn } from "@/lib/utils";
 export type BadgeStatus = AccountStatus | JourneyStage | EntryAuthorBadge;
 
 const statusBadgeVariants = cva(
-  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap",
+  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs leading-none font-semibold whitespace-nowrap",
   {
     variants: {
       status: {
-        to_invite: "bg-muted text-muted-foreground",
+        to_invite: "bg-muted text-secondary-foreground",
         invited: "bg-info text-info-foreground",
         invite_expired: "bg-warning text-warning-foreground",
-        active: "bg-success text-success-foreground",
-        disabled: "bg-muted text-muted-foreground line-through",
+        active: "bg-primary-tint text-primary-ink",
+        disabled: "border border-line-strong bg-card text-muted-foreground",
         onboarding: "bg-warning text-warning-foreground",
-        in_progress: "bg-success text-success-foreground",
+        in_progress: "bg-primary-tint text-primary-ink",
         paused: "bg-info text-info-foreground",
-        completed: "bg-muted text-muted-foreground",
+        completed: "bg-muted text-secondary-foreground",
         // autore di una registrazione del tracking (A-16)
         staff_created: "bg-info text-info-foreground",
         staff_edited: "bg-muted text-muted-foreground",
@@ -48,7 +48,6 @@ export function StatusBadge({
 }) {
   return (
     <span className={cn(statusBadgeVariants({ status }), className)}>
-      <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
       {LABELS[status]}
     </span>
   );

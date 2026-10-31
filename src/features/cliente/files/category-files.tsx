@@ -3,7 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
 import { FileCard } from "@/components/shared/file-card";
 import { OpenFileButton } from "@/components/shared/open-file-button";
-import { PageHeader } from "@/components/shared/page-header";
+import { ClientPageHeader } from "@/features/cliente/client-header";
 import { copy } from "@/lib/copy/it";
 import { formatFileSize, formatLongDate } from "@/lib/format";
 import type { FileItem } from "@/server/services/files.service";
@@ -36,8 +36,9 @@ export function CategoryFiles({
   today,
 }: CategoryFilesProps) {
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader title={title} description={subtitle} />
+    <div className="flex flex-col gap-4">
+      <ClientPageHeader title={title} />
+      <p className="text-sm text-muted-foreground">{subtitle}</p>
 
       {!current && archive.length === 0 ? (
         <EmptyState
@@ -49,14 +50,14 @@ export function CategoryFiles({
 
       {current ? (
         <section aria-labelledby="current-file" className="flex flex-col gap-3">
-          <h2 id="current-file" className="text-sm font-semibold">
+          <h2 id="current-file" className="sr-only">
             {t.currentTitle}
           </h2>
           <FileCard
             variant="featured"
             title={current.title}
-            badge={current.firstReadAt ? null : "new"}
-            eyebrow={
+            badge={current.firstReadAt ? "current" : "new"}
+            meta={
               current.validFrom
                 ? t.currentSince(formatLongDate(current.validFrom))
                 : undefined
@@ -69,16 +70,16 @@ export function CategoryFiles({
       ) : null}
 
       {archive.length > 0 ? (
-        <section aria-labelledby="archive" className="flex flex-col gap-3">
+        <section aria-labelledby="archive" className="flex flex-col gap-2.5">
           <div className="flex items-baseline justify-between gap-2">
-            <h2 id="archive" className="text-sm font-semibold">
+            <h2 id="archive" className="text-[17px] font-bold">
               {t.archiveTitle}
             </h2>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-[13px] text-muted-foreground">
               {t.archiveCount(archive.length)}
             </span>
           </div>
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col divide-y divide-muted overflow-hidden rounded-[14px] border bg-card">
             {archive.map((file) => (
               <li key={file.id}>
                 <FileCard
@@ -100,6 +101,7 @@ export function CategoryFiles({
                     mode="view"
                     label={copy.files.openShort}
                     variant="outline"
+                    size="sm"
                   />
                 </FileCard>
               </li>

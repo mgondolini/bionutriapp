@@ -98,6 +98,7 @@ export function LoginForm({ next }: { next?: string }) {
           )}
         />
         <Button
+          size="lg"
           type="submit"
           disabled={!hydrated || isPending}
           className="w-full"

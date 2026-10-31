@@ -66,6 +66,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           )}
         />
         <Button
+          size="lg"
           type="submit"
           disabled={!hydrated || isPending}
           className="w-full"

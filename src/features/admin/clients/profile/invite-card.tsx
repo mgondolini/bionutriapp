@@ -50,13 +50,13 @@ export function InviteCard({
   return (
     <ProfileSection title={t.title}>
       {status === "invite_expired" && invite ? (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg bg-warning/40 px-3 py-2 text-sm">
+        <div className="flex flex-wrap items-center gap-2 rounded-xl bg-warning px-4 py-3 text-sm text-warning-foreground">
           <StatusBadge status="invite_expired" />
           <span>{t.expiredNotice(formatLongDate(invite.expiresAt))}</span>
         </div>
       ) : null}
 
-      <dl className="grid gap-4 sm:grid-cols-2">
+      <dl className="grid gap-3.5">
         <ProfileItem label={t.lastSent}>
           {invite?.sentAt ? formatDateTime(invite.sentAt) : t.never}
         </ProfileItem>
@@ -79,7 +79,7 @@ export function InviteCard({
           <figcaption className="text-xs font-medium text-muted-foreground">
             {t.previewTitle(formatPhone(client.phone))}
           </figcaption>
-          <blockquote className="rounded-lg rounded-tl-none bg-success/30 px-3 py-2 text-sm">
+          <blockquote className="max-w-[420px] rounded-[14px] border border-primary/20 bg-primary-tint px-3.5 py-3 text-[13.5px]">
             {copy.invites.whatsappMessage(studioName, t.previewLinkPlaceholder)}
           </blockquote>
           <span className="text-xs text-muted-foreground">{t.previewNote}</span>
@@ -92,9 +92,9 @@ export function InviteCard({
           name={name}
           label={label}
           variant={isActive ? "outline" : "default"}
-          className="self-start"
+          className={isActive ? "w-full" : "self-start"}
         />
-        <p className="text-sm text-muted-foreground">{hint}</p>
+        <p className="text-[12.5px] text-muted-foreground">{hint}</p>
       </div>
     </ProfileSection>
   );

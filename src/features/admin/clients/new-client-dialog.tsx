@@ -124,7 +124,7 @@ export function NewClientDialog() {
         <UserPlus aria-hidden="true" />
         {copy.admin.clients.actions.newClient}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-[660px]">
         <DialogHeader>
           <DialogTitle>{t.title}</DialogTitle>
           <DialogDescription>{t.description}</DialogDescription>
@@ -135,19 +135,19 @@ export function NewClientDialog() {
             name="mode"
             control={form.control}
             render={({ field }) => (
-              <fieldset className="grid gap-2 sm:grid-cols-2">
+              <fieldset className="grid gap-3 sm:grid-cols-2">
                 <legend className="sr-only">{t.modeLabel}</legend>
                 {CLIENT_CREATION_MODES.map((option) => (
                   <label
                     key={option}
                     className={cn(
-                      "flex cursor-pointer flex-col gap-1 rounded-xl border p-3 text-sm transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
+                      "flex cursor-pointer flex-col gap-0.5 rounded-xl border border-line-strong bg-card p-4 text-sm transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
                       field.value === option
-                        ? "border-primary bg-primary/5"
+                        ? "border-primary ring-3 ring-primary/20"
                         : "hover:bg-muted",
                     )}
                   >
-                    <span className="flex items-center gap-2 font-semibold">
+                    <span className="flex items-center gap-3 text-[15px] font-bold">
                       <input
                         type="radio"
                         name={field.name}
@@ -157,11 +157,11 @@ export function NewClientDialog() {
                           field.onChange(option);
                           form.clearErrors();
                         }}
-                        className="size-4 accent-(--primary)"
+                        className="size-[22px] shrink-0 accent-(--primary)"
                       />
                       {t.modes[option].label}
                     </span>
-                    <span className="text-muted-foreground">
+                    <span className="pl-[34px] text-[13px] text-muted-foreground">
                       {t.modes[option].description}
                     </span>
                   </label>
@@ -170,8 +170,8 @@ export function NewClientDialog() {
             )}
           />
 
-          <FieldGroup>
-            {error ? <FormMessage>{error}</FormMessage> : null}
+          {error ? <FormMessage>{error}</FormMessage> : null}
+          <FieldGroup className="grid gap-4 sm:grid-cols-2">
             {FIELDS[mode].map(({ name, label, type, autoComplete }) => (
               <Controller
                 key={`${mode}-${name}`}
@@ -199,13 +199,13 @@ export function NewClientDialog() {
             ))}
           </FieldGroup>
 
-          <div className="flex flex-col gap-2 rounded-xl bg-muted p-3 text-sm">
-            <span className="font-medium">{t.initialState}</span>
+          <div className="flex flex-col gap-2 rounded-xl bg-info p-4 text-sm text-info-foreground">
+            <span className="font-semibold">{t.initialState}</span>
             <div className="flex flex-wrap gap-2">
               <StatusBadge status="to_invite" />
               <StatusBadge status={initialStage} />
             </div>
-            <span className="text-muted-foreground">{t.initialStateHint}</span>
+            <span>{t.initialStateHint}</span>
           </div>
 
           <DialogFooter>

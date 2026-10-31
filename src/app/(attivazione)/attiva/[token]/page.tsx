@@ -60,7 +60,7 @@ async function Activation({
           }
         >
           <div className="flex flex-col gap-6">
-            <p className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm">
+            <p className="flex items-center gap-2 self-center rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-secondary-foreground">
               <ShieldCheck
                 aria-hidden="true"
                 className="size-4 text-primary-ink"

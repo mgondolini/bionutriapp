@@ -1,5 +1,6 @@
 "use client";
 
+import { CircleCheck, Flag, Pause, Play, type LucideIcon } from "lucide-react";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { INITIAL_STAGE_BY_ORIGIN } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
-import { availableActions } from "@/lib/domain/journey";
+import { availableActions, type JourneyAction } from "@/lib/domain/journey";
 import { formatLongDate } from "@/lib/format";
 import { changeStageAction } from "@/server/actions/clients.actions";
 import type { ClientProfile } from "@/server/services/clients.service";
@@ -46,6 +47,12 @@ export function StageCard({
   }
 
   const stage = client.journeyStage;
+  const icons: Record<JourneyAction, LucideIcon> = {
+    complete_onboarding: CircleCheck,
+    pause: Pause,
+    complete: Flag,
+    resume: Play,
+  };
   const change = (to: typeof stage) =>
     startTransition(async () => {
       const result = await changeStageAction({
@@ -59,33 +66,34 @@ export function StageCard({
     });
 
   return (
-    <ProfileSection title={t.title}>
-      <div className="flex flex-col gap-1">
-        <StatusBadge status={stage} className="self-start" />
-        {stageSince ? (
-          <p className="text-sm text-muted-foreground">
-            {t.since(stageLabel[stage], formatLongDate(stageSince))}
-          </p>
-        ) : null}
+    <ProfileSection title={t.title} action={<StatusBadge status={stage} />}>
+      {stageSince ? (
+        <p className="text-[13.5px] text-muted-foreground">
+          {t.since(stageLabel[stage], formatLongDate(stageSince))}
+        </p>
+      ) : null}
+      <div className="flex flex-wrap gap-2.5">
+        {availableActions(stage).map(({ to, action }) => {
+          const Icon = icons[action];
+          return (
+            <Button
+              key={to}
+              type="button"
+              variant={
+                action === "pause" || action === "complete"
+                  ? "outline"
+                  : "default"
+              }
+              disabled={isPending}
+              onClick={() => change(to)}
+            >
+              <Icon aria-hidden="true" />
+              {t.actions[action]}
+            </Button>
+          );
+        })}
       </div>
-      <div className="flex flex-wrap gap-2">
-        {availableActions(stage).map(({ to, action }) => (
-          <Button
-            key={to}
-            type="button"
-            variant={
-              action === "pause" || action === "complete"
-                ? "outline"
-                : "default"
-            }
-            disabled={isPending}
-            onClick={() => change(to)}
-          >
-            {t.actions[action]}
-          </Button>
-        ))}
-      </div>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-[12.5px] text-muted-foreground">
         {stage === "onboarding" ? t.onboardingHint : t.hint}
       </p>
     </ProfileSection>

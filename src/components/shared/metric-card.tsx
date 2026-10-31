@@ -13,14 +13,14 @@ import { MetricIcon } from "./metric-icon";
 const t = copy.tracking;
 
 const statusVariants = cva(
-  "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap",
+  "inline-flex items-center rounded-full px-2.5 py-1 text-xs leading-none font-semibold whitespace-nowrap",
   {
     variants: {
       status: {
-        ok: "bg-success text-success-foreground",
+        ok: "bg-primary-tint text-primary-ink",
         due_soon: "bg-info text-info-foreground",
         overdue: "bg-warning text-warning-foreground",
-        never: "border border-dashed text-muted-foreground",
+        never: "border border-dashed border-line-strong text-muted-foreground",
       } satisfies Record<CircumferenceStatus, string>,
     },
   },
@@ -44,41 +44,74 @@ export function MetricStatusBadge({
 /** Spunta di T-01: misura già registrata nel periodo corrente. */
 export function RecordedTick() {
   return (
-    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-success text-success-foreground">
-      <Check aria-hidden="true" className="size-4" />
+    <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+      <Check aria-hidden="true" className="size-4" strokeWidth={2.5} />
       <span className="sr-only">{t.recordedAria}</span>
     </span>
   );
 }
 
 const iconVariants = cva(
-  "flex size-10 shrink-0 items-center justify-center rounded-lg",
+  "flex size-10 shrink-0 items-center justify-center rounded-xl",
   {
     variants: {
       kind: {
-        circumference: "bg-muted text-foreground",
-        habit: "bg-primary/10 text-primary-ink",
-        workout: "bg-accent text-accent-foreground",
+        circumference: "bg-primary-tint text-primary-ink",
+        habit: "bg-info text-info-foreground",
+        workout: "bg-muted text-secondary-foreground",
       } satisfies Record<MetricKind, string>,
+      late: {
+        true: "bg-warning text-warning-foreground",
+        false: "",
+      },
     },
+    defaultVariants: { late: false },
   },
 );
 
 const cardVariants = cva("flex text-card-foreground", {
   variants: {
     layout: {
-      /** Riga dell'elenco del cliente (C8): tutta la riga porta al dettaglio. */
-      row: "items-center gap-3 rounded-xl border bg-card px-4 py-3",
+      /**
+       * Riga dell'elenco del cliente (C8): tutta la riga porta al dettaglio.
+       * Le righe stanno in un elenco raggruppato (`MetricRowList`).
+       */
+      row: "min-h-16 items-center gap-3 bg-card px-4 py-3",
       /** Card della scheda Tracking dello staff (A9). */
-      panel: "flex-col gap-4 rounded-xl border bg-card p-5 shadow-xs",
+      panel: "flex-col gap-2.5 rounded-[14px] border bg-card p-4",
     },
     interactive: {
-      true: "transition-colors hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+      true: "transition-colors hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-inset",
+      false: "",
+    },
+    late: {
+      true: "",
       false: "",
     },
   },
-  defaultVariants: { interactive: false },
+  compoundVariants: [
+    { layout: "panel", late: true, className: "border-[#e9c9a5]" },
+  ],
+  defaultVariants: { interactive: false, late: false },
 });
+
+/** Elenco raggruppato delle righe di `MetricCard` (C5, C8): un solo riquadro con i separatori. */
+export function MetricRowList({
+  label,
+  children,
+}: {
+  label?: string;
+  children: ReactNode;
+}) {
+  return (
+    <ul
+      aria-label={label}
+      className="flex flex-col divide-y divide-muted overflow-hidden rounded-[14px] border bg-card"
+    >
+      {children}
+    </ul>
+  );
+}
 
 type MetricCardProps = {
   kind: MetricKind;
@@ -87,7 +120,7 @@ type MetricCardProps = {
   title: string;
   /** Istruzione della misura o sottotitolo. */
   description?: string | null;
-  /** Righe brevi sotto il titolo (registrazioni, ultima data…). */
+  /** Righe brevi sotto il titolo (registrazioni, ultima data…); nel pannello, pillola accanto al titolo. */
   meta?: ReactNode;
   status?: CircumferenceStatus | null;
   recorded?: boolean;
@@ -101,7 +134,8 @@ type MetricCardProps = {
 /**
  * Card di una misura (DEV-02, DEV-12): stessa struttura per circonferenze,
  * abitudini e allenamenti, che cambiano solo per variante e contenuto.
- * Usata nell'area cliente (C8) e nella scheda Tracking dello staff (A9).
+ * Usata nell'area cliente (C8, riga con icona) e nella scheda Tracking dello
+ * staff (A9, pannello con titolo e stato).
  */
 export function MetricCard({
   kind,
@@ -116,61 +150,70 @@ export function MetricCard({
   children,
   className,
 }: MetricCardProps) {
-  const header = (
-    <>
-      <span className={iconVariants({ kind })}>
-        <MetricIcon name={icon} />
-      </span>
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 className="font-semibold">
-            {href && layout === "panel" ? (
-              <Link
-                href={href}
-                className="rounded-sm underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
-              >
-                {title}
-              </Link>
-            ) : (
-              title
-            )}
-          </h3>
-          {status && status !== "ok" ? (
-            <MetricStatusBadge status={status} />
-          ) : null}
-        </div>
-        {description ? (
-          <p className="text-sm text-muted-foreground">{description}</p>
-        ) : null}
-        {meta ? (
-          <div className="text-xs text-muted-foreground">{meta}</div>
-        ) : null}
-      </div>
-      {recorded ? <RecordedTick /> : null}
-    </>
-  );
+  const late = status === "overdue";
 
   if (layout === "row") {
     const classes = cn(
       cardVariants({ layout, interactive: Boolean(href) }),
       className,
     );
+    const content = (
+      <>
+        <span className={iconVariants({ kind, late })}>
+          <MetricIcon name={icon} />
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <h3 className="text-[15px] font-semibold">{title}</h3>
+          {description ? (
+            <p className="text-[12.5px] text-muted-foreground">{description}</p>
+          ) : null}
+          {meta ? (
+            <div className="text-[12.5px] font-semibold">{meta}</div>
+          ) : null}
+        </div>
+        {status && status !== "ok" ? (
+          <MetricStatusBadge status={status} />
+        ) : recorded ? (
+          <RecordedTick />
+        ) : null}
+        {children}
+      </>
+    );
     return href ? (
       <Link href={href} className={classes}>
-        {header}
-        {children}
+        {content}
       </Link>
     ) : (
-      <article className={classes}>
-        {header}
-        {children}
-      </article>
+      <article className={classes}>{content}</article>
     );
   }
 
   return (
-    <article className={cn(cardVariants({ layout }), className)}>
-      <div className="flex items-start gap-3">{header}</div>
+    <article className={cn(cardVariants({ layout, late }), className)}>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <h3 className="text-[15px] font-bold">
+          {href ? (
+            <Link
+              href={href}
+              className="rounded-sm underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+            >
+              {title}
+            </Link>
+          ) : (
+            title
+          )}
+        </h3>
+        {status ? (
+          <MetricStatusBadge status={status} />
+        ) : meta ? (
+          <span className="rounded-full bg-muted px-2.5 py-1 text-xs leading-none font-semibold whitespace-nowrap text-secondary-foreground">
+            {meta}
+          </span>
+        ) : null}
+      </div>
+      {description ? (
+        <p className="text-sm text-muted-foreground">{description}</p>
+      ) : null}
       {children}
     </article>
   );

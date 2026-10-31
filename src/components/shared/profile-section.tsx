@@ -21,13 +21,13 @@ export function ProfileSection({
     <section
       aria-labelledby={id}
       className={cn(
-        "flex flex-col gap-4 rounded-xl border bg-card p-5 text-card-foreground",
+        "flex flex-col gap-4 rounded-[14px] border bg-card p-5 text-card-foreground sm:px-6 sm:py-[22px]",
         className,
       )}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-48 flex-1 flex-col gap-0.5">
-          <h2 id={id} className="text-base font-semibold">
+          <h2 id={id} className="text-[17px] font-bold tracking-tight">
             {title}
           </h2>
           {description ? (
@@ -50,9 +50,9 @@ export function ProfileItem({
   children: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-0.5">
-      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
-      <dd className="text-sm">{children}</dd>
+    <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] gap-3 text-sm sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-4">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="min-w-0 font-medium break-words">{children}</dd>
     </div>
   );
 }

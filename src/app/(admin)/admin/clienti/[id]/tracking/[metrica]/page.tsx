@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -37,21 +37,25 @@ async function MetricContent({
     item.kind === "circumference" ? item.summary.schedule.status : null;
   return (
     <div className="flex flex-col gap-5">
-      <header className="flex flex-col gap-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href={clientDetailPath(clientId.data, "tracking")}
-            aria-label={t.backAria}
-            className={buttonVariants({ variant: "ghost", size: "icon" })}
-          >
-            <ArrowLeft aria-hidden="true" />
-          </Link>
-          <h2 className="text-xl font-bold">{item.metric.name}</h2>
-          {status && status !== "ok" ? (
-            <MetricStatusBadge status={status} />
-          ) : null}
+      <header className="flex items-start gap-3.5">
+        <Link
+          href={clientDetailPath(clientId.data, "tracking")}
+          aria-label={t.backAria}
+          className={buttonVariants({ variant: "outline", size: "icon" })}
+        >
+          <ChevronLeft aria-hidden="true" />
+        </Link>
+        <div className="flex min-w-0 flex-col gap-1">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h2 className="text-2xl font-bold">{item.metric.name}</h2>
+            {status && status !== "ok" ? (
+              <MetricStatusBadge status={status} />
+            ) : null}
+          </div>
+          <p className="text-[13px] text-muted-foreground">
+            {t.subtitle[item.kind]}
+          </p>
         </div>
-        <p className="text-sm text-muted-foreground">{t.subtitle[item.kind]}</p>
       </header>
       <StaffMetricDetail
         item={item}

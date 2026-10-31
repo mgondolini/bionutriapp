@@ -53,9 +53,9 @@ function RecordCard({
   return (
     <section
       aria-labelledby="record-card"
-      className="flex flex-col gap-4 rounded-xl border bg-card p-5"
+      className="flex flex-col gap-4 rounded-2xl border bg-card p-[18px]"
     >
-      <h2 id="record-card" className="font-semibold">
+      <h2 id="record-card" className="text-[17px] font-bold">
         {title}
       </h2>
       {children}
@@ -82,7 +82,7 @@ function CircumferenceDetail({
         <RecordCard title={t.circumference.newTitle}>
           {message ? (
             <FormMessage
-              tone={summary.schedule.status === "overdue" ? "error" : "info"}
+              tone={summary.schedule.status === "overdue" ? "warning" : "info"}
             >
               {message}
             </FormMessage>
@@ -101,9 +101,9 @@ function CircumferenceDetail({
           ) : null}
         </RecordCard>
       ) : null}
-      <section className="flex flex-col gap-2 rounded-xl border bg-card p-5">
+      <section className="flex flex-col gap-2 rounded-2xl border bg-card p-[18px]">
         {summary.last ? (
-          <p className="text-3xl font-bold">
+          <p className="text-[28px] leading-none font-bold tracking-tight">
             {measureText(summary.last.value, item.metric.unit)}
           </p>
         ) : null}
@@ -158,13 +158,13 @@ function WorkoutDetail({
       ) : null}
       <section
         aria-labelledby="workout-diary"
-        className="flex flex-col gap-4 rounded-xl border bg-card p-5"
+        className="flex flex-col gap-4 rounded-2xl border bg-card p-[18px]"
       >
         <div className="flex items-baseline justify-between gap-2">
-          <h2 id="workout-diary" className="font-semibold">
+          <h2 id="workout-diary" className="text-[17px] font-bold">
             {t.workout.diaryTitle}
           </h2>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-[13px] text-muted-foreground">
             {tt.sessions(stats.all.count)}
           </span>
         </div>
@@ -173,7 +173,7 @@ function WorkoutDetail({
             <dt className="order-2 text-xs text-muted-foreground">
               {t.workout.averageAll}
             </dt>
-            <dd className="text-2xl font-bold">
+            <dd className="text-2xl font-bold tracking-tight">
               {stats.all.average !== null
                 ? averageText(stats.all.average)
                 : tt.chart.notRecorded}
@@ -183,7 +183,9 @@ function WorkoutDetail({
             <dt className="order-2 text-xs text-muted-foreground">
               {t.workout.weekSessions}
             </dt>
-            <dd className="text-2xl font-bold">{stats.week.count}</dd>
+            <dd className="text-2xl font-bold tracking-tight">
+              {stats.week.count}
+            </dd>
           </div>
         </dl>
         <MetricChart

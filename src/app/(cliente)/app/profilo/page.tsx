@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { EmailCard } from "@/components/shared/profile/email-card";
 import { PasswordCard } from "@/components/shared/profile/password-card";
 import { SessionCard } from "@/components/shared/profile/session-card";
+import { ClientPageHeader } from "@/features/cliente/client-header";
 import { InstallCard } from "@/features/cliente/profile/install-card";
 import { PersonalDataCard } from "@/features/cliente/profile/personal-data-card";
 import { ProfileHeader } from "@/features/cliente/profile/profile-header";
@@ -27,7 +28,8 @@ export default async function ProfilePage() {
 
   const name = [profile.firstName, profile.lastName].filter(Boolean).join(" ");
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
+      <ClientPageHeader title={copy.client.profile.label} />
       <ProfileHeader
         name={name}
         initials={initialsOf(profile.firstName, profile.lastName)}

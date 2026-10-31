@@ -68,6 +68,7 @@ export function ConfirmEmailForm({ tokenHash }: { tokenHash: string | null }) {
     >
       {outcome ? <FormMessage>{outcome.error}</FormMessage> : null}
       <Button
+        size="lg"
         type="submit"
         disabled={!hydrated || isPending}
         className="w-full"

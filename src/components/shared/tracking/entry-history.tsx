@@ -74,11 +74,11 @@ export function EntryHistory({
   return (
     <section aria-labelledby="entry-history" className="flex flex-col gap-3">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 id="entry-history" className="text-sm font-semibold">
+        <h2 id="entry-history" className="text-lg font-bold">
           {title}
         </h2>
         {anyEditable ? (
-          <span className="text-xs text-muted-foreground">
+          <span className="text-[13px] text-muted-foreground">
             {item.kind === "circumference" ? t.editHint : t.editHintShort}
           </span>
         ) : null}
@@ -86,7 +86,7 @@ export function EntryHistory({
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">{tt.noEntries}</p>
       ) : (
-        <ul className="flex flex-col divide-y rounded-xl border bg-card">
+        <ul className="flex flex-col divide-y divide-muted rounded-[14px] border bg-card">
           {rows.map((row) => {
             const dateLabel = formatLongDate(row.recordedOn);
             const valueLabel =
@@ -97,19 +97,19 @@ export function EntryHistory({
             return (
               <li
                 key={row.id}
-                className="flex items-center gap-3 px-4 py-2"
+                className="flex min-h-14 items-center gap-3 py-2 pr-2 pl-4"
                 data-testid="entry-row"
               >
                 <div className="flex min-w-0 flex-1 flex-col items-start gap-0.5">
-                  <span className="text-sm font-medium">
+                  <span className="text-sm">
                     {formatDayMonthLong(row.recordedOn)}
                   </span>
-                  <span className="max-w-full truncate text-xs text-muted-foreground">
+                  <span className="max-w-full truncate text-[12.5px] text-muted-foreground">
                     {detailFor(item, row)}
                   </span>
                   {badge ? <StatusBadge status={badge} /> : null}
                 </div>
-                <span className="font-semibold whitespace-nowrap tabular-nums">
+                <span className="text-[15px] font-bold whitespace-nowrap tabular-nums">
                   {valueLabel}
                 </span>
                 {canEditEntry(row, viewer) ? (

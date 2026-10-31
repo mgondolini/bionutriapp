@@ -161,7 +161,7 @@ test("cliente già nel database: invito, link scaduto, nuovo invito, attivazione
   // Accesso a /app In percorso: sezioni sbloccate
   await expect(device.page).toHaveURL(/\/app$/);
   await expect(
-    device.page.getByRole("heading", { name: "Home" }),
+    device.page.getByRole("heading", { level: 1, name: /^Ciao / }),
   ).toBeVisible();
   await device.page.goto("/app/diete");
   await expect(device.page).toHaveURL(/\/app\/diete$/);

@@ -1,4 +1,4 @@
-import { PageHeader } from "@/components/shared/page-header";
+import { ClientPageHeader } from "@/features/cliente/client-header";
 import { TrackingOverview } from "@/features/cliente/tracking/tracking-overview";
 import { copy } from "@/lib/copy/it";
 import { requireClient } from "@/server/services/session.service";
@@ -18,8 +18,8 @@ export default async function TrackingPage() {
   if (!actor) redirect(ROUTES.client.home);
   const { overview, today, canWrite } = await getClientTracking(actor);
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader title={t.title} description={t.subtitle} />
+    <div className="flex flex-col gap-4">
+      <ClientPageHeader title={t.title} />
       <TrackingOverview overview={overview} today={today} canWrite={canWrite} />
     </div>
   );

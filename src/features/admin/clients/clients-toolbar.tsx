@@ -52,12 +52,22 @@ function FacetSelect<T extends string>({
 }: FacetSelectProps<T>) {
   const id = useId();
   const items = [
-    { value: ALL, label: t.option(allLabel, counts[ALL]) },
-    ...values.map((v) => ({ value: v, label: t.option(labels[v], counts[v]) })),
+    {
+      value: ALL,
+      label: t.option(allLabel, counts[ALL]),
+      name: allLabel,
+      count: counts[ALL],
+    },
+    ...values.map((v) => ({
+      value: v,
+      label: t.option(labels[v], counts[v]),
+      name: labels[v],
+      count: counts[v],
+    })),
   ];
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-medium">
+      <label htmlFor={id} className="text-[13px] font-semibold">
         {label}
       </label>
       <Select
@@ -69,7 +79,7 @@ function FacetSelect<T extends string>({
       >
         <SelectTrigger
           id={id}
-          className="h-11 w-full min-w-52 data-[size=default]:h-11 sm:w-auto"
+          className="h-11 w-full data-[size=default]:h-11 md:w-[230px]"
         >
           <SelectValue />
         </SelectTrigger>
@@ -78,9 +88,15 @@ function FacetSelect<T extends string>({
             <SelectItem
               key={item.value}
               value={item.value}
+              label={item.label}
               className="min-h-11"
             >
-              {item.label}
+              <span className="flex w-full items-center justify-between gap-4">
+                {item.name}
+                <span className="text-muted-foreground tabular-nums">
+                  {item.count}
+                </span>
+              </span>
             </SelectItem>
           ))}
         </SelectContent>
@@ -150,13 +166,13 @@ export function ClientsToolbar({ filters, counts }: ClientsToolbarProps) {
         onChange={(stage) => navigate({ ...filters, stage })}
       />
       <div className="flex flex-1 flex-col gap-1.5 md:min-w-64">
-        <label htmlFor={searchId} className="text-sm font-medium">
+        <label htmlFor={searchId} className="text-[13px] font-semibold">
           {t.searchLabel}
         </label>
         <div className="relative">
           <Search
             aria-hidden="true"
-            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+            className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground"
           />
           <Input
             id={searchId}
@@ -164,7 +180,7 @@ export function ClientsToolbar({ filters, counts }: ClientsToolbarProps) {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t.searchPlaceholder}
-            className="bg-card pl-9"
+            className="pl-10.5"
           />
         </div>
       </div>

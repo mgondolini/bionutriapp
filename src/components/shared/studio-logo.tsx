@@ -6,13 +6,13 @@ import { initialsOf } from "@/lib/studio/branding";
 import { cn } from "@/lib/utils";
 
 const logoVariants = cva(
-  "flex shrink-0 items-center justify-center overflow-hidden rounded-xl bg-primary font-semibold text-primary-foreground",
+  "flex shrink-0 items-center justify-center overflow-hidden bg-primary font-bold text-primary-foreground",
   {
     variants: {
       size: {
-        sm: "size-9 text-sm",
-        md: "size-11 text-base",
-        lg: "size-16 text-xl",
+        sm: "size-9 rounded-[10px] text-sm",
+        md: "size-11 rounded-xl text-base",
+        lg: "size-16 rounded-2xl text-xl",
       },
     },
     defaultVariants: { size: "md" },

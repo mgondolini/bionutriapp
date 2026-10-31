@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { installGuideKind, shouldAutoOpenInstallGuide } from "@/lib/pwa/device";
+import { cn } from "@/lib/utils";
 
 import { dismissInstallGuide, isInstallGuideDismissed } from "./install-prompt";
 import { usePwa } from "./pwa-provider";
@@ -24,6 +25,12 @@ const t = copy.install;
 
 const IOS_ICONS = [Share, SquarePlus, BellRing];
 const ANDROID_ICONS = [EllipsisVertical, Download, BellRing];
+/** Colori delle icone dei passaggi, come nel mockup C3. */
+const STEP_TONES = [
+  "bg-info text-info-foreground",
+  "bg-primary-tint text-primary-ink",
+  "bg-warning text-warning-foreground",
+];
 
 function Steps({
   steps,
@@ -33,30 +40,34 @@ function Steps({
   icons: readonly (typeof Share)[];
 }) {
   return (
-    <ol className="flex flex-col gap-2">
+    <ol className="flex flex-col gap-3">
       {steps.map((step, index) => {
         const Icon = icons[index];
         return (
           <li
             key={step.title}
-            className="flex items-start gap-3 rounded-xl border bg-card p-4"
+            className="flex items-center gap-3.5 rounded-[14px] border bg-card p-3.5"
           >
             <span
               aria-hidden="true"
-              className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground"
+              className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-foreground text-sm font-bold text-background"
             >
               {index + 1}
             </span>
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span className="font-medium">{step.title}</span>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-[14.5px] font-bold">{step.title}</span>
+              <span className="text-[13px] text-muted-foreground">
                 {step.description}
               </span>
             </div>
-            <Icon
-              aria-hidden="true"
-              className="mt-1 size-5 shrink-0 text-primary-ink"
-            />
+            <span
+              className={cn(
+                "flex size-10 shrink-0 items-center justify-center rounded-xl",
+                STEP_TONES[index % STEP_TONES.length],
+              )}
+            >
+              <Icon aria-hidden="true" className="size-5" />
+            </span>
           </li>
         );
       })}
@@ -91,22 +102,26 @@ export function InstallGuide() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-3">
-        <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary-ink">
+    <div className="flex flex-col gap-5 pt-3">
+      <header className="flex flex-col items-center gap-2.5 text-center">
+        <span className="mb-1.5 flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
           <Smartphone aria-hidden="true" className="size-6" />
         </span>
-        <h1 className="text-2xl font-bold tracking-tight">{t.title}</h1>
-        <p className="text-muted-foreground">{t.description}</p>
+        <h1 className="text-[26px] leading-tight font-bold tracking-tight">
+          {t.title}
+        </h1>
+        <p className="text-sm text-muted-foreground">{t.description}</p>
       </header>
 
       {kind === "installed" ? (
-        <p className="rounded-xl border bg-card p-4">{t.alreadyInstalled}</p>
+        <p className="rounded-[14px] border bg-card p-4">
+          {t.alreadyInstalled}
+        </p>
       ) : null}
 
       {kind === "android-prompt" || kind === "desktop-prompt" ? (
-        <section className="flex flex-col gap-3 rounded-2xl border bg-card p-4">
-          <h2 className="font-semibold">{t.promptTitle}</h2>
+        <section className="flex flex-col gap-3 rounded-[14px] border bg-card p-4">
+          <h2 className="text-[15px] font-bold">{t.promptTitle}</h2>
           <p className="text-sm text-muted-foreground">{t.promptDescription}</p>
           <Button onClick={install} className="self-start">
             <Download aria-hidden="true" />
@@ -116,13 +131,13 @@ export function InstallGuide() {
       ) : null}
 
       {kind === "desktop-manual" ? (
-        <p className="rounded-xl border bg-card p-4 text-sm">
+        <p className="rounded-[14px] border bg-card p-4 text-sm">
           {t.desktopManual}
         </p>
       ) : null}
 
       {kind === "ios-other-browser" ? (
-        <p className="rounded-xl border bg-card p-4 text-sm">
+        <p className="rounded-[14px] border bg-card p-4 text-sm">
           {t.iosOtherBrowser}
         </p>
       ) : null}
@@ -132,7 +147,7 @@ export function InstallGuide() {
           value={activeTab}
           onValueChange={(value) => setTab(value as "ios" | "android")}
         >
-          <TabsList>
+          <TabsList className="w-full">
             <TabsTrigger value="ios">{t.tabs.ios}</TabsTrigger>
             <TabsTrigger value="android">{t.tabs.android}</TabsTrigger>
           </TabsList>
@@ -145,13 +160,21 @@ export function InstallGuide() {
         </Tabs>
       ) : null}
 
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-col gap-2">
         {kind === "installed" ? (
-          <Button onClick={close}>{t.back}</Button>
+          <Button size="lg" onClick={close}>
+            {t.back}
+          </Button>
         ) : (
           <>
-            <Button onClick={close}>{t.done}</Button>
-            <Button variant="ghost" onClick={close}>
+            <Button size="lg" onClick={close}>
+              {t.done}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={close}
+              className="text-primary-ink hover:text-primary-ink"
+            >
               {t.later}
             </Button>
           </>

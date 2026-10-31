@@ -1,11 +1,10 @@
 import {
+  Activity,
+  ChartColumn,
   Check,
   Dumbbell,
-  FileText,
-  LineChart,
   Lock,
-  Salad,
-  Sprout,
+  Utensils,
   type LucideIcon,
 } from "lucide-react";
 
@@ -16,10 +15,10 @@ import { cn } from "@/lib/utils";
 const t = copy.client.home.onboarding;
 
 const ICONS: Record<ClientNavKey, LucideIcon> = {
-  diets: Salad,
+  diets: Utensils,
   workouts: Dumbbell,
-  reports: FileText,
-  tracking: LineChart,
+  reports: ChartColumn,
+  tracking: Activity,
 };
 
 /**
@@ -29,50 +28,53 @@ const ICONS: Record<ClientNavKey, LucideIcon> = {
  */
 export function OnboardingHome({ studioName }: { studioName: string }) {
   return (
-    <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-3 rounded-2xl bg-primary p-6 text-primary-foreground">
-        <Sprout aria-hidden="true" className="size-8" />
-        <p className="text-sm font-medium opacity-90">{t.welcome}</p>
-        <h1 className="text-2xl font-bold tracking-tight">
+    <div className="flex flex-col gap-4">
+      <section className="flex flex-col gap-3 rounded-[18px] bg-primary p-5 text-primary-foreground">
+        <p className="self-start rounded-full bg-primary-deep px-2.5 py-1 text-[12.5px] leading-none font-bold">
+          {t.welcome}
+        </p>
+        <h2 className="text-[21px] leading-tight font-bold tracking-tight">
           {t.title(studioName)}
-        </h1>
-        <p className="opacity-90">{t.description(studioName)}</p>
+        </h2>
+        <p className="rounded-xl bg-primary-deep px-3.5 py-3 text-sm leading-normal">
+          {t.description(studioName)}
+        </p>
       </section>
 
       <section
         aria-labelledby="onboarding-steps"
         className="flex flex-col gap-3"
       >
-        <h2 id="onboarding-steps" className="text-lg font-semibold">
+        <h2 id="onboarding-steps" className="text-[17px] font-bold">
           {t.stepsTitle}
         </h2>
-        <ol className="flex flex-col gap-2">
+        <ol className="flex flex-col gap-3">
           {t.steps.map((step, index) => {
             const done = index === 0;
             return (
               <li
                 key={step.title}
-                className="flex items-start gap-3 rounded-xl border bg-card p-4"
+                className="flex items-center gap-3.5 rounded-[14px] border bg-card p-3.5"
               >
                 <span
                   aria-hidden="true"
                   className={cn(
-                    "flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
+                    "flex size-[30px] shrink-0 items-center justify-center rounded-full text-sm font-bold",
                     done
                       ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground",
+                      : "bg-foreground text-background",
                   )}
                 >
                   {done ? <Check className="size-4" /> : index + 1}
                 </span>
                 <div className="flex flex-col">
-                  <span className="font-medium">
+                  <span className="text-[14.5px] font-bold">
                     {step.title}
                     {done ? (
                       <span className="sr-only">{t.stepDone}</span>
                     ) : null}
                   </span>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-[13px] text-muted-foreground">
                     {step.description}
                   </span>
                 </div>
@@ -86,23 +88,25 @@ export function OnboardingHome({ studioName }: { studioName: string }) {
         aria-labelledby="onboarding-area"
         className="flex flex-col gap-3"
       >
-        <h2 id="onboarding-area" className="text-lg font-semibold">
+        <h2 id="onboarding-area" className="text-[17px] font-bold">
           {t.areaTitle}
         </h2>
-        <ul className="grid gap-2 sm:grid-cols-2">
+        <ul className="flex flex-col divide-y divide-muted overflow-hidden rounded-[14px] border bg-card">
           {CLIENT_NAV.map((item) => {
             const Icon = ICONS[item.key];
             return (
               <li
                 key={item.key}
-                className="flex items-center gap-3 rounded-xl border border-dashed bg-muted/40 p-4 text-muted-foreground"
+                className="flex min-h-15 items-center gap-3 px-4 py-3 text-muted-foreground"
               >
-                <Icon aria-hidden="true" className="size-5" />
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted text-secondary-foreground">
+                  <Icon aria-hidden="true" className="size-5" />
+                </span>
                 <div className="flex flex-1 flex-col">
-                  <span className="font-medium text-foreground">
+                  <span className="text-[14.5px] font-semibold text-secondary-foreground">
                     {copy.client.nav[item.key].label}
                   </span>
-                  <span className="text-sm">{t.locked}</span>
+                  <span className="text-[12.5px]">{t.locked}</span>
                 </div>
                 <Lock aria-hidden="true" className="size-4" />
               </li>

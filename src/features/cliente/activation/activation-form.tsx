@@ -212,7 +212,7 @@ export function ActivationForm({
                       onChange={(event) => field.onChange(event.target.checked)}
                       onBlur={field.onBlur}
                       aria-invalid={fieldState.invalid}
-                      className="mt-0.5 size-5 shrink-0 accent-(--primary)"
+                      className="mt-0.5 size-[22px] shrink-0 accent-(--primary)"
                     />
                     <span>{label}</span>
                   </label>
@@ -225,6 +225,7 @@ export function ActivationForm({
       </FieldSet>
 
       <Button
+        size="lg"
         type="submit"
         disabled={!hydrated || isPending}
         className="w-full"

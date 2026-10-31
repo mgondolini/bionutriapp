@@ -6,6 +6,7 @@ import {
   normalizeHexColor,
   pickForeground,
   inkColor,
+  deepColor,
   themeVariables,
 } from "./color";
 
@@ -96,5 +97,14 @@ describe("inkColor", () => {
     expect(
       contrastRatio(inkColor("#FFFFFF"), "#F5F6F2"),
     ).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe("deepColor", () => {
+  it("aumenta il contrasto con il testo sopra il primario", () => {
+    for (const color of ["#2E6A4E", "#1F2A44", "#F2C94C", "#7A3E8E"]) {
+      const { color: text, ratio } = pickForeground(color);
+      expect(contrastRatio(deepColor(color), text)).toBeGreaterThan(ratio);
+    }
   });
 });

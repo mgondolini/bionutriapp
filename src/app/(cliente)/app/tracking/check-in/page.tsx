@@ -38,11 +38,11 @@ export default async function CheckinPage({
   const dates = { today: checkin.today, yesterday: checkin.yesterday };
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       <TrackingHeader title={t.title} />
       <nav
         aria-label={t.dayLabel}
-        className="grid grid-cols-2 gap-1 rounded-xl bg-muted p-1"
+        className="grid grid-cols-2 overflow-hidden rounded-xl border border-line-strong bg-card"
       >
         {[...CHECKIN_DAYS].reverse().map((option) => (
           <Link
@@ -51,10 +51,10 @@ export default async function CheckinPage({
             replace
             aria-current={option === day ? "page" : undefined}
             className={cn(
-              "flex h-11 items-center justify-center rounded-lg text-sm font-medium transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+              "flex h-11 items-center justify-center text-sm transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-inset",
               option === day
-                ? "bg-background shadow-xs"
-                : "text-muted-foreground hover:text-foreground",
+                ? "bg-foreground font-semibold text-background"
+                : "text-secondary-foreground hover:bg-muted",
             )}
           >
             {t.days[option](formatDayMonthShort(dates[option]))}

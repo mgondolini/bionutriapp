@@ -1,3 +1,4 @@
+import { CategoryTag } from "@/components/shared/category-tag";
 import { StatusBadge } from "@/components/shared/status-badge";
 import type { ClientListItem } from "@/lib/clients/list-filters";
 import { copy } from "@/lib/copy/it";
@@ -19,16 +20,23 @@ export function isHighlighted(item: ClientListItem): boolean {
   return item.journeyStage === "onboarding";
 }
 
+/** Iniziali, nome e cellulare (A-01). */
 export function ClientIdentity({ item }: { item: ClientListItem }) {
   return (
     <div className="flex min-w-0 items-center gap-3">
       <span
         aria-hidden="true"
-        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-semibold"
+        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-tint text-[13px] font-bold text-primary-ink"
       >
         {initialsOf(item.firstName, item.lastName)}
       </span>
-      <span className="truncate font-semibold">{fullName(item)}</span>
+      <span className="flex min-w-0 flex-col">
+        <span className="truncate font-semibold">{fullName(item)}</span>
+        <PhoneText
+          phone={item.phone}
+          className="text-[13px] text-muted-foreground"
+        />
+      </span>
     </div>
   );
 }
@@ -47,10 +55,10 @@ export function PhoneText({
   );
 }
 
-/** Stato account con la fase sotto (A-01). */
+/** Stato account e fase insieme, per le card sotto i 768 px (A-01). */
 export function StatusAndStage({ item }: { item: ClientListItem }) {
   return (
-    <div className="flex flex-col items-start gap-1">
+    <div className="flex flex-col items-end gap-1.5">
       <StatusBadge status={item.accountStatus} />
       <StatusBadge status={item.journeyStage} />
     </div>
@@ -61,11 +69,12 @@ export function LastFile({ item }: { item: ClientListItem }) {
   if (!item.lastFile)
     return <span className="text-muted-foreground">{t.noFile}</span>;
   return (
-    <div className="flex min-w-0 flex-col">
-      <span className="truncate font-medium">{item.lastFile.title}</span>
-      <span className="text-xs text-muted-foreground">
-        {copy.domain.fileCategory[item.lastFile.category]}
-        {" · "}
+    <div className="flex min-w-0 flex-col gap-1">
+      <span className="font-semibold text-pretty whitespace-normal">
+        {item.lastFile.title}
+      </span>
+      <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs whitespace-nowrap text-muted-foreground">
+        <CategoryTag category={item.lastFile.category} />
         {formatShortDate(item.lastFile.uploadedAt)}
       </span>
     </div>

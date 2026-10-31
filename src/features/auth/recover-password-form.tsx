@@ -74,6 +74,7 @@ export function RecoverPasswordForm() {
               )}
             />
             <Button
+              size="lg"
               type="submit"
               disabled={!hydrated || isPending}
               className="w-full"

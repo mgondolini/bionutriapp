@@ -1,6 +1,6 @@
 "use client";
 
-import { Target } from "lucide-react";
+import { Check, Flag } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useId, useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -16,6 +16,7 @@ import { ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { formatGoalAmount } from "@/lib/domain/tracking/score-scale";
 import { useHydrated } from "@/lib/use-hydrated";
+import { cn } from "@/lib/utils";
 import { saveCheckinAction } from "@/server/actions/tracking.actions";
 import type { Checkin, CheckinHabit } from "@/server/services/tracking.service";
 import { checkinSchema } from "@/server/validation/tracking.schema";
@@ -108,23 +109,23 @@ export function CheckinForm({ checkin }: { checkin: Checkin }) {
             name={`values.${habit.key}`}
             control={form.control}
             render={({ field }) => (
-              <fieldset className="flex flex-col gap-3 rounded-xl border bg-card p-4">
-                <div className="flex items-start gap-3">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-ink">
+              <fieldset className="flex flex-col gap-3.5 rounded-2xl border bg-card p-[18px]">
+                <div className="flex items-center gap-3">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-info text-info-foreground">
                     <MetricIcon name={habit.icon} />
                   </span>
-                  <div className="flex flex-col gap-0.5">
-                    <legend className="font-semibold">{habit.name}</legend>
-                    <p
-                      id={questionId}
-                      className="text-sm text-muted-foreground"
-                    >
-                      {habit.instructions ?? habit.name}
-                    </p>
-                  </div>
+                  <legend className="text-[17px] font-bold">
+                    {habit.name}
+                  </legend>
                 </div>
-                <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                  <Target aria-hidden="true" className="size-3.5" />
+                <p
+                  id={questionId}
+                  className="text-sm text-secondary-foreground"
+                >
+                  {habit.instructions ?? habit.name}
+                </p>
+                <p className="flex items-center gap-1.5 self-start rounded-full bg-primary-tint px-2.5 py-1 text-[12.5px] font-semibold text-primary-ink">
+                  <Flag aria-hidden="true" className="size-3.5" />
                   {habit.goal
                     ? t.goal(
                         formatGoalAmount(habit.goal.value, habit.goal.unit),
@@ -152,8 +153,15 @@ export function CheckinForm({ checkin }: { checkin: Checkin }) {
                 <p
                   id={descriptionId}
                   aria-live="polite"
-                  className="min-h-5 text-sm font-medium"
+                  className={cn(
+                    "flex min-h-5 items-center gap-2.5 text-[13.5px]",
+                    field.value != null &&
+                      "rounded-[10px] bg-primary-tint px-3 py-2.5 font-semibold text-primary-ink",
+                  )}
                 >
+                  {field.value != null ? (
+                    <Check aria-hidden="true" className="size-4 shrink-0" />
+                  ) : null}
                   {scoreDescription(habit, field.value ?? null)}
                 </p>
               </fieldset>
@@ -163,10 +171,12 @@ export function CheckinForm({ checkin }: { checkin: Checkin }) {
       })}
 
       {error ? <FormMessage>{error}</FormMessage> : null}
-      <Button type="submit" disabled={!hydrated || isPending}>
+      <Button size="lg" type="submit" disabled={!hydrated || isPending}>
         {isPending ? t.saving : t.save}
       </Button>
-      <p className="text-center text-xs text-muted-foreground">{t.skipHint}</p>
+      <p className="text-center text-[12.5px] text-muted-foreground">
+        {t.skipHint}
+      </p>
     </form>
   );
 }

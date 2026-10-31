@@ -324,13 +324,16 @@ export const copy = {
         caption: "Elenco dei clienti dello studio",
         client: "Cliente",
         phone: "Cellulare",
-        status: "Stato account e fase",
+        status: "Stato account",
+        stage: "Stato percorso",
         lastFile: "Ultimo file",
         lastEntry: "Ultima misura",
         actions: "Azioni",
         noFile: "Nessun file",
         noEntry: "Nessuna misura",
         lastEntryOn: (date: string) => `Registrata il ${date}`,
+        footer: (count: number) =>
+          `${count} ${count === 1 ? "cliente" : "clienti"}. Le righe evidenziate sono clienti in Onboarding.`,
       },
       actions: {
         newClient: "Nuovo cliente",
@@ -402,8 +405,8 @@ export const copy = {
         importing: "Importazione…",
         summaryValid: (count: number) =>
           count === 1 ? "1 riga valida" : `${count} righe valide`,
-        summaryDiscarded: (count: number) =>
-          count === 1 ? "1 riga scartata" : `${count} righe scartate`,
+        summaryValidLabel: "clienti pronti da importare",
+        summaryDiscardedLabel: "righe scartate",
         validTitle: "Clienti da importare",
         validHint: "Entreranno con fase In percorso e stato Da invitare.",
         discardedTitle: "Righe scartate",
@@ -508,8 +511,7 @@ export const copy = {
           cancel: "Annulla",
         },
         circumference: {
-          deltaFrom: (delta: string, date: string) =>
-            `${delta} rispetto al ${date}`,
+          since: (date: string) => `rispetto al ${date}`,
           lastOn: (date: string) => `Ultima: ${date}`,
           nextOn: (date: string) => `Prossima: ${date}`,
           expired: (date: string, days: number) =>
@@ -773,6 +775,8 @@ export const copy = {
     nav: clientNav,
     menuLabel: "Menu",
     openMenu: "Apri il menu",
+    closeMenu: "Chiudi",
+    backHome: "Torna alla home",
     profile: { label: "Profilo", description: "Dati, password, notifiche" },
     greeting: (firstName: string) => `Ciao ${firstName}`,
     home: {
@@ -1008,6 +1012,7 @@ export const copy = {
     /** Registrazioni inserite dal nutrizionista (A-15). */
     add: {
       cta: "Aggiungi registrazione",
+      ctaShort: "Aggiungi",
       ctaAria: (name: string) => `Aggiungi registrazione: ${name}`,
       title: (name: string) => `Nuova registrazione · ${name}`,
       description: (client: string) => `Per ${client}`,

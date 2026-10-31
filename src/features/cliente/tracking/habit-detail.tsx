@@ -22,9 +22,11 @@ export function HabitWeek({
     <div className="flex flex-col gap-4">
       <HabitWeekSummary item={item} today={today} />
       {canWrite && item.stats.todayValue === null ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-primary/10 px-4 py-3">
-          <p className="text-sm">{t.todayMissing}</p>
-          <Link href={checkinUrl()} className={buttonVariants()}>
+        <div className="flex flex-col gap-3.5 rounded-2xl border bg-card p-[18px]">
+          <p className="rounded-[10px] bg-info px-3.5 py-3 text-[13.5px] text-info-foreground">
+            {t.todayMissing}
+          </p>
+          <Link href={checkinUrl()} className={buttonVariants({ size: "lg" })}>
             {t.todayCta}
           </Link>
         </div>

@@ -114,7 +114,7 @@ export function CircumferenceForm({
                   disabled={isPending}
                   aria-invalid={fieldState.invalid}
                   aria-describedby={hintId}
-                  className="pr-12 text-lg font-semibold"
+                  className="pr-12 text-lg font-semibold md:text-lg"
                 />
                 {limits.unit ? (
                   <span
@@ -157,7 +157,7 @@ export function CircumferenceForm({
         )}
       </FieldDescription>
       {error ? <FormMessage>{error}</FormMessage> : null}
-      <Button type="submit" disabled={!hydrated || isPending}>
+      <Button size="lg" type="submit" disabled={!hydrated || isPending}>
         {submitLabel}
       </Button>
     </form>

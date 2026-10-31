@@ -31,22 +31,25 @@ export function HabitScale({
   return (
     <section aria-labelledby="habit-scale" className="flex flex-col gap-3">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 id="habit-scale" className="text-sm font-semibold">
+        <h2 id="habit-scale" className="text-[17px] font-bold">
           {tt.scale.title}
         </h2>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-[13px] text-muted-foreground">
           {t.scaleGoal(goalAmount)}
         </span>
       </div>
-      <dl className="flex flex-col divide-y rounded-xl border bg-card">
+      <dl className="flex flex-col divide-y divide-muted overflow-hidden rounded-[14px] border bg-card">
         {scale.map((row) => (
-          <div key={row.score} className="flex items-center gap-3 px-4 py-2">
-            <dt className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 font-semibold text-primary-ink">
+          <div
+            key={row.score}
+            className="flex min-h-14 items-center gap-3 px-4 py-2"
+          >
+            <dt className="flex size-[30px] shrink-0 items-center justify-center rounded-lg bg-primary-tint font-bold text-primary-ink">
               {row.score}
             </dt>
-            <dd className="flex flex-1 flex-wrap items-baseline justify-between gap-x-3">
-              <span className="text-sm font-medium">{row.meaning}</span>
-              <span className="text-sm text-muted-foreground">
+            <dd className="flex flex-1 flex-col">
+              <span className="text-sm font-semibold">{row.meaning}</span>
+              <span className="text-[12.5px] text-muted-foreground">
                 {row.amount}
               </span>
             </dd>
@@ -73,54 +76,55 @@ export function HabitWeekSummary({
   return (
     <section
       aria-labelledby="habit-week"
-      className="grid gap-4 rounded-xl border bg-card p-5 sm:grid-cols-2"
+      className="flex flex-col gap-3.5 rounded-2xl border bg-card p-[18px]"
     >
-      <div className="flex flex-col gap-1">
-        <div className="flex flex-wrap items-baseline gap-2">
-          <h2 id="habit-week" className="text-sm font-semibold">
-            {t.thisWeek}
-          </h2>
-          {delta ? (
-            <span className="text-xs font-medium text-primary-ink">
-              {delta}
-            </span>
-          ) : null}
-        </div>
-        {stats.average !== null ? (
-          <p className="text-3xl font-bold">
-            {averageText(stats.average)}
-            <span className="ml-1 text-base font-normal text-muted-foreground">
-              {tt.outOf(item.metric.maxValue)}
-            </span>
-          </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 id="habit-week" className="text-[17px] font-bold">
+          {t.thisWeek}
+        </h2>
+        {delta ? (
+          <span className="rounded-full bg-primary-tint px-2.5 py-1 text-xs leading-none font-semibold text-primary-ink">
+            {delta}
+          </span>
         ) : null}
-        <p className="text-xs text-muted-foreground">
-          {stats.average !== null
-            ? t.averageOf(
-                weekRangeText(stats.weekFrom, stats.weekTo),
-                tt.filledDays(stats.filledDays),
-              )
-            : tt.noWeekValues}
-        </p>
       </div>
-      <div className="flex flex-col gap-1">
-        {stats.previousAverage !== null ? (
-          <p className="text-3xl font-bold text-muted-foreground">
-            {averageText(stats.previousAverage)}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-1 rounded-xl bg-background px-3.5 py-3">
+          {stats.average !== null ? (
+            <p className="text-2xl leading-tight font-bold tracking-tight">
+              {averageText(stats.average)}
+              <span className="ml-1 text-sm font-medium tracking-normal text-muted-foreground">
+                {tt.outOf(item.metric.maxValue)}
+              </span>
+            </p>
+          ) : null}
+          <p className="text-[12.5px] text-muted-foreground">
+            {stats.average !== null
+              ? t.averageOf(
+                  weekRangeText(stats.weekFrom, stats.weekTo),
+                  tt.filledDays(stats.filledDays),
+                )
+              : tt.noWeekValues}
           </p>
-        ) : null}
-        <p className="text-xs text-muted-foreground">
-          {stats.previousAverage !== null
-            ? t.previousAverage(tt.filledDays(stats.previousFilledDays))
-            : t.noPrevious}
-        </p>
+        </div>
+        <div className="flex flex-col gap-1 rounded-xl bg-background px-3.5 py-3">
+          {stats.previousAverage !== null ? (
+            <p className="text-2xl leading-tight font-bold tracking-tight">
+              {averageText(stats.previousAverage)}
+            </p>
+          ) : null}
+          <p className="text-[12.5px] text-muted-foreground">
+            {stats.previousAverage !== null
+              ? t.previousAverage(tt.filledDays(stats.previousFilledDays))
+              : t.noPrevious}
+          </p>
+        </div>
       </div>
       <MetricChart
         variant="week"
         title={tt.chartTitle}
         days={habitWeekSeries(item.entries, today)}
         max={item.metric.maxValue}
-        className="sm:col-span-2"
       />
     </section>
   );

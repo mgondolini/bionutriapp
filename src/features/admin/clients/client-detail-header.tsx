@@ -1,4 +1,3 @@
-import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -17,7 +16,7 @@ export function ClientDetailHeader({ client }: { client: ClientHeader }) {
     <header className="flex flex-col gap-4">
       <nav
         aria-label={t.breadcrumb}
-        className="flex items-center gap-1 text-sm text-muted-foreground"
+        className="-mt-2 flex items-center gap-1.5 text-[13px] text-muted-foreground"
       >
         <Link
           href={ROUTES.admin.clients}
@@ -25,41 +24,42 @@ export function ClientDetailHeader({ client }: { client: ClientHeader }) {
         >
           {t.breadcrumb}
         </Link>
-        <ChevronRight aria-hidden="true" className="size-4" />
-        <span aria-current="page" className="truncate text-foreground">
+        <span aria-hidden="true">/</span>
+        <span
+          aria-current="page"
+          className="truncate font-semibold text-foreground"
+        >
           {name}
         </span>
       </nav>
       <div className="flex flex-wrap items-center gap-4">
         <span
           aria-hidden="true"
-          className="flex size-14 shrink-0 items-center justify-center rounded-full bg-secondary text-lg font-semibold"
+          className="flex size-15 shrink-0 items-center justify-center rounded-full bg-primary-tint text-xl font-bold text-primary-ink"
         >
           {initialsOf(client.firstName, client.lastName)}
         </span>
         <div className="flex min-w-0 flex-col gap-2">
-          <h1 className="text-2xl font-bold tracking-tight">{name}</h1>
-          <div className="flex flex-wrap items-center gap-2">
+          <h1 className="text-[28px] leading-tight font-bold tracking-tight">
+            {name}
+          </h1>
+          <div className="flex flex-wrap items-center gap-2.5 text-[13.5px] text-muted-foreground">
             <StatusBadge status={client.accountStatus} />
             {client.activatedAt ? (
               <>
                 <StatusBadge status={client.journeyStage} />
-                <span className="text-sm text-muted-foreground">
-                  {t.activeSince(formatLongDate(client.activatedAt))}
-                </span>
+                <span>{t.activeSince(formatLongDate(client.activatedAt))}</span>
               </>
             ) : (
               <>
-                <span className="text-sm text-muted-foreground">
+                <span>
                   {t.stageOnActivation(
                     copy.domain.journeyStage[
                       INITIAL_STAGE_BY_ORIGIN[client.origin]
                     ],
                   )}
                 </span>
-                <span className="text-sm text-muted-foreground">
-                  {t.notActiveYet}
-                </span>
+                <span>{t.notActiveYet}</span>
               </>
             )}
           </div>

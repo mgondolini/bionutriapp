@@ -60,7 +60,7 @@ test("cambio password: le altre sessioni si chiudono; dopo Esci niente /app né 
 
   await page.goto("/app/profilo");
   await expect(
-    page.getByRole("heading", { name: "Paola Password", level: 1 }),
+    page.getByRole("heading", { name: "Paola Password", level: 2 }),
   ).toBeVisible();
 
   // Password attuale sbagliata: rifiutata, messaggio generico

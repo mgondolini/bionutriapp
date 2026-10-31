@@ -7,7 +7,6 @@ import {
   ClientIdentity,
   LastEntry,
   LastFile,
-  PhoneText,
   StatusAndStage,
   fullName,
   isHighlighted,
@@ -24,19 +23,13 @@ export function ClientsCards({ items }: { items: ClientListItem[] }) {
           key={item.id}
           data-onboarding={isHighlighted(item) || undefined}
           className={cn(
-            "flex flex-col gap-3 rounded-xl border bg-card p-4",
+            "flex flex-col gap-3 rounded-[14px] border bg-card p-4",
             isHighlighted(item) &&
-              "border-warning-foreground/30 bg-warning/40 shadow-[inset_4px_0_0_var(--warning-foreground)]",
+              "bg-[#fff9f1] shadow-[inset_4px_0_0_#d9a066]",
           )}
         >
           <div className="flex items-start justify-between gap-3">
-            <div className="flex min-w-0 flex-col gap-1">
-              <ClientIdentity item={item} />
-              <PhoneText
-                phone={item.phone}
-                className="pl-13 text-sm text-muted-foreground"
-              />
-            </div>
+            <ClientIdentity item={item} />
             <StatusAndStage item={item} />
           </div>
           <dl className="grid grid-cols-2 gap-3 text-sm">

@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, ExternalLink } from "lucide-react";
+import { Download, ExternalLink, Eye } from "lucide-react";
 import { useTransition, type ComponentProps } from "react";
 import { toast } from "sonner";
 
@@ -18,6 +18,8 @@ type OpenFileButtonProps = {
   mode: FileOpenMode;
   /** Testo visibile; il nome accessibile contiene sempre il titolo del file. */
   label: string;
+  /** Icona: per "view" finestra esterna (predefinita) oppure occhio. */
+  icon?: "external" | "eye";
   variant?: ComponentProps<typeof Button>["variant"];
   size?: ComponentProps<typeof Button>["size"];
   className?: string;
@@ -37,12 +39,14 @@ export function OpenFileButton({
   title,
   mode,
   label,
+  icon,
   variant = mode === "view" ? "default" : "outline",
   size,
   className,
 }: OpenFileButtonProps) {
   const [isPending, startTransition] = useTransition();
-  const Icon = mode === "view" ? ExternalLink : Download;
+  const Icon =
+    mode === "download" ? Download : icon === "eye" ? Eye : ExternalLink;
 
   const open = () => {
     const popup = mode === "view" ? window.open("", "_blank") : null;

@@ -35,19 +35,21 @@ function Stat({
   hint?: string | null;
 }) {
   return (
-    <div className="flex flex-col gap-1 rounded-xl border bg-card p-4">
-      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
-      <dd className="flex flex-col gap-0.5">
-        <span className="text-2xl font-bold tabular-nums">
+    <div className="flex flex-col gap-1 rounded-[14px] border bg-card px-5 py-[18px]">
+      <dt className="text-[13px] font-semibold text-muted-foreground">
+        {label}
+      </dt>
+      <dd className="flex flex-col gap-1">
+        <span className="text-[26px] leading-tight font-bold tracking-tight tabular-nums">
           {value}
           {unit ? (
-            <span className="ml-1 text-sm font-normal text-muted-foreground">
+            <span className="ml-1 text-sm font-medium tracking-normal text-muted-foreground">
               {unit}
             </span>
           ) : null}
         </span>
         {hint ? (
-          <span className="text-xs text-muted-foreground">{hint}</span>
+          <span className="text-[13px] text-muted-foreground">{hint}</span>
         ) : null}
       </dd>
     </div>
@@ -66,7 +68,7 @@ function CircumferenceDetail({
   const unit = metric.unit;
   return (
     <>
-      <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat
           label={t.lastValue}
           value={summary.last ? measureText(summary.last.value, null) : NONE}
@@ -124,7 +126,7 @@ function CircumferenceDetail({
           }
         />
       </dl>
-      <section className="rounded-xl border bg-card p-4 sm:p-5">
+      <section className="rounded-[14px] border bg-card p-4 sm:px-6 sm:py-[22px]">
         <MetricChart
           variant="line"
           title={tt.chartTitle}
@@ -153,7 +155,7 @@ function WorkoutDetail({
     value === null ? null : t.averageLine(averageText(value));
   return (
     <>
-      <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat
           label={t.workoutAverage}
           value={
@@ -181,7 +183,7 @@ function WorkoutDetail({
           hint={average(stats.recent.average)}
         />
       </dl>
-      <section className="rounded-xl border bg-card p-4 sm:p-5">
+      <section className="rounded-[14px] border bg-card p-4 sm:px-6 sm:py-[22px]">
         <MetricChart
           variant="bars"
           title={tt.chartTitle}

@@ -266,7 +266,7 @@ test("offline il service worker mostra solo la pagina offline, mai dati", async 
   await expect(page.getByText("Ciao Olga")).toBeVisible();
   await page.goto("/app/profilo");
   await expect(
-    page.getByRole("heading", { name: "Olga Offline", level: 1 }),
+    page.getByRole("heading", { name: "Olga Offline", level: 2 }),
   ).toBeVisible();
   // Service worker attivo, poi una pagina caricata da zero: è controllata
   // (come all'apertura dell'app installata)

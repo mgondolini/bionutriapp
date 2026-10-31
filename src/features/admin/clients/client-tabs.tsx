@@ -14,7 +14,7 @@ export function ClientTabs({ clientId }: { clientId: string }) {
   const pathname = usePathname();
   return (
     <nav aria-label={t.tabsLabel} className="border-b">
-      <ul className="-mb-px flex gap-1 overflow-x-auto">
+      <ul className="-mb-px flex gap-1.5 overflow-x-auto">
         {CLIENT_TABS.map((tab) => {
           const href = clientDetailPath(clientId, tab);
           const active = pathname === href || pathname.startsWith(`${href}/`);
@@ -24,10 +24,10 @@ export function ClientTabs({ clientId }: { clientId: string }) {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "inline-flex min-h-11 items-center border-b-2 px-4 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                  "inline-flex min-h-12 items-center border-b-3 px-[18px] text-[15px] outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                   active
-                    ? "border-primary text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground",
+                    ? "border-primary font-bold text-primary-ink"
+                    : "border-transparent font-medium text-muted-foreground hover:text-foreground",
                 )}
               >
                 {t.tabs[tab]}

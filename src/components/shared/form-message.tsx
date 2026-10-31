@@ -2,10 +2,11 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
-const formMessageVariants = cva("rounded-lg px-3 py-2 text-sm", {
+const formMessageVariants = cva("rounded-xl px-4 py-3 text-sm", {
   variants: {
     tone: {
       error: "bg-destructive/10 text-destructive",
+      warning: "bg-warning text-warning-foreground",
       info: "bg-info text-info-foreground",
     },
   },

@@ -1,9 +1,9 @@
-import { CalendarCheck, LineChart } from "lucide-react";
+import { LineChart } from "lucide-react";
 import Link from "next/link";
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { FormMessage } from "@/components/shared/form-message";
-import { MetricCard } from "@/components/shared/metric-card";
+import { MetricCard, MetricRowList } from "@/components/shared/metric-card";
 import { buttonVariants } from "@/components/ui/button";
 import {
   METRIC_KINDS,
@@ -72,25 +72,23 @@ function CheckinCard({
   return (
     <section
       aria-labelledby="checkin-card"
-      className="flex flex-col gap-3 rounded-xl bg-primary/10 p-5"
+      className="flex flex-col gap-3 rounded-[18px] bg-primary p-5 text-primary-foreground"
     >
-      <div className="flex items-start gap-3">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <CalendarCheck aria-hidden="true" className="size-5" />
-        </span>
-        <div className="flex flex-col gap-0.5">
-          <h2 id="checkin-card" className="font-semibold">
-            {t.checkinCard.title}
-          </h2>
-          <p className="text-xs text-muted-foreground">
-            {t.checkinCard.date(
-              formatWeekdayShort(today),
-              formatDayMonthLong(today),
-            )}
-          </p>
-        </div>
+      <div className="flex items-baseline justify-between gap-3">
+        <h2
+          id="checkin-card"
+          className="text-[19px] leading-tight font-bold tracking-tight"
+        >
+          {t.checkinCard.title}
+        </h2>
+        <p className="shrink-0 text-[12.5px] font-semibold">
+          {t.checkinCard.date(
+            formatWeekdayShort(today),
+            formatDayMonthLong(today),
+          )}
+        </p>
       </div>
-      <p className="text-sm">
+      <p className="text-sm leading-normal">
         {t.checkinCard.description}{" "}
         {t.checkinCard.missing(missing.length, habits.length)}
       </p>
@@ -98,8 +96,8 @@ function CheckinCard({
         <Link
           href={checkinUrl()}
           className={buttonVariants({
-            variant: done ? "outline" : "default",
-            className: "self-start",
+            variant: done ? "inverse-outline" : "inverse",
+            className: "h-12 w-full rounded-xl",
           })}
         >
           {done ? t.checkinCard.ctaEdit : t.checkinCard.cta}
@@ -115,17 +113,17 @@ function HabitAverages({ items }: { items: MetricOverview[] }) {
   );
   if (habits.length === 0) return null;
   return (
-    <ul className="grid gap-2 sm:grid-cols-2">
+    <ul className="grid grid-cols-2 gap-3">
       {habits.map((item) =>
         item.kind === "habit" && item.stats.average !== null ? (
           <li
             key={item.metric.id}
-            className="flex flex-col gap-0.5 rounded-xl border bg-card px-4 py-3"
+            className="flex flex-col gap-0.5 rounded-xl border bg-card px-3.5 py-3"
           >
-            <span className="text-2xl font-bold">
+            <span className="text-2xl font-bold tracking-tight">
               {averageText(item.stats.average)}
             </span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-[12.5px] text-muted-foreground">
               {tt.weekAverage(item.metric.name)}
               {habitDeltaText(item.stats.delta, true)
                 ? ` · ${habitDeltaText(item.stats.delta, true)}`
@@ -148,16 +146,16 @@ function KindSection({
   if (items.length === 0) return null;
   const id = `tracking-${kind}`;
   return (
-    <section aria-labelledby={id} className="flex flex-col gap-3">
+    <section aria-labelledby={id} className="flex flex-col gap-2.5">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 id={id} className="text-sm font-semibold">
+        <h2 id={id} className="text-[17px] font-bold">
           {tt.kinds[kind].title}
         </h2>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-[13px] text-muted-foreground">
           {tt.kinds[kind].hint}
         </span>
       </div>
-      <ul className="flex flex-col gap-2">
+      <MetricRowList>
         {items.map((item) => (
           <li key={item.metric.id}>
             <MetricCard
@@ -177,7 +175,7 @@ function KindSection({
             />
           </li>
         ))}
-      </ul>
+      </MetricRowList>
       {kind === "habit" ? <HabitAverages items={items} /> : null}
     </section>
   );
@@ -203,7 +201,7 @@ export function TrackingOverview({
     );
   }
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       {canWrite ? null : <FormMessage tone="info">{t.readOnly}</FormMessage>}
       <CheckinCard overview={overview} today={today} canWrite={canWrite} />
       {METRIC_KINDS.map((kind) => (

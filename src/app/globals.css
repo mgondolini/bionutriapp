@@ -36,6 +36,10 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
   --color-primary-ink: var(--primary-ink);
+  --color-primary-tint: var(--primary-tint);
+  --color-primary-deep: var(--primary-deep);
+  --color-subtle: var(--subtle);
+  --color-line-strong: var(--line-strong);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -68,6 +72,10 @@
   --primary-foreground: #ffffff;
   /* primario per testi e icone su sfondo chiaro (inkColor in src/lib/color.ts) */
   --primary-ink: #2e6a4e;
+  /* fondo tenue del primario: voce attiva, pillole, icone (accent-tint del mockup) */
+  /* riquadri su superfici del primario (deepColor in src/lib/color.ts) */
+  --primary-deep: #265740;
+  --primary-tint: color-mix(in oklab, var(--primary) 12%, white);
   --secondary: #eef1ec;
   --secondary-foreground: #18211d;
   --muted: #eef1ec;
@@ -76,7 +84,11 @@
   --accent-foreground: #18211d;
   --destructive: #b42318;
   --border: #dde2db;
-  --input: #dde2db;
+  --input: #c9d0c7;
+  /* bordo di bottoni secondari, campi e caselle (line2 del mockup) */
+  --line-strong: #c9d0c7;
+  /* intestazioni di tabella e zone di rilascio */
+  --subtle: #fafbf8;
   --ring: #2e6a4e;
   --info: #e2ecf7;
   --info-foreground: #1f4e80;
@@ -143,6 +155,10 @@
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-sans;
+    @apply font-sans antialiased;
+  }
+  h1,
+  h2 {
+    @apply tracking-tight;
   }
 }

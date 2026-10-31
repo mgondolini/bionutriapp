@@ -133,6 +133,19 @@ export function inkColor(primaryColor: string | null | undefined): string {
   return DARK_TEXT_COLOR;
 }
 
+/**
+ * Fondo dei riquadri dentro una superficie del colore dello studio (nota del
+ * file in corso, C5/C7): si allontana dal testo sopra il primario, quindi il
+ * contrasto con quel testo cresce sempre. Scurito se il testo è bianco,
+ * schiarito se è scuro.
+ */
+export function deepColor(primaryColor: string | null | undefined): string {
+  const primary = normalizeHexColor(primaryColor);
+  return pickForeground(primary).color === LIGHT_TEXT_COLOR
+    ? darken(primary, 0.18)
+    : tint(primary, LIGHT_TEXT_COLOR, 0.7);
+}
+
 /** Variabili CSS del tema derivate dal colore principale dello studio. */
 export function themeVariables(
   primaryColor: string | null | undefined,
@@ -144,6 +157,7 @@ export function themeVariables(
     "--primary": primary,
     "--primary-foreground": foreground,
     "--primary-ink": ink,
+    "--primary-deep": deepColor(primary),
     // anello del focus sempre visibile (contrasto 3:1 anche con colori chiari)
     "--ring": ink,
     "--sidebar-primary": primary,

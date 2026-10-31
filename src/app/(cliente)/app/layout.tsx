@@ -6,7 +6,7 @@ import { PageLoading } from "@/components/shared/page-states";
 import { INSTALL_PROMPT_CAPTURE } from "@/features/cliente/pwa/install-prompt";
 import { PwaProvider } from "@/features/cliente/pwa/pwa-provider";
 import {
-  ClientHeader,
+  ClientShellProvider,
   type ClientMenuItem,
 } from "@/features/cliente/client-header";
 import { CLIENT_NAV, ROUTES } from "@/lib/constants/domain";
@@ -29,25 +29,26 @@ async function ClientShell({ children }: { children: React.ReactNode }) {
   }));
 
   return (
-    <>
-      <ClientHeader
-        studio={{ name: studio.name, logoUrl: studio.logoUrl }}
-        greeting={copy.client.greeting(client.firstName)}
-        initials={initialsOf(client.firstName, client.lastName)}
-        sections={sections}
-        profile={{
+    <ClientShellProvider
+      value={{
+        studioName: studio.name,
+        greeting: copy.client.greeting(client.firstName),
+        initials: initialsOf(client.firstName, client.lastName),
+        sections,
+        profile: {
           key: "profile",
           href: ROUTES.client.profile,
           ...copy.client.profile,
-        }}
-      />
+        },
+      }}
+    >
       <main
         id={MAIN_CONTENT_ID}
-        className="mx-auto w-full max-w-2xl flex-1 px-4 py-6"
+        className="mx-auto w-full max-w-2xl flex-1 px-5 pt-5 pb-8"
       >
         {children}
       </main>
-    </>
+    </ClientShellProvider>
   );
 }
 

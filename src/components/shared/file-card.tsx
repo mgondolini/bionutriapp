@@ -15,12 +15,12 @@ const BADGE_LABELS: Record<FileBadge, string> = {
 };
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap",
+  "inline-flex items-center rounded-full px-2.5 py-1 text-xs leading-none font-semibold whitespace-nowrap",
   {
     variants: {
       badge: {
         new: "bg-primary text-primary-foreground",
-        current: "bg-success text-success-foreground",
+        current: "bg-primary-tint text-primary-ink",
         toRead: "bg-warning text-warning-foreground",
       } satisfies Record<FileBadge, string>,
     },
@@ -44,10 +44,11 @@ export function FileBadgeLabel({
 const cardVariants = cva("flex text-card-foreground", {
   variants: {
     variant: {
-      /** File in evidenza: home (C5) e file in corso (C7). */
-      featured: "flex-col gap-4 rounded-xl border bg-card p-5 shadow-xs",
-      /** Riga compatta: archivio (C7) e scheda File su schermi stretti. */
-      row: "flex-wrap items-center gap-3 rounded-xl border bg-card px-4 py-3",
+      /** File in evidenza nel colore dello studio: home (C5) e file in corso (C7). */
+      featured:
+        "flex-col gap-3 rounded-[18px] bg-primary p-5 text-primary-foreground",
+      /** Riga compatta: archivio (C7, in un elenco raggruppato) e scheda File su schermi stretti. */
+      row: "min-h-16 flex-wrap items-center gap-3 bg-card px-4 py-3",
     },
   },
 });
@@ -55,9 +56,9 @@ const cardVariants = cva("flex text-card-foreground", {
 type FileCardProps = {
   variant: "featured" | "row";
   title: string;
-  /** Riga sopra il titolo nella variante featured (es. categoria e data). */
+  /** Riga sopra il titolo nella variante featured (es. la categoria). */
   eyebrow?: string;
-  /** Data, dimensione o altre informazioni sotto il titolo. */
+  /** Data, dimensione o altre informazioni: sotto il titolo nella riga, a destra in alto nella variante featured. */
   meta?: ReactNode;
   badge?: FileBadge | null;
   /** Nota del nutrizionista: testo semplice, mai interpretato come HTML. */
@@ -81,22 +82,22 @@ export function FileCard({
   if (variant === "row") {
     return (
       <article className={cn(cardVariants({ variant }), className)}>
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-tint text-primary-ink">
           <FileText aria-hidden="true" className="size-5" />
         </span>
         <div className="flex min-w-40 flex-1 flex-col gap-0.5">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="line-clamp-2 text-sm font-semibold break-words">
+            <h3 className="line-clamp-2 text-[15px] font-semibold break-words">
               {title}
             </h3>
             {badge ? <FileBadgeLabel badge={badge} /> : null}
           </div>
           {meta ? (
-            <div className="text-xs text-muted-foreground">{meta}</div>
+            <div className="text-[12.5px] text-muted-foreground">{meta}</div>
           ) : null}
         </div>
         {children ? (
-          <div className="ml-auto flex shrink-0 items-center gap-1">
+          <div className="ml-auto flex shrink-0 items-center gap-2">
             {children}
           </div>
         ) : null}
@@ -106,26 +107,32 @@ export function FileCard({
 
   return (
     <article className={cn(cardVariants({ variant }), className)}>
-      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        {badge ? <FileBadgeLabel badge={badge} /> : null}
-        {eyebrow ? <span>{eyebrow}</span> : null}
+      <div className="flex flex-wrap items-center justify-between gap-2 text-[12.5px]">
+        <span className="flex flex-wrap items-center gap-2 font-bold">
+          {badge ? (
+            <span className="rounded-full bg-primary-deep px-2.5 py-1 leading-none">
+              {BADGE_LABELS[badge]}
+            </span>
+          ) : null}
+          {eyebrow}
+        </span>
+        {meta ? <span>{meta}</span> : null}
       </div>
-      <div className="flex flex-col gap-1">
-        <h3 className="text-lg leading-snug font-semibold">{title}</h3>
-        {meta ? (
-          <div className="text-sm text-muted-foreground">{meta}</div>
-        ) : null}
-      </div>
+      <h3 className="text-[21px] leading-tight font-bold tracking-tight">
+        {title}
+      </h3>
       {note ? (
         <blockquote
           aria-label={copy.files.noteLabel}
-          className="rounded-lg border-l-4 border-primary/60 bg-muted px-3 py-2 text-sm whitespace-pre-line"
+          className="rounded-xl bg-primary-deep px-3.5 py-3 text-sm leading-normal whitespace-pre-line"
         >
           {note}
         </blockquote>
       ) : null}
       {children ? (
-        <div className="flex flex-wrap items-center gap-2">{children}</div>
+        <div className="grid grid-cols-2 gap-2.5 *:h-12 *:rounded-xl">
+          {children}
+        </div>
       ) : null}
     </article>
   );

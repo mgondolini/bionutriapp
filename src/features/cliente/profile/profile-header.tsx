@@ -17,20 +17,20 @@ export function ProfileHeader({
   activatedAt: string | null;
 }) {
   return (
-    <header className="flex items-center gap-4">
-      <Avatar className="size-14">
-        <AvatarFallback className="bg-primary text-lg font-semibold text-primary-foreground">
+    <div className="flex items-center gap-3.5">
+      <Avatar className="size-16">
+        <AvatarFallback className="bg-primary-tint text-[22px] font-bold text-primary-ink">
           {initials}
         </AvatarFallback>
       </Avatar>
       <div className="flex min-w-0 flex-col gap-0.5">
-        <h1 className="truncate text-xl font-bold">{name}</h1>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="truncate text-xl font-bold tracking-tight">{name}</h2>
+        <p className="text-[13px] text-muted-foreground">
           {activatedAt
             ? t.clientOf(studioName, formatLongDate(activatedAt))
             : t.clientOfNoDate(studioName)}
         </p>
       </div>
-    </header>
+    </div>
   );
 }

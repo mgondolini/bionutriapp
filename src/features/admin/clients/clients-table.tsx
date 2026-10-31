@@ -11,13 +11,13 @@ import type { ClientListItem } from "@/lib/clients/list-filters";
 import { copy } from "@/lib/copy/it";
 import { cn } from "@/lib/utils";
 
+import { StatusBadge } from "@/components/shared/status-badge";
+
 import { ClientRowActions } from "./client-row-actions";
 import {
   ClientIdentity,
   LastEntry,
   LastFile,
-  PhoneText,
-  StatusAndStage,
   fullName,
   isHighlighted,
 } from "./client-list-parts";
@@ -27,17 +27,19 @@ const t = copy.admin.clients.table;
 /** Elenco clienti in tabella, da 768 px in su (A-01). */
 export function ClientsTable({ items }: { items: ClientListItem[] }) {
   return (
-    <div className="hidden overflow-hidden rounded-xl border bg-card md:block">
-      <Table>
+    <div className="hidden overflow-hidden rounded-[14px] border bg-card md:block">
+      <Table className="table-fixed">
         <TableCaption className="sr-only">{t.caption}</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead className="px-4">{t.client}</TableHead>
-            <TableHead>{t.phone}</TableHead>
-            <TableHead>{t.status}</TableHead>
+            <TableHead className="w-[24%]">{t.client}</TableHead>
+            <TableHead className="w-[12%]">{t.status}</TableHead>
+            <TableHead className="w-[12%]">{t.stage}</TableHead>
             <TableHead>{t.lastFile}</TableHead>
-            <TableHead>{t.lastEntry}</TableHead>
-            <TableHead className="px-4 text-right">{t.actions}</TableHead>
+            <TableHead className="w-[13%]">{t.lastEntry}</TableHead>
+            <TableHead className="w-[150px] text-right xl:w-[220px]">
+              <span className="sr-only">{t.actions}</span>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -47,36 +49,39 @@ export function ClientsTable({ items }: { items: ClientListItem[] }) {
               data-onboarding={isHighlighted(item) || undefined}
               className={cn(
                 isHighlighted(item) &&
-                  "bg-warning/40 shadow-[inset_4px_0_0_var(--warning-foreground)] hover:bg-warning/60",
+                  "bg-[#fff9f1] shadow-[inset_4px_0_0_#d9a066] hover:bg-[#fff4e6]",
               )}
             >
-              <TableCell className="max-w-64 px-4 py-3">
+              <TableCell>
                 <ClientIdentity item={item} />
               </TableCell>
               <TableCell>
-                <PhoneText phone={item.phone} />
+                <StatusBadge status={item.accountStatus} />
               </TableCell>
               <TableCell>
-                <StatusAndStage item={item} />
+                <StatusBadge status={item.journeyStage} />
               </TableCell>
-              <TableCell className="max-w-64">
+              <TableCell className="whitespace-normal">
                 <LastFile item={item} />
               </TableCell>
-              <TableCell>
+              <TableCell className="whitespace-normal">
                 <LastEntry item={item} />
               </TableCell>
-              <TableCell className="px-4">
+              <TableCell>
                 <ClientRowActions
                   clientId={item.id}
                   name={fullName(item)}
                   accountStatus={item.accountStatus}
-                  className="justify-end"
+                  className="flex-col items-end"
                 />
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      <p className="border-t px-5 py-3.5 text-[13px] text-muted-foreground">
+        {t.footer(items.length)}
+      </p>
     </div>
   );
 }

@@ -162,7 +162,7 @@ export function ClientDataCard({ client }: { client: ClientProfile }) {
         </form>
       ) : (
         <>
-          <dl className="grid gap-4 sm:grid-cols-2">
+          <dl className="grid gap-3.5">
             <ProfileItem label={t.firstName}>{client.firstName}</ProfileItem>
             <ProfileItem label={t.lastName}>
               {client.lastName ?? t.empty}

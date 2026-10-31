@@ -26,12 +26,15 @@ export function AddEntryDialog({
   clientId,
   clientName,
   today,
+  compact = false,
   className,
 }: {
   item: MetricOverview;
   clientId: string;
   clientName: string;
   today: string;
+  /** Etichetta breve ("Aggiungi") per le card strette della scheda Tracking. */
+  compact?: boolean;
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -48,11 +51,12 @@ export function AddEntryDialog({
         <Button
           type="button"
           variant="outline"
+          size={compact ? "sm" : "default"}
           aria-label={t.ctaAria(item.metric.name)}
           className={className}
         >
           <Plus aria-hidden="true" />
-          {t.cta}
+          {compact ? t.ctaShort : t.cta}
         </Button>
       }
     >

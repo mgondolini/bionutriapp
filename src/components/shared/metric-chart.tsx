@@ -103,7 +103,7 @@ const lineConfig = {
 } satisfies ChartConfig;
 
 const weekConfig = {
-  previous: { label: t.previousWeek, color: "var(--muted-foreground)" },
+  previous: { label: t.previousWeek, color: "var(--primary)" },
   current: { label: t.currentWeek, color: "var(--primary)" },
 } satisfies ChartConfig;
 
@@ -118,7 +118,7 @@ function RangePicker({
     <div
       role="group"
       aria-label={t.rangeLabel}
-      className="flex gap-1 rounded-lg bg-muted p-1"
+      className="inline-flex overflow-hidden rounded-[10px] border border-line-strong bg-card"
     >
       {(Object.keys(RANGES) as Range[]).map((range) => (
         <button
@@ -127,10 +127,10 @@ function RangePicker({
           aria-pressed={value === range}
           onClick={() => onChange(range)}
           className={cn(
-            "h-9 rounded-md px-3 text-xs font-medium transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+            "min-h-11 px-4 text-[13px] transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-inset",
             value === range
-              ? "bg-background shadow-xs"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-foreground font-semibold text-background"
+              : "text-secondary-foreground hover:bg-muted",
           )}
         >
           {t.ranges[range]}
@@ -164,7 +164,7 @@ export function MetricChart(props: ChartProps) {
 
   const header = (
     <div className="flex flex-wrap items-center justify-between gap-2">
-      <figcaption id={titleId} className="text-sm font-semibold">
+      <figcaption id={titleId} className="text-[17px] font-bold tracking-tight">
         {props.title}
       </figcaption>
       {props.variant !== "week" ? (
@@ -204,7 +204,7 @@ export function MetricChart(props: ChartProps) {
                 <Bar
                   dataKey="previous"
                   fill="var(--color-previous)"
-                  fillOpacity={0.35}
+                  fillOpacity={0.4}
                   radius={4}
                   isAnimationActive={false}
                 >
@@ -230,7 +230,7 @@ export function MetricChart(props: ChartProps) {
             </ChartContainer>
             <ul className="mt-2 flex gap-4 text-xs text-muted-foreground">
               <li className="flex items-center gap-1.5">
-                <span className="size-3 rounded-sm bg-muted-foreground/35" />
+                <span className="size-3 rounded-sm bg-primary/40" />
                 {t.previousWeek}
               </li>
               <li className="flex items-center gap-1.5">

@@ -94,6 +94,7 @@ export function NewPasswordForm({ tokenHash }: { tokenHash: string | null }) {
           />
         ))}
         <Button
+          size="lg"
           type="submit"
           disabled={!hydrated || isPending}
           className="w-full"

@@ -66,12 +66,12 @@ function UserMenu({
   const { signOut, isPending } = useSignOut();
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex min-h-11 w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors outline-none hover:bg-sidebar-accent focus-visible:ring-3 focus-visible:ring-ring/50">
+      <DropdownMenuTrigger className="flex min-h-11 w-full items-center gap-3 rounded-xl bg-background p-3.5 text-left transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50">
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-sm font-semibold">
+          <span className="text-sm leading-snug font-bold">
             {user.displayName}
           </span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-[13px] text-muted-foreground">
             {user.roleLabel}
           </span>
         </span>
@@ -110,10 +110,12 @@ function SidebarContent({
 }: Omit<AdminFrameProps, "children"> & { onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
-    <div className="flex h-full flex-col gap-6 p-4">
-      <div className="flex items-center gap-3 px-2">
+    <div className="flex h-full flex-col gap-7 px-5 py-7">
+      <div className="flex items-center gap-2.5">
         <StudioLogo name={studio.name} logoUrl={studio.logoUrl} size="sm" />
-        <span className="leading-tight font-semibold">{studio.name}</span>
+        <span className="text-[17px] leading-tight font-bold tracking-tight">
+          {studio.name}
+        </span>
       </div>
 
       <nav aria-label={copy.admin.navLabel} className="flex-1">
@@ -128,13 +130,13 @@ function SidebarContent({
                   onClick={onNavigate}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                    "flex min-h-11 items-center gap-2.5 rounded-[10px] px-3.5 py-2 text-[15px] leading-tight transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                     active
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent",
+                      ? "bg-primary-tint font-semibold text-primary-ink"
+                      : "text-secondary-foreground/85 hover:bg-sidebar-accent",
                   )}
                 >
-                  <Icon aria-hidden="true" className="size-4" />
+                  <Icon aria-hidden="true" className="size-[18px] shrink-0" />
                   {item.label}
                 </Link>
               </li>
@@ -143,7 +145,7 @@ function SidebarContent({
         </ul>
       </nav>
 
-      <div className="border-t pt-4">
+      <div>
         <UserMenu user={user} onNavigate={onNavigate} />
       </div>
     </div>
@@ -159,7 +161,7 @@ export function AdminFrame({ studio, user, items, children }: AdminFrameProps) {
   return (
     <div className="flex min-h-full flex-1">
       <SkipLink />
-      <aside className="hidden w-64 shrink-0 border-r bg-sidebar lg:block">
+      <aside className="hidden w-[220px] shrink-0 border-r bg-sidebar lg:block">
         <div className="sticky top-0 h-dvh">
           <SidebarContent studio={studio} user={user} items={items} />
         </div>
@@ -195,7 +197,7 @@ export function AdminFrame({ studio, user, items, children }: AdminFrameProps) {
 
         <main
           id={MAIN_CONTENT_ID}
-          className="flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-10"
+          className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:pt-8 lg:pb-12"
         >
           {children}
         </main>

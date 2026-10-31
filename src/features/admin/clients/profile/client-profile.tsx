@@ -21,7 +21,7 @@ export function ClientProfile({
     null;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
       <div className="flex flex-col gap-6">
         <ClientDataCard key={client.id} client={client} />
         <StageHistory items={client.history} />

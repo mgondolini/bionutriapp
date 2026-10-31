@@ -70,7 +70,7 @@ export function AccountCard({
 
   return (
     <ProfileSection title={t.title}>
-      <dl className="grid gap-4">
+      <dl className="grid gap-3.5">
         <ProfileItem label={t.status}>
           <StatusBadge status={client.accountStatus} />
         </ProfileItem>
@@ -90,13 +90,13 @@ export function AccountCard({
       <div className="flex flex-col gap-2">
         <Button
           type="button"
-          variant={disabled ? "default" : "outline"}
+          variant={disabled ? "default" : "destructive-outline"}
           onClick={open}
           className="self-start"
         >
           {disabled ? t.enable : t.disable}
         </Button>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-[12.5px] text-muted-foreground">
           {disabled ? t.enableHint : t.disableHint}
         </p>
       </div>

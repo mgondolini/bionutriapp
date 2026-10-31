@@ -66,7 +66,7 @@ export function DeleteFileDialog({
         render={
           <Button
             type="button"
-            variant="ghost"
+            variant="destructive-outline"
             size="icon"
             aria-label={copy.admin.clients.files.list.deleteAria(title)}
           />
@@ -79,8 +79,8 @@ export function DeleteFileDialog({
           <DialogTitle>{t.title}</DialogTitle>
           <DialogDescription>{t.description(clientName)}</DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col gap-0.5 rounded-lg bg-muted px-3 py-2 text-sm">
-          <span className="font-medium">{title}</span>
+        <div className="flex flex-col gap-0.5 rounded-xl bg-background px-4 py-3 text-sm">
+          <span className="font-semibold">{title}</span>
           <span className="text-muted-foreground">{meta}</span>
         </div>
         {error ? <FormMessage>{error}</FormMessage> : null}

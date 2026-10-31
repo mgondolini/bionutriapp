@@ -47,7 +47,7 @@ export function ScorePicker({
           <label
             key={score}
             className={cn(
-              "flex h-12 min-w-11 cursor-pointer items-center justify-center rounded-lg border text-base font-semibold transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
+              "flex h-[54px] min-w-11 cursor-pointer items-center justify-center rounded-xl border border-line-strong text-[19px] font-bold transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
               checked
                 ? "border-primary bg-primary text-primary-foreground"
                 : "bg-card hover:bg-muted",

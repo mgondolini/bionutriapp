@@ -14,7 +14,7 @@ export function StageHistory({ items }: { items: StageHistoryItem[] }) {
       {items.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t.empty}</p>
       ) : (
-        <ol className="flex flex-col gap-3">
+        <ol className="flex flex-col">
           {items.map((item) => {
             const author =
               item.source === "automatic"
@@ -25,15 +25,15 @@ export function StageHistory({ items }: { items: StageHistoryItem[] }) {
             return (
               <li
                 key={item.id}
-                className="flex flex-col gap-0.5 border-l-2 border-primary/40 pl-3"
+                className="relative flex flex-col gap-0.5 pb-[18px] pl-7 before:absolute before:top-1.5 before:left-[5px] before:size-2.5 before:rounded-full before:bg-primary after:absolute after:top-[18px] after:-bottom-1.5 after:left-[9px] after:w-0.5 after:bg-border last:pb-0 last:after:hidden"
               >
-                <span className="text-sm font-medium">
+                <span className="text-sm font-semibold">
                   {t.transition(
                     item.from ? stageLabel[item.from] : t.created,
                     stageLabel[item.to],
                   )}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-[13px] text-muted-foreground">
                   {t.meta(formatShortDateTime(item.changedAt), author)}
                 </span>
               </li>
