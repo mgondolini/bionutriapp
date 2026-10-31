@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, ExternalLink, Eye } from "lucide-react";
+import { ChevronRight, Download, ExternalLink, Eye } from "lucide-react";
 import { useTransition, type ComponentProps } from "react";
 import { toast } from "sonner";
 
@@ -18,8 +18,8 @@ type OpenFileButtonProps = {
   mode: FileOpenMode;
   /** Testo visibile; il nome accessibile contiene sempre il titolo del file. */
   label: string;
-  /** Icona: per "view" finestra esterna (predefinita) oppure occhio. */
-  icon?: "external" | "eye";
+  /** Icona: per "view" finestra esterna (predefinita), occhio, oppure freccia dopo il testo. */
+  icon?: "external" | "eye" | "chevron";
   variant?: ComponentProps<typeof Button>["variant"];
   size?: ComponentProps<typeof Button>["size"];
   className?: string;
@@ -92,8 +92,9 @@ export function OpenFileButton({
       aria-label={t.actionAria(label, title)}
       className={className}
     >
-      <Icon aria-hidden="true" />
+      {icon === "chevron" ? null : <Icon aria-hidden="true" />}
       {isPending && mode === "view" ? t.opening : label}
+      {icon === "chevron" ? <ChevronRight aria-hidden="true" /> : null}
     </Button>
   );
 }

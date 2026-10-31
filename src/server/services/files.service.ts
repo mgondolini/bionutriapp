@@ -13,6 +13,7 @@ import {
 import {
   currentFileIds,
   latestPublished,
+  otherCurrentFiles,
   splitCurrentAndArchive,
 } from "@/lib/files/current-file";
 import { downloadFileName, hasPdfHeader } from "@/lib/files/file-checks";
@@ -111,11 +112,20 @@ export async function getClientCategoryFiles(
   return splitCurrentAndArchive(files, dayInRome());
 }
 
-/** Home del cliente (C-02): ultimo file pubblicato, di qualsiasi categoria. */
-export async function getClientLatestFile(
+export type ClientHomeFiles = {
+  /** Ultimo file pubblicato, di qualsiasi categoria (in evidenza). */
+  latest: FileItem | null;
+  /** File in corso delle categorie, escluso quello in evidenza. */
+  others: FileItem[];
+};
+
+/** Home del cliente (C-02, C5): ultimo file pubblicato e altri file in corso, con una sola lettura. */
+export async function getClientHomeFiles(
   clientId: string,
-): Promise<FileItem | null> {
-  return latestPublished(await getOwnFiles(clientId));
+): Promise<ClientHomeFiles> {
+  const files = await getOwnFiles(clientId);
+  const latest = latestPublished(files);
+  return { latest, others: otherCurrentFiles(files, dayInRome(), latest) };
 }
 
 // ---------------------------------------------------------------------

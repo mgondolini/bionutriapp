@@ -4,6 +4,7 @@ import {
   currentFile,
   currentFileIds,
   latestPublished,
+  otherCurrentFiles,
   splitCurrentAndArchive,
   type DatedFile,
 } from "./current-file";
@@ -97,5 +98,41 @@ describe("latestPublished", () => {
     ];
     expect(latestPublished(files)?.id).toBe("novembre");
     expect(latestPublished([])).toBeNull();
+  });
+});
+
+describe("otherCurrentFiles", () => {
+  const diet = file("dieta", "2026-10-07", "2026-10-07T08:00:00Z");
+  const workout = file(
+    "scheda",
+    "2026-10-01",
+    "2026-10-01T08:00:00Z",
+    "workout",
+  );
+  const oldReport = file(
+    "report-vecchio",
+    "2026-09-01",
+    "2026-09-01T08:00:00Z",
+    "report",
+  );
+  const report = file("report", "2026-10-03", "2026-10-03T08:00:00Z", "report");
+
+  it("restituisce il file in corso delle altre categorie, in ordine", () => {
+    const files = [report, diet, oldReport, workout];
+    expect(otherCurrentFiles(files, TODAY, diet).map((f) => f.id)).toEqual([
+      "scheda",
+      "report",
+    ]);
+  });
+
+  it("con il file in evidenza a validità futura mostra quello in corso della stessa categoria", () => {
+    const future = file("dieta-novembre", "2026-11-01", "2026-10-15T08:00:00Z");
+    expect(
+      otherCurrentFiles([diet, future], TODAY, future).map((f) => f.id),
+    ).toEqual(["dieta"]);
+  });
+
+  it("senza file non restituisce nulla", () => {
+    expect(otherCurrentFiles([], TODAY, null)).toEqual([]);
   });
 });

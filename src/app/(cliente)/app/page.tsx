@@ -1,10 +1,11 @@
 import { ClientHomeHeader } from "@/features/cliente/client-header";
 import { LatestFile } from "@/features/cliente/files/latest-file";
+import { OtherCurrentFiles } from "@/features/cliente/files/other-current-files";
 import { OnboardingHome } from "@/features/cliente/onboarding-home";
 import { InstallGuideAutoOpen } from "@/features/cliente/pwa/install-guide";
 import { PushBanner } from "@/features/cliente/pwa/push-banner";
 import { ToRecord } from "@/features/cliente/tracking/to-record";
-import { getClientLatestFile } from "@/server/services/files.service";
+import { getClientHomeFiles } from "@/server/services/files.service";
 import { listOwnEndpoints } from "@/server/services/push.service";
 import { requireClient } from "@/server/services/session.service";
 import {
@@ -39,15 +40,16 @@ export default async function ClientHomePage() {
     );
   }
   const actor = clientTrackingActor(session);
-  const [latest, toRecord] = await Promise.all([
-    getClientLatestFile(client.id),
+  const [files, toRecord] = await Promise.all([
+    getClientHomeFiles(client.id),
     actor?.canWrite ? getHomeToRecord(actor) : null,
   ]);
   return (
     <div className="flex flex-col gap-4">
       <ClientHomeHeader />
       {pwa}
-      <LatestFile file={latest} />
+      <LatestFile file={files.latest} />
+      <OtherCurrentFiles files={files.others} />
       {toRecord ? <ToRecord items={toRecord} /> : null}
     </div>
   );

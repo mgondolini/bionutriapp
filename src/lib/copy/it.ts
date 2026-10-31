@@ -784,6 +784,7 @@ export const copy = {
       description:
         "Qui troverai l'ultimo file pubblicato e le misure da registrare.",
       latestFile: "Ultimo file",
+      otherFiles: "Altri file in corso",
       noFilesTitle: "Ancora nessun file",
       noFilesDescription:
         "Quando lo studio pubblicherà un file per te, lo troverai qui.",

@@ -76,3 +76,20 @@ export function latestPublished<T extends DatedFile>(
 ): T | null {
   return [...files].sort(byUploadDesc)[0] ?? null;
 }
+
+/**
+ * File in corso delle categorie, nell'ordine Dieta, Allenamento, Report,
+ * escluso quello già in evidenza (home del cliente, "Altri file in corso").
+ */
+export function otherCurrentFiles<T extends DatedFile>(
+  files: readonly T[],
+  today: string,
+  featured: T | null,
+): T[] {
+  return FILE_CATEGORIES.map((category) =>
+    currentFile(
+      files.filter((file) => file.category === category),
+      today,
+    ),
+  ).filter((file): file is T => file !== null && file.id !== featured?.id);
+}
