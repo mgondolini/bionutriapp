@@ -6,6 +6,18 @@ import { securityHeaders } from "./src/lib/security/headers";
 // per la produzione) i link di invito ed email usano l'URL dell'anteprima.
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.DEPLOY_PRIME_URL;
 
+// Su Netlify (staging e produzione) i link di invito ed email devono puntare
+// al sito pubblicato: un indirizzo locale non si apre dal telefono del cliente.
+if (
+  process.env.NETLIFY &&
+  appUrl &&
+  /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/.test(appUrl)
+) {
+  throw new Error(
+    `NEXT_PUBLIC_APP_URL punta a un indirizzo locale (${appUrl}): impostala nel pannello di Netlify o rimuovila per usare l'URL del deploy.`,
+  );
+}
+
 const nextConfig: NextConfig = {
   ...(appUrl ? { env: { NEXT_PUBLIC_APP_URL: appUrl } } : {}),
   cacheComponents: true,

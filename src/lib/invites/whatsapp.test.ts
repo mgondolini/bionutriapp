@@ -44,7 +44,7 @@ describe("messaggio di invito", () => {
     const link = activationUrl("https://app.test", "TOKEN");
     expect(link).toBe("https://app.test/attiva/TOKEN");
     expect(copy.invites.whatsappMessage("Studio Verde", link)).toBe(
-      "Ciao! Studio Verde ti invita ad attivare il tuo account: https://app.test/attiva/TOKEN",
+      "Studio Verde e il suo team ti invitano ad attivare l'account: https://app.test/attiva/TOKEN",
     );
   });
 });

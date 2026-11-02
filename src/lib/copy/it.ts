@@ -1133,7 +1133,7 @@ export const copy = {
   invites: {
     /** Messaggio WhatsApp precompilato: SOLO nome dello studio e link (N-05). */
     whatsappMessage: (studioName: string, link: string) =>
-      `Ciao! ${studioName} ti invita ad attivare il tuo account: ${link}`,
+      `${studioName} e il suo team ti invitano ad attivare l'account: ${link}`,
   },
   activation: {
     metaTitle: "Attiva il tuo account",

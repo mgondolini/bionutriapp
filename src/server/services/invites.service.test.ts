@@ -360,7 +360,7 @@ describe("createInvite", () => {
       result.whatsappUrl.startsWith("https://wa.me/393331234567?text="),
     ).toBe(true);
     expect(text).toBe(
-      `Ciao! Studio Verde ti invita ad attivare il tuo account: https://app.test/attiva/${token}`,
+      `Studio Verde e il suo team ti invitano ad attivare l'account: https://app.test/attiva/${token}`,
     );
     const [, , savedHash] = vi.mocked(invitesRepository.insertInvite).mock
       .calls[0]!;
