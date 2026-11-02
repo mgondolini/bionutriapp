@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { Suspense } from "react";
 
+import { LaunchSplash } from "@/components/shared/launch-splash";
 import { StudioThemeStyle } from "@/components/shared/studio-theme-style";
 import { Toaster } from "@/components/ui/sonner";
 import { APP_BACKGROUND_COLOR } from "@/lib/constants/domain";
@@ -27,7 +28,9 @@ const jakarta = Plus_Jakarta_Sans({
 export async function generateMetadata(): Promise<Metadata> {
   const studio = await getPublicStudio();
   return {
-    title: copy.app.fallbackName,
+    // nome dello studio nella scheda del browser; le pagine con un titolo
+    // proprio (attivazione, privacy) lo mettono prima del nome
+    title: { default: studio.name, template: `%s · ${studio.name}` },
     description: copy.app.description,
     applicationName: studio.name,
     appleWebApp: {
@@ -58,6 +61,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="it" className={`${jakarta.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
+        <Suspense fallback={null}>
+          <LaunchSplash />
+        </Suspense>
         <Suspense fallback={null}>
           <StudioTheme />
         </Suspense>
