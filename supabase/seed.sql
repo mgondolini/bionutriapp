@@ -93,6 +93,8 @@ update public.clients set account_status = 'disabled' where id = 'bbbbbbbb-2222-
 -- Come fa l'app alla disattivazione: utente bloccato in Supabase Auth (ban)
 update auth.users set banned_until = now() + interval '100 years' where id = 'bbbbbbbb-0000-4000-8000-0000000000c2';
 update public.clients set birth_date = '1991-03-12'    where id = 'aaaaaaaa-2222-4000-8000-000000000001';
+-- Altezza: Anna l'ha indicata all'attivazione; Marco (attivato prima) no
+update public.clients set height_cm = 168             where id = 'aaaaaaaa-2222-4000-8000-000000000001';
 
 -- File (solo metadati: i PDF di prova si caricano con `pnpm seed:files`).
 -- Il file di Marco resta invisibile a lui finché è in Onboarding (C-09).

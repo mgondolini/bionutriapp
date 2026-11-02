@@ -6,6 +6,8 @@ import { Controller, useForm, type Resolver } from "react-hook-form";
 
 import { FormMessage } from "@/components/shared/form-message";
 import { PasswordInput } from "@/components/shared/password-input";
+import { PrivacyNoticeContent } from "@/components/shared/privacy-notice";
+import { ResponsiveDialog } from "@/components/shared/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -17,7 +19,6 @@ import {
   FieldSet,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { useHydrated } from "@/lib/use-hydrated";
 import { activateAccountAction } from "@/server/actions/invites.actions";
@@ -28,13 +29,14 @@ import {
 
 const t = copy.activation;
 
-type TextField = "firstName" | "lastName" | "email" | "birthDate";
+type TextField = "firstName" | "lastName" | "email" | "birthDate" | "heightCm";
 
 const DATA_FIELDS: {
   name: TextField;
   label: string;
   type?: string;
   autoComplete: string;
+  inputMode?: "numeric";
   placeholder?: string;
   hint?: string;
 }[] = [
@@ -54,6 +56,14 @@ const DATA_FIELDS: {
     hint: t.emailHint,
   },
   { name: "birthDate", label: t.birthDate, type: "date", autoComplete: "bday" },
+  {
+    name: "heightCm",
+    label: t.height,
+    autoComplete: "off",
+    inputMode: "numeric",
+    placeholder: copy.common.height.placeholder,
+    hint: t.heightHint,
+  },
 ];
 
 /** Presa visione dell'informativa e consenso ai dati sanitari, separati (NF-06). */
@@ -70,17 +80,22 @@ const CONSENTS: { name: "privacyNotice" | "healthData"; label: string }[] = [
  */
 export function ActivationForm({
   token,
+  studioName,
   initial,
 }: {
   token: string;
+  /** Titolare del trattamento nell'informativa. */
+  studioName: string;
   initial: {
     firstName: string;
     lastName: string | null;
     email: string | null;
     birthDate: string | null;
+    heightCm: number | null;
   };
 }) {
   const [error, setError] = useState<string | null>(null);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const hydrated = useHydrated();
   const form = useForm<ActivationFormValues>({
@@ -93,6 +108,7 @@ export function ActivationForm({
       lastName: initial.lastName ?? "",
       email: initial.email ?? "",
       birthDate: initial.birthDate ?? "",
+      heightCm: initial.heightCm === null ? "" : String(initial.heightCm),
       password: "",
       privacyNotice: false,
       healthData: false,
@@ -130,7 +146,15 @@ export function ActivationForm({
         <FieldLegend>{t.dataTitle}</FieldLegend>
         <FieldGroup>
           {DATA_FIELDS.map(
-            ({ name, label, type, autoComplete, placeholder, hint }) => (
+            ({
+              name,
+              label,
+              type,
+              autoComplete,
+              inputMode,
+              placeholder,
+              hint,
+            }) => (
               <Controller
                 key={name}
                 name={name}
@@ -145,6 +169,7 @@ export function ActivationForm({
                       id={`activation-${name}`}
                       type={type ?? "text"}
                       autoComplete={autoComplete}
+                      inputMode={inputMode}
                       placeholder={placeholder}
                       aria-invalid={fieldState.invalid}
                     />
@@ -187,14 +212,37 @@ export function ActivationForm({
 
       <FieldSet>
         <FieldLegend>{t.consentTitle}</FieldLegend>
-        <a
-          href={ROUTES.privacy}
-          target="_blank"
-          rel="noopener"
-          className="text-sm font-medium text-primary-ink underline underline-offset-4"
+        <ResponsiveDialog
+          open={privacyOpen}
+          onOpenChange={setPrivacyOpen}
+          title={t.privacyDialogTitle}
+          dialogClassName="sm:max-w-2xl"
+          trigger={
+            <Button
+              type="button"
+              variant="link"
+              className="h-11 self-start px-0 underline"
+            >
+              {t.privacyNoticeLink}
+            </Button>
+          }
         >
-          {t.privacyNoticeLink}
-        </a>
+          <div className="flex flex-col gap-6">
+            <PrivacyNoticeContent studioName={studioName} />
+            {/* Spunta solo la presa visione: il consenso ai dati sulla salute resta una scelta separata (art. 9 GDPR). */}
+            <Button
+              type="button"
+              size="lg"
+              className="sticky bottom-0 w-full"
+              onClick={() => {
+                form.setValue("privacyNotice", true, { shouldValidate: true });
+                setPrivacyOpen(false);
+              }}
+            >
+              {t.privacyAccept}
+            </Button>
+          </div>
+        </ResponsiveDialog>
         <FieldGroup className="gap-3">
           {CONSENTS.map(({ name, label }) => (
             <Controller

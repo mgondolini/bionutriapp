@@ -12,6 +12,7 @@ import {
 import { copy } from "@/lib/copy/it";
 import { parseBirthDate } from "@/lib/csv/clean-clients";
 import { normalizePhone } from "@/lib/phone";
+import { optionalHeight } from "@/server/validation/height.schema";
 
 const v = copy.admin.clients.validation;
 
@@ -145,6 +146,7 @@ export const updateClientSchema = z.object({
   phone: phoneSchema,
   email: optionalEmail,
   birthDate: optionalBirthDate,
+  heightCm: optionalHeight,
 });
 export type UpdateClientInput = z.output<typeof updateClientSchema>;
 export type UpdateClientFormValues = z.input<typeof updateClientSchema>;

@@ -154,16 +154,18 @@ describe("cambio email", () => {
 });
 
 describe("profilo del cliente", () => {
-  it("salva solo nome, cognome e data di nascita", async () => {
+  it("salva solo nome, cognome, data di nascita e altezza", async () => {
     await service.updateClientProfile({
       firstName: "Giulia",
       lastName: "Bianchi",
       birthDate: "1991-03-12",
+      heightCm: 165,
     });
     expect(profile.updateOwnClient).toHaveBeenCalledWith({
       first_name: "Giulia",
       last_name: "Bianchi",
       birth_date: "1991-03-12",
+      height_cm: 165,
     });
   });
 
@@ -175,6 +177,7 @@ describe("profilo del cliente", () => {
       phone: "+393330000001",
       email: "giulia@esempio.it",
       birth_date: null,
+      height_cm: 165,
       activated_at: "2026-04-14T10:00:00Z",
       push_enabled: false,
     });

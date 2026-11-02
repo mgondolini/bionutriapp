@@ -23,6 +23,7 @@ export type ClientProfilePage = {
   lastName: string | null;
   phone: string;
   birthDate: string | null;
+  heightCm: number | null;
   activatedAt: string | null;
   pushEnabled: boolean;
   email: AccountEmail;
@@ -42,6 +43,7 @@ export async function getClientProfile(
     lastName: client.last_name,
     phone: client.phone,
     birthDate: client.birth_date,
+    heightCm: client.height_cm,
     activatedAt: client.activated_at,
     pushEnabled: client.push_enabled,
     // l'email dell'account è quella di Auth; clients.email la segue dopo la conferma

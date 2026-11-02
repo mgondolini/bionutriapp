@@ -16,16 +16,18 @@ describe("profilo del cliente", () => {
       firstName: "  Giulia ",
       lastName: "Bianchi",
       birthDate: "1991-03-12",
+      heightCm: "165",
     });
     expect(parsed).toEqual({
       firstName: "Giulia",
       lastName: "Bianchi",
       birthDate: "1991-03-12",
+      heightCm: 165,
     });
   });
 
   it("data di nascita facoltativa, ma reale e non futura", () => {
-    const base = { firstName: "Giulia", lastName: "Bianchi" };
+    const base = { firstName: "Giulia", lastName: "Bianchi", heightCm: "165" };
     expect(
       clientProfileSchema.parse({ ...base, birthDate: "" }).birthDate,
     ).toBe(null);
@@ -45,6 +47,7 @@ describe("profilo del cliente", () => {
         firstName: " ",
         lastName: "B",
         birthDate: "",
+        heightCm: "165",
       }).success,
     ).toBe(false);
     expect(
@@ -52,6 +55,7 @@ describe("profilo del cliente", () => {
         firstName: "G",
         lastName: "x".repeat(81),
         birthDate: "",
+        heightCm: "165",
       }).success,
     ).toBe(false);
   });
@@ -61,6 +65,7 @@ describe("profilo del cliente", () => {
       firstName: "Giulia",
       lastName: "Bianchi",
       birthDate: "",
+      heightCm: "165",
       phone: "+393330000000",
       account_status: "disabled",
       journey_stage: "completed",
@@ -69,8 +74,19 @@ describe("profilo del cliente", () => {
     expect(Object.keys(parsed).sort()).toEqual([
       "birthDate",
       "firstName",
+      "heightCm",
       "lastName",
     ]);
+  });
+
+  it("altezza obbligatoria, in centimetri interi", () => {
+    const base = { firstName: "Giulia", lastName: "Bianchi", birthDate: "" };
+    expect(
+      clientProfileSchema.safeParse({ ...base, heightCm: "" }).success,
+    ).toBe(false);
+    expect(
+      clientProfileSchema.safeParse({ ...base, heightCm: "1,65" }).success,
+    ).toBe(false);
   });
 
   it("l'aggiornamento contiene solo le colonne modificabili dal cliente", () => {
@@ -78,12 +94,14 @@ describe("profilo del cliente", () => {
       firstName: "Giulia",
       lastName: "Bianchi",
       birthDate: null,
+      heightCm: 165,
     });
     expect(Object.keys(update)).toEqual([...CLIENT_EDITABLE_FIELDS]);
     expect(CLIENT_EDITABLE_FIELDS).toEqual([
       "first_name",
       "last_name",
       "birth_date",
+      "height_cm",
     ]);
   });
 });

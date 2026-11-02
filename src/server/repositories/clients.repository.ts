@@ -110,7 +110,7 @@ export async function insertClients(
 
 /** Colonne della scheda Profilo (A-06, A-07). */
 const CLIENT_PROFILE_COLUMNS =
-  "id, studio_id, first_name, last_name, phone, email, birth_date, origin, account_status, effective_account_status, journey_stage, activated_at, push_enabled, user_id, created_at, last_invite_created_at, last_invite_sent_at, last_invite_expires_at, last_invite_used_at";
+  "id, studio_id, first_name, last_name, phone, email, birth_date, height_cm, origin, account_status, effective_account_status, journey_stage, activated_at, push_enabled, user_id, created_at, last_invite_created_at, last_invite_sent_at, last_invite_expires_at, last_invite_used_at";
 
 /** Scheda Profilo; null se il cliente non esiste o è di un altro studio (RLS). */
 export async function getClientProfile(clientId: string) {
@@ -142,6 +142,7 @@ export type ClientDataUpdate = {
   phone: string;
   email: string | null;
   birthDate: string | null;
+  heightCm: number | null;
 };
 
 export type UpdateResult =
@@ -165,6 +166,7 @@ export async function updateClientData(
       phone: data.phone,
       email: data.email,
       birth_date: data.birthDate,
+      height_cm: data.heightCm,
     })
     .eq("id", clientId)
     .select("id");

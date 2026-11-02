@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { MetricStatusBadge } from "@/components/shared/metric-card";
 import { PageLoading } from "@/components/shared/page-states";
 import { buttonVariants } from "@/components/ui/button";
+import { HeightPill } from "@/features/admin/clients/tracking/height-pill";
 import { StaffMetricDetail } from "@/features/admin/clients/tracking/staff-metric-detail";
 import { clientDetailPath } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
@@ -50,6 +51,9 @@ async function MetricContent({
             <h2 className="text-2xl font-bold">{item.metric.name}</h2>
             {status && status !== "ok" ? (
               <MetricStatusBadge status={status} />
+            ) : null}
+            {item.kind === "circumference" ? (
+              <HeightPill clientId={clientId.data} heightCm={detail.heightCm} />
             ) : null}
           </div>
           <p className="text-[13px] text-muted-foreground">

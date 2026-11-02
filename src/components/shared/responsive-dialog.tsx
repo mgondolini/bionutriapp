@@ -25,6 +25,8 @@ type ResponsiveDialogProps = {
   trigger: React.ReactElement;
   title: string;
   description?: React.ReactNode;
+  /** Classi in più per il dialog su schermi larghi (es. larghezza per un testo lungo). */
+  dialogClassName?: string;
   children: React.ReactNode;
 };
 
@@ -39,6 +41,7 @@ export function ResponsiveDialog({
   trigger,
   title,
   description,
+  dialogClassName,
   children,
 }: ResponsiveDialogProps) {
   const phone = useMediaQuery(PHONE_MEDIA_QUERY);
@@ -66,7 +69,7 @@ export function ResponsiveDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger render={trigger} />
-      <DialogContent>
+      <DialogContent className={dialogClassName}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description ? (

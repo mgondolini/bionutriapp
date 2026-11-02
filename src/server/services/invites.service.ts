@@ -109,6 +109,7 @@ export type ActivationView =
         phone: string;
         email: string | null;
         birthDate: string | null;
+        heightCm: number | null;
       };
     };
 
@@ -142,6 +143,7 @@ export async function getActivationView(
       phone: row.client.phone,
       email: row.client.email,
       birthDate: row.client.birth_date,
+      heightCm: row.client.height_cm,
     },
   };
 }
@@ -200,6 +202,7 @@ export async function activate(
         last_name: input.lastName,
         email: input.email,
         birth_date: input.birthDate,
+        height_cm: input.heightCm,
         privacy_notice: input.privacyNotice,
         health_data: input.healthData,
         policy_version: PRIVACY_POLICY_VERSION,

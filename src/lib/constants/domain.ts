@@ -117,11 +117,14 @@ export const CLIENT_EDITABLE_FIELDS = [
   "first_name",
   "last_name",
   "birth_date",
+  "height_cm",
 ] as const;
 export type ClientEditableField = (typeof CLIENT_EDITABLE_FIELDS)[number];
 
 /** Limiti dei campi del profilo, uguali ai check del database. */
 export const NAME_MAX_LENGTH = 80;
+/** Altezza del cliente in centimetri interi (check di `clients.height_cm`). DA CONFERMARE */
+export const HEIGHT_LIMITS = { min: 100, max: 230 } as const;
 export const TITLE_MAX_LENGTH = 20;
 
 /**

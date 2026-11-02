@@ -4,13 +4,15 @@ select plan(16);
 select tests.create_fixtures();
 
 -- Misure predefinite
-select is((select count(*)::int from public.metrics where studio_id = tests.id('studio1')), 9,
-  'alla creazione dello studio vengono create 9 misure');
+select is((select count(*)::int from public.metrics where studio_id = tests.id('studio1')), 11,
+  'alla creazione dello studio vengono create 11 misure');
 select results_eq(
   $$ select key, value_type, frequency, min_value, max_value from public.metrics
       where studio_id = tests.id('studio1') order by sort_order $$,
   $$ values
-       ('circ_waist'::text, 'decimal'::text, 'monthly_30d'::text, 10::numeric, 250::numeric),
+       ('weight'::text, 'decimal'::text, 'monthly_30d'::text, 20::numeric, 300::numeric),
+       ('circ_shoulders', 'decimal', 'monthly_30d', 10, 250),
+       ('circ_waist', 'decimal', 'monthly_30d', 10, 250),
        ('circ_navel', 'decimal', 'monthly_30d', 10, 250),
        ('circ_glutes', 'decimal', 'monthly_30d', 10, 250),
        ('circ_right_leg', 'decimal', 'monthly_30d', 10, 150),

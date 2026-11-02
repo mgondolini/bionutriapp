@@ -57,7 +57,7 @@ export async function findInviteByHash(tokenHash: string) {
   const { data, error } = await supabase
     .from("client_invites")
     .select(
-      "id, expires_at, used_at, revoked_at, client:clients!inner(id, first_name, last_name, phone, email, birth_date, origin, account_status, user_id, studio:studios!inner(name, slug))",
+      "id, expires_at, used_at, revoked_at, client:clients!inner(id, first_name, last_name, phone, email, birth_date, height_cm, origin, account_status, user_id, studio:studios!inner(name, slug))",
     )
     .eq("token_hash", tokenHash)
     .maybeSingle();
@@ -70,6 +70,7 @@ export type ActivationProfile = {
   last_name: string | null;
   email: string | null;
   birth_date: string | null;
+  height_cm: number;
   privacy_notice: boolean;
   health_data: boolean;
   policy_version: string;

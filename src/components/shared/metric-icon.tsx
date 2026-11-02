@@ -5,6 +5,7 @@ import {
   GlassWater,
   Moon,
   Ruler,
+  Weight,
   type LucideIcon,
 } from "lucide-react";
 
@@ -13,6 +14,7 @@ import { cn } from "@/lib/utils";
 /** Icone lucide per il nome salvato in metrics.icon; le altre ricadono su Activity. */
 const ICONS: Record<string, LucideIcon> = {
   ruler: Ruler,
+  weight: Weight,
   footprints: Footprints,
   moon: Moon,
   "glass-water": GlassWater,

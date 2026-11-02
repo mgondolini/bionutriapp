@@ -7,10 +7,10 @@ import {
   CLIENT_EDITABLE_FIELDS,
   NAME_MAX_LENGTH,
   TITLE_MAX_LENGTH,
-  type ClientEditableField,
 } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { parseBirthDate } from "@/lib/csv/clean-clients";
+import { requiredHeight } from "@/server/validation/height.schema";
 import { passwordSchema } from "@/server/validation/password.schema";
 
 const v = copy.profile.validation;
@@ -41,23 +41,36 @@ export const clientProfileSchema = z.object({
   firstName: requiredName(v.firstNameRequired),
   lastName: requiredName(v.lastNameRequired),
   birthDate: optionalBirthDate,
+  heightCm: requiredHeight,
 });
 export type ClientProfileInput = z.output<typeof clientProfileSchema>;
 export type ClientProfileFormValues = z.input<typeof clientProfileSchema>;
 
+/**
+ * Colonne di `clients` che il cliente modifica, con i loro valori; le chiavi
+ * sono quelle di CLIENT_EDITABLE_FIELDS (lo verifica `update[field]` sotto).
+ */
+export type ClientProfileUpdate = {
+  first_name: string;
+  last_name: string | null;
+  birth_date: string | null;
+  height_cm: number;
+};
+
 /** Valori validati → colonne di `clients` (le sole che il cliente può toccare). */
 export function toClientProfileUpdate(
   input: ClientProfileInput,
-): Record<ClientEditableField, string | null> {
-  const update = {
+): ClientProfileUpdate {
+  const update: ClientProfileUpdate = {
     first_name: input.firstName,
     last_name: input.lastName,
     birth_date: input.birthDate,
-  } satisfies Record<ClientEditableField, string | null>;
+    height_cm: input.heightCm,
+  };
   // garanzia a runtime: nessuna colonna fuori dall'elenco
   return Object.fromEntries(
     CLIENT_EDITABLE_FIELDS.map((field) => [field, update[field]]),
-  ) as Record<ClientEditableField, string | null>;
+  ) as ClientProfileUpdate;
 }
 
 /** Nome del professionista: titolo facoltativo ("Dott.ssa"), nome, cognome. */

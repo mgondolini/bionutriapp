@@ -34,19 +34,21 @@ const t = copy.profile.personal;
 type FieldName = keyof ClientProfileFormValues;
 
 /**
- * Dati personali del cliente (C13, C-07): modifica di nome, cognome e data
- * di nascita. Il cellulare è in sola lettura: è l'identificativo di accesso e
+ * Dati personali del cliente (C13, C-07): modifica di nome, cognome, data
+ * di nascita e altezza (obbligatoria, come all'attivazione). Il cellulare è in sola lettura: è l'identificativo di accesso e
  * il numero degli inviti WhatsApp, lo cambia solo lo studio (A-06).
  */
 export function PersonalDataCard({
   firstName,
   lastName,
   birthDate,
+  heightCm,
   phone,
 }: {
   firstName: string;
   lastName: string | null;
   birthDate: string | null;
+  heightCm: number | null;
   phone: string;
 }) {
   const hydrated = useHydrated();
@@ -58,6 +60,7 @@ export function PersonalDataCard({
     firstName,
     lastName: lastName ?? "",
     birthDate: birthDate ?? "",
+    heightCm: heightCm === null ? "" : String(heightCm),
   };
   const form = useForm<ClientProfileFormValues>({
     resolver: zodResolver(clientProfileSchema, undefined, {
@@ -98,6 +101,8 @@ export function PersonalDataCard({
     label: string;
     autoComplete: string;
     type?: string;
+    inputMode?: "numeric";
+    placeholder?: string;
   }[] = [
     { name: "firstName", label: t.firstName, autoComplete: "given-name" },
     { name: "lastName", label: t.lastName, autoComplete: "family-name" },
@@ -106,6 +111,13 @@ export function PersonalDataCard({
       label: t.birthDate,
       autoComplete: "bday",
       type: "date",
+    },
+    {
+      name: "heightCm",
+      label: copy.activation.height,
+      autoComplete: "off",
+      inputMode: "numeric",
+      placeholder: copy.common.height.placeholder,
     },
   ];
 
@@ -135,30 +147,34 @@ export function PersonalDataCard({
         >
           <FieldGroup>
             {error ? <FormMessage>{error}</FormMessage> : null}
-            {fields.map(({ name, label, autoComplete, type }) => {
-              const inputId = `${ids}-${name}`;
-              return (
-                <Controller
-                  key={name}
-                  name={name}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor={inputId}>{label}</FieldLabel>
-                      <Input
-                        {...field}
-                        id={inputId}
-                        type={type}
-                        autoComplete={autoComplete}
-                        disabled={isPending}
-                        aria-invalid={fieldState.invalid}
-                      />
-                      <FieldError errors={[fieldState.error]} />
-                    </Field>
-                  )}
-                />
-              );
-            })}
+            {fields.map(
+              ({ name, label, autoComplete, type, inputMode, placeholder }) => {
+                const inputId = `${ids}-${name}`;
+                return (
+                  <Controller
+                    key={name}
+                    name={name}
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor={inputId}>{label}</FieldLabel>
+                        <Input
+                          {...field}
+                          id={inputId}
+                          type={type}
+                          autoComplete={autoComplete}
+                          inputMode={inputMode}
+                          placeholder={placeholder}
+                          disabled={isPending}
+                          aria-invalid={fieldState.invalid}
+                        />
+                        <FieldError errors={[fieldState.error]} />
+                      </Field>
+                    )}
+                  />
+                );
+              },
+            )}
           </FieldGroup>
           <div className="flex flex-wrap gap-2">
             <Button type="submit" disabled={!hydrated || isPending}>
@@ -181,6 +197,9 @@ export function PersonalDataCard({
           </ProfileItem>
           <ProfileItem label={t.birthDate}>
             {birthDate ? formatLongDate(birthDate) : t.noValue}
+          </ProfileItem>
+          <ProfileItem label={t.height}>
+            {heightCm === null ? t.noValue : copy.common.height.value(heightCm)}
           </ProfileItem>
         </dl>
       )}

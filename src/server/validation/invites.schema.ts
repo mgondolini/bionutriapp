@@ -4,6 +4,7 @@ import { z } from "zod";
 import { INVITE_TOKEN_LENGTH } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { parseBirthDate } from "@/lib/csv/clean-clients";
+import { requiredHeight } from "@/server/validation/height.schema";
 import { passwordSchema } from "@/server/validation/password.schema";
 
 const v = copy.activation.validation;
@@ -14,12 +15,13 @@ export const inviteTokenSchema = z
   .length(INVITE_TOKEN_LENGTH)
   .regex(/^[A-Za-z0-9_-]+$/);
 
-const optionalEmail = z
+/** Email obbligatoria: serve per accedere e per recuperare la password da soli. */
+const requiredEmail = z
   .string()
   .trim()
   .toLowerCase()
-  .pipe(z.union([z.literal(""), z.email(v.emailInvalid)]))
-  .transform((value) => value || null);
+  .min(1, v.emailRequired)
+  .pipe(z.email(v.emailInvalid));
 
 const optionalBirthDate = z
   .string()
@@ -32,8 +34,8 @@ const optionalBirthDate = z
 
 /**
  * Attivazione (C-08), schermate C1 e C2: stesso schema per i due percorsi.
- * Il cognome è obbligatorio: il cliente nuovo lo inserisce qui, quello già
- * presente lo verifica. Il cellulare non si modifica (identifica l'invito).
+ * Cognome, email e altezza sono obbligatori: il cliente nuovo li inserisce
+ * qui, quello già presente li verifica. Il cellulare non si modifica (identifica l'invito).
  */
 export const activationSchema = z.object({
   token: inviteTokenSchema,
@@ -43,8 +45,9 @@ export const activationSchema = z.object({
     .min(1, v.firstNameRequired)
     .max(80, v.nameTooLong),
   lastName: z.string().trim().min(1, v.lastNameRequired).max(80, v.nameTooLong),
-  email: optionalEmail,
+  email: requiredEmail,
   birthDate: optionalBirthDate,
+  heightCm: requiredHeight,
   password: passwordSchema,
   // Due dichiarazioni distinte (NF-06): presa visione dell'informativa e
   // consenso esplicito al trattamento dei dati sanitari (art. 9 GDPR).
@@ -60,6 +63,7 @@ export type ActivationFormValues = {
   lastName: string;
   email: string;
   birthDate: string;
+  heightCm: string;
   password: string;
   privacyNotice: boolean;
   healthData: boolean;

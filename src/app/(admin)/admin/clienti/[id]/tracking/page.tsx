@@ -20,6 +20,7 @@ async function TrackingContent({
     <TrackingBoard
       clientId={data.clientId}
       clientName={data.clientName}
+      heightCm={data.heightCm}
       overview={data.overview}
       goals={data.goals}
       today={data.today}

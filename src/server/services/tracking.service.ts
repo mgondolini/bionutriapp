@@ -484,6 +484,8 @@ export type StaffGoal = {
 export type StaffTracking = {
   clientId: string;
   clientName: string;
+  /** Altezza del cliente (dato anagrafico), accanto a peso e circonferenze. */
+  heightCm: number | null;
   overview: MetricOverview[];
   /** Obiettivi effettivi di passi, sonno e acqua, nell'ordine del check-in. */
   goals: StaffGoal[];
@@ -522,6 +524,7 @@ export async function getStaffTracking(
   return {
     clientId,
     clientName: [client.first_name, client.last_name].filter(Boolean).join(" "),
+    heightCm: client.height_cm,
     overview: buildTrackingOverview({ ...data, today }),
     goals,
     today,
@@ -533,7 +536,9 @@ export async function getStaffMetricDetail(
   studioId: string,
   clientId: string,
   metricKey: string,
-): Promise<(MetricDetail & { clientName: string }) | null> {
+): Promise<
+  (MetricDetail & { clientName: string; heightCm: number | null }) | null
+> {
   const tracking = await getStaffTracking(studioId, clientId);
   const item = tracking?.overview.find(
     (entry) => entry.metric.key === metricKey,
@@ -546,6 +551,7 @@ export async function getStaffMetricDetail(
     canWrite: true,
     viewer: STAFF_VIEWER,
     clientName: tracking.clientName,
+    heightCm: tracking.heightCm,
   };
 }
 

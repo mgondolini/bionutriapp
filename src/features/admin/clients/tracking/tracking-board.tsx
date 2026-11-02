@@ -30,6 +30,7 @@ import type { StaffGoal } from "@/server/services/tracking.service";
 
 import { AddEntryDialog } from "./add-entry-dialog";
 import { GoalsDialog } from "./goals-dialog";
+import { HeightPill } from "./height-pill";
 
 const t = copy.admin.clients.tracking;
 
@@ -59,11 +60,45 @@ function BigValue({ value, unit }: { value: string; unit?: string }) {
 
 function CardFooter({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-auto flex flex-col gap-0.5 border-t border-muted pt-2.5 text-xs text-muted-foreground">
+    <div className="flex flex-col gap-0.5 border-t border-muted pt-2.5 text-xs text-muted-foreground">
       {children}
     </div>
   );
 }
+
+/**
+ * Righe della card dopo l'intestazione: valore, grafico, nota, piè di pagina
+ * e pulsante. Ogni card ha sempre tutte le righe (vuote se mancano) e le
+ * allinea con quelle delle altre card della stessa fila (`subgrid`, vedi
+ * `PANEL_GRID`): grafici e pulsanti stanno alla stessa altezza anche se una
+ * card non ha la variazione, la nota o il voto.
+ */
+function PanelRows({
+  value,
+  chart,
+  note,
+  footer,
+  action,
+}: {
+  value: React.ReactNode;
+  chart?: React.ReactNode;
+  note?: React.ReactNode;
+  footer?: React.ReactNode;
+  action: React.ReactNode;
+}) {
+  return (
+    <>
+      <div className="flex flex-col gap-1.5">{value}</div>
+      <div className="self-end">{chart}</div>
+      <div>{note}</div>
+      <div className="self-end">{footer}</div>
+      {action}
+    </>
+  );
+}
+
+/** Intestazione + le cinque righe di `PanelRows`. */
+const PANEL_GRID = "row-span-6 grid grid-rows-subgrid";
 
 /** Voti degli ultimi giorni fino a oggi, dal più vecchio; `null` per i giorni saltati. */
 function habitBars(
@@ -101,57 +136,62 @@ function CircumferenceCard({
   return (
     <MetricCard
       layout="panel"
-      className="w-full"
+      className={cn("w-full", PANEL_GRID)}
       kind="circumference"
       icon={metric.icon}
       title={metric.name}
       status={schedule.status}
       href={href}
     >
-      {summary.last ? (
-        <>
-          <div className="flex flex-col gap-1.5">
-            <BigValue
-              value={measureText(summary.last.value, null)}
-              unit={metric.unit ?? undefined}
-            />
-            {summary.delta !== null && summary.previous ? (
-              <p className="text-[13px] text-muted-foreground">
-                <b className="font-bold text-foreground">
-                  {formatSignedDelta(summary.delta, metric.unit)}
-                </b>{" "}
-                {t.circumference.since(
-                  formatDayMonthShort(summary.previous.recordedOn),
+      <PanelRows
+        value={
+          summary.last ? (
+            <>
+              <BigValue
+                value={measureText(summary.last.value, null)}
+                unit={metric.unit ?? undefined}
+              />
+              {summary.delta !== null && summary.previous ? (
+                <p className="text-[13px] text-muted-foreground">
+                  <b className="font-bold text-foreground">
+                    {formatSignedDelta(summary.delta, metric.unit)}
+                  </b>{" "}
+                  {t.circumference.since(
+                    formatDayMonthShort(summary.previous.recordedOn),
+                  )}
+                </p>
+              ) : null}
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {t.circumference.noEntries}
+            </p>
+          )
+        }
+        chart={<Sparkline values={trend} />}
+        footer={
+          summary.last ? (
+            <CardFooter>
+              <span>
+                {t.circumference.lastOn(
+                  formatDayMonthShort(summary.last.recordedOn),
                 )}
-              </p>
-            ) : null}
-          </div>
-          <Sparkline values={trend} className="my-1" />
-          <CardFooter>
-            <span>
-              {t.circumference.lastOn(
-                formatDayMonthShort(summary.last.recordedOn),
-              )}
-            </span>
-            <span>
-              {schedule.status === "overdue"
-                ? t.circumference.expired(
-                    formatDayMonthShort(schedule.dueOn!),
-                    -schedule.daysLeft!,
-                  )
-                : t.circumference.nextOn(formatDayMonthShort(schedule.dueOn!))}
-            </span>
-          </CardFooter>
-        </>
-      ) : (
-        <>
-          <p className="text-sm text-muted-foreground">
-            {t.circumference.noEntries}
-          </p>
-          <div className="flex-1" />
-        </>
-      )}
-      {action}
+              </span>
+              <span>
+                {schedule.status === "overdue"
+                  ? t.circumference.expired(
+                      formatDayMonthShort(schedule.dueOn!),
+                      -schedule.daysLeft!,
+                    )
+                  : t.circumference.nextOn(
+                      formatDayMonthShort(schedule.dueOn!),
+                    )}
+              </span>
+            </CardFooter>
+          ) : null
+        }
+        action={action}
+      />
     </MetricCard>
   );
 }
@@ -162,42 +202,48 @@ function HabitCard({ item, href, action, today }: CardProps<HabitOverview>) {
   return (
     <MetricCard
       layout="panel"
-      className="w-full"
+      className={cn("w-full", PANEL_GRID)}
       kind="habit"
       icon={metric.icon}
       title={metric.name}
       meta={tt.filledDaysOfWeek(stats.filledDays)}
       href={href}
     >
-      <div className="flex flex-col gap-1.5">
-        {stats.average !== null ? (
-          <BigValue
-            value={averageText(stats.average)}
-            unit={tt.outOf(metric.maxValue)}
-          />
-        ) : (
-          <p className="text-sm text-muted-foreground">{tt.noWeekValues}</p>
-        )}
-        {delta ? (
-          <p className="text-[13px] text-muted-foreground">{delta}</p>
-        ) : null}
-      </div>
-      <MiniBars
-        values={habitBars(entries, today)}
-        max={metric.maxValue}
-        className="my-1"
+      <PanelRows
+        value={
+          <>
+            {stats.average !== null ? (
+              <BigValue
+                value={averageText(stats.average)}
+                unit={tt.outOf(metric.maxValue)}
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">{tt.noWeekValues}</p>
+            )}
+            {delta ? (
+              <p className="text-[13px] text-muted-foreground">{delta}</p>
+            ) : null}
+          </>
+        }
+        chart={
+          <MiniBars values={habitBars(entries, today)} max={metric.maxValue} />
+        }
+        footer={
+          <CardFooter>
+            <span>
+              {stats.todayValue !== null
+                ? t.habit.todayScore(String(stats.todayValue))
+                : t.habit.todayMissing}
+            </span>
+            {goal ? (
+              <span>
+                {t.habit.goal(formatGoalAmount(goal.value, goal.unit))}
+              </span>
+            ) : null}
+          </CardFooter>
+        }
+        action={action}
       />
-      <CardFooter>
-        <span>
-          {stats.todayValue !== null
-            ? t.habit.todayScore(String(stats.todayValue))
-            : t.habit.todayMissing}
-        </span>
-        {goal ? (
-          <span>{t.habit.goal(formatGoalAmount(goal.value, goal.unit))}</span>
-        ) : null}
-      </CardFooter>
-      {action}
     </MetricCard>
   );
 }
@@ -211,53 +257,58 @@ function WorkoutCard({ item, href, action }: CardProps<WorkoutOverview>) {
   return (
     <MetricCard
       layout="panel"
-      className="w-full"
+      className={cn("w-full", PANEL_GRID)}
       kind="workout"
       icon={metric.icon}
       title={metric.name}
       meta={t.workout.thisWeek(tt.sessions(stats.week.count))}
       href={href}
     >
-      {stats.last && stats.all.average !== null ? (
-        <>
-          <div className="flex flex-col gap-1.5">
-            <BigValue
-              value={String(stats.last.value)}
-              unit={tt.outOf(metric.maxValue)}
-            />
-            <p className="text-[13px] text-muted-foreground">
-              {t.workout.averageAll(
-                averageText(stats.all.average),
-                tt.sessions(stats.all.count),
-              )}
+      <PanelRows
+        value={
+          stats.last && stats.all.average !== null ? (
+            <>
+              <BigValue
+                value={String(stats.last.value)}
+                unit={tt.outOf(metric.maxValue)}
+              />
+              <p className="text-[13px] text-muted-foreground">
+                {t.workout.averageAll(
+                  averageText(stats.all.average),
+                  tt.sessions(stats.all.count),
+                )}
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {t.workout.noSessions}
             </p>
-          </div>
-          <MiniBars values={sessions} max={metric.maxValue} className="my-1" />
-          {stats.last.note ? (
+          )
+        }
+        chart={<MiniBars values={sessions} max={metric.maxValue} />}
+        note={
+          stats.last?.note ? (
             <blockquote className="border-l-2 border-line-strong pl-3 text-[13px] whitespace-pre-line text-muted-foreground">
               {stats.last.note}
             </blockquote>
-          ) : null}
-          <CardFooter>
-            <span>
-              {t.workout.lastOn(formatDayMonthShort(stats.last.recordedOn))}
-            </span>
-            {stats.recent.average !== null ? (
+          ) : null
+        }
+        footer={
+          stats.last ? (
+            <CardFooter>
               <span>
-                {t.workout.recentAverage(averageText(stats.recent.average))}
+                {t.workout.lastOn(formatDayMonthShort(stats.last.recordedOn))}
               </span>
-            ) : null}
-          </CardFooter>
-        </>
-      ) : (
-        <>
-          <p className="text-sm text-muted-foreground">
-            {t.workout.noSessions}
-          </p>
-          <div className="flex-1" />
-        </>
-      )}
-      {action}
+              {stats.recent.average !== null ? (
+                <span>
+                  {t.workout.recentAverage(averageText(stats.recent.average))}
+                </span>
+              ) : null}
+            </CardFooter>
+          ) : null
+        }
+        action={action}
+      />
     </MetricCard>
   );
 }
@@ -267,12 +318,14 @@ function Section({
   items,
   clientId,
   clientName,
+  heightCm,
   today,
 }: {
   kind: MetricKind;
   items: MetricOverview[];
   clientId: string;
   clientName: string;
+  heightCm: number | null;
   today: string;
 }) {
   if (items.length === 0) return null;
@@ -285,19 +338,17 @@ function Section({
   return (
     <section aria-labelledby={id} className="flex flex-col gap-3">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-        <h2 id={id} className="text-lg font-bold">
-          {tt.kinds[kind].title}
-        </h2>
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+          <h2 id={id} className="text-lg font-bold">
+            {tt.kinds[kind].title}
+          </h2>
+          {kind === "circumference" ? (
+            <HeightPill clientId={clientId} heightCm={heightCm} />
+          ) : null}
+        </div>
         <p className="text-[13px] text-muted-foreground">{subtitle}</p>
       </div>
-      <ul
-        className={cn(
-          "grid gap-3 sm:grid-cols-2",
-          kind === "circumference"
-            ? "lg:grid-cols-3 xl:grid-cols-5"
-            : "lg:grid-cols-3 xl:grid-cols-4",
-        )}
-      >
+      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {items.map((item) => {
           const href = clientTrackingMetricPath(clientId, item.metric.key);
           const action = (
@@ -311,7 +362,7 @@ function Section({
             />
           );
           return (
-            <li key={item.metric.id} className="flex min-w-0">
+            <li key={item.metric.id} className={cn("min-w-0", PANEL_GRID)}>
               {item.kind === "circumference" ? (
                 <CircumferenceCard
                   item={item}
@@ -405,12 +456,14 @@ function GoalsSection({
 export function TrackingBoard({
   clientId,
   clientName,
+  heightCm,
   overview,
   goals,
   today,
 }: {
   clientId: string;
   clientName: string;
+  heightCm: number | null;
   overview: MetricOverview[];
   goals: StaffGoal[];
   today: string;
@@ -456,6 +509,7 @@ export function TrackingBoard({
           items={overview.filter((item) => sectionOf(item.kind) === kind)}
           clientId={clientId}
           clientName={clientName}
+          heightCm={heightCm}
           today={today}
         />
       ))}

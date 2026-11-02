@@ -105,13 +105,15 @@ L'area piattaforma è riservata alla sviluppatrice e serve a gestire gli studi e
 
 ## Tracking delle misure
 
-Nella 1.0 il tracking comprende 9 misure predefinite: cinque circonferenze mensili, tre abitudini giornaliere a punteggio (passi, sonno, acqua) e il diario degli allenamenti. Le misure sono create automaticamente per ogni studio e salvate come configurazione nel database, così da poterle personalizzare in futuro.
+Nella 1.0 il tracking comprende 11 misure predefinite: il peso e sei circonferenze mensili, tre abitudini giornaliere a punteggio (passi, sonno, acqua) e il diario degli allenamenti. Le misure sono create automaticamente per ogni studio e salvate come configurazione nel database, così da poterle personalizzare in futuro.
 
 | Misura | Unità | Frequenza | Valori ammessi | Istruzione per il cliente |
 | --- | --- | --- | --- | --- |
+| Peso | kg | Ogni 30 giorni | 20–300, decimale | Ogni 30 giorni inseriscilo qui |
+| Circ. Spalle | cm | Ogni 30 giorni | 10–250, decimale | Ogni 30 giorni inseriscila qui |
 | Circ. Vita | cm | Ogni 30 giorni | 10–250, decimale | Ogni 30 giorni inseriscila qui |
 | Circ. Ombelicale | cm | Ogni 30 giorni | 10–250, decimale | Ogni 30 giorni inseriscila qui |
-| Circ. Gluteo | cm | Ogni 30 giorni | 10–250, decimale | Ogni 30 giorni inseriscila qui |
+| Circ. Fianchi | cm | Ogni 30 giorni | 10–250, decimale | Ogni 30 giorni inseriscila qui |
 | Circ. Gamba dx | cm | Ogni 30 giorni | 10–150, decimale | Ogni 30 giorni inseriscila qui |
 | Circ. Braccio dx | cm | Ogni 30 giorni | 10–100, decimale | Ogni 30 giorni inseriscila qui |
 | Passi | voto | Giornaliera | 1–5, intero | Quanto ti sei avvicinato oggi al tuo obiettivo di passi? |

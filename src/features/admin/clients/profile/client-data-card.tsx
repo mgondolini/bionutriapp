@@ -40,12 +40,14 @@ const FIELDS: {
   name: FieldName;
   label: string;
   type?: string;
+  inputMode?: "numeric";
 }[] = [
   { name: "firstName", label: t.firstName },
   { name: "lastName", label: t.lastName },
   { name: "phone", label: t.phone, type: "tel" },
   { name: "email", label: t.email, type: "email" },
   { name: "birthDate", label: t.birthDate, type: "date" },
+  { name: "heightCm", label: t.height, inputMode: "numeric" },
 ];
 
 function valuesOf(client: ClientProfile): UpdateClientFormValues {
@@ -56,6 +58,7 @@ function valuesOf(client: ClientProfile): UpdateClientFormValues {
     phone: client.phone,
     email: client.email ?? "",
     birthDate: client.birthDate ?? "",
+    heightCm: client.heightCm === null ? "" : String(client.heightCm),
   };
 }
 
@@ -124,7 +127,7 @@ export function ClientDataCard({ client }: { client: ClientProfile }) {
           <FieldGroup>
             {error ? <FormMessage>{error}</FormMessage> : null}
             <div className="grid gap-4 sm:grid-cols-2">
-              {FIELDS.map(({ name, label, type }) => (
+              {FIELDS.map(({ name, label, type, inputMode }) => (
                 <Controller
                   key={name}
                   name={name}
@@ -138,6 +141,7 @@ export function ClientDataCard({ client }: { client: ClientProfile }) {
                         {...field}
                         id={`client-${name}`}
                         type={type ?? "text"}
+                        inputMode={inputMode}
                         autoComplete="off"
                         aria-invalid={fieldState.invalid}
                       />
@@ -175,6 +179,11 @@ export function ClientDataCard({ client }: { client: ClientProfile }) {
               {client.birthDate && client.age !== null
                 ? t.age(formatLongDate(client.birthDate), client.age)
                 : t.empty}
+            </ProfileItem>
+            <ProfileItem label={t.heightValue}>
+              {client.heightCm === null
+                ? t.empty
+                : copy.common.height.value(client.heightCm)}
             </ProfileItem>
             <ProfileItem label={t.origin}>
               {t.origins[client.origin]}

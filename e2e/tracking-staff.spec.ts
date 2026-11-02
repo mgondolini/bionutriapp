@@ -83,8 +83,12 @@ test("il nutrizionista inserisce una circonferenza dal telefono e la legge nel g
   await expect(page).toHaveURL(/\/admin/);
   await page.goto(`/admin/clienti/${clientId}/tracking`);
   await expect(
-    page.getByRole("heading", { name: "Circonferenze" }),
+    page.getByRole("heading", { name: "Peso e circonferenze" }),
   ).toBeVisible();
+  // altezza non ancora indicata: il collegamento porta al profilo
+  await expect(
+    page.getByRole("link", { name: /Altezza non indicata/ }),
+  ).toHaveAttribute("href", `/admin/clienti/${clientId}/profilo`);
   await expectNoHorizontalScroll(page);
 
   await page

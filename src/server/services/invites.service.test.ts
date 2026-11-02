@@ -146,8 +146,9 @@ function input(token: string) {
     token,
     firstName: "Anna",
     lastName: "Rossi",
-    email: null,
+    email: "anna.rossi@example.test",
     birthDate: null,
+    heightCm: 172,
     password: "password123",
     privacyNotice: true as const,
     healthData: true as const,
@@ -196,12 +197,17 @@ describe("activate", () => {
     expect(result).toEqual({ ok: true, signedIn: true });
     expect(authAdmin.createUser).toHaveBeenCalledWith({
       phone: "+393331234567",
-      email: null,
+      email: "anna.rossi@example.test",
       password: "password123",
     });
     expect(authRepository.signInWithPassword).toHaveBeenCalledWith(
       { phone: "+393331234567" },
       "password123",
+    );
+    expect(invitesRepository.activateClient).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(String),
+      expect.objectContaining({ height_cm: 172 }),
     );
     expect(db.invites[0]!.usedAt).not.toBeNull();
   });
@@ -232,10 +238,10 @@ describe("activate", () => {
     );
   });
 
-  it("senza email e senza login riuscito non risulta autenticato", async () => {
-    vi.mocked(authRepository.signInWithPassword).mockResolvedValueOnce({
-      ok: false,
-    });
+  it("senza login riuscito non risulta autenticato", async () => {
+    vi.mocked(authRepository.signInWithPassword)
+      .mockResolvedValueOnce({ ok: false })
+      .mockResolvedValueOnce({ ok: false });
     const token = seedInvite();
     const result = await invitesService.activate(input(token));
     expect(result).toEqual({ ok: true, signedIn: false });

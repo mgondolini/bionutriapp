@@ -69,11 +69,13 @@ async function Activation({
             </p>
             <ActivationForm
               token={token}
+              studioName={studio.name}
               initial={{
                 firstName: client.firstName,
                 lastName: client.lastName,
                 email: client.email,
                 birthDate: client.birthDate,
+                heightCm: client.heightCm,
               }}
             />
             <p className="text-center text-xs text-muted-foreground">

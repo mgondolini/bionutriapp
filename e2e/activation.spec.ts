@@ -145,8 +145,9 @@ test("cliente già nel database: invito, link scaduto, nuovo invito, attivazione
     device.page.getByText(/Numero verificato: \+39 345/),
   ).toBeVisible();
   await device.page
-    .getByLabel("Email (facoltativa)")
+    .getByLabel("Email", { exact: true })
     .fill(`ilaria.${run}@example.test`);
+  await device.page.getByLabel("Altezza (cm)").fill("168");
   await device.page.getByLabel("Password", { exact: true }).fill(PASSWORD);
   await device.page
     .getByRole("checkbox", { name: "Ho letto l'informativa privacy" })
@@ -217,7 +218,7 @@ test("cliente nuovo: il secondo invito annulla il primo, attivazione in Onboardi
   await device.page.goto(first.link);
   await expect(device.page.getByText(INVALID)).toBeVisible();
 
-  // C2: modulo da compilare, nessuna email
+  // C2: modulo da compilare, email obbligatoria
   await device.page.goto(second.link);
   await expect(
     device.page.getByRole("button", { name: "Attiva il mio account" }),
@@ -227,6 +228,22 @@ test("cliente nuovo: il secondo invito annulla il primo, attivazione in Onboardi
   ).toBeVisible();
   await device.page.getByLabel("Cognome", { exact: true }).fill(fresh.lastName);
   await device.page.getByLabel("Password", { exact: true }).fill("corta");
+  await device.page
+    .getByRole("button", { name: "Attiva il mio account" })
+    .click();
+  await expect(device.page.getByText("Inserisci la tua email.")).toBeVisible();
+  await expect(device.page.getByText("Inserisci l'altezza.")).toBeVisible();
+  await device.page.getByLabel("Altezza (cm)").fill("1,80");
+  await device.page
+    .getByRole("button", { name: "Attiva il mio account" })
+    .click();
+  await expect(
+    device.page.getByText("Inserisci l'altezza in centimetri, da 100 a 230."),
+  ).toBeVisible();
+  await device.page.getByLabel("Altezza (cm)").fill("180");
+  await device.page
+    .getByLabel("Email", { exact: true })
+    .fill(`nuovo.${fresh.e164.slice(1)}@example.test`);
   await device.page
     .getByRole("button", { name: "Attiva il mio account" })
     .click();
@@ -244,9 +261,25 @@ test("cliente nuovo: il secondo invito annulla il primo, attivazione in Onboardi
     ),
   ).toBeVisible();
   await device.page.getByLabel("Password", { exact: true }).fill(PASSWORD);
+  // Informativa in un pannello: si chiude con la X o accettando
   await device.page
-    .getByRole("checkbox", { name: "Ho letto l'informativa privacy" })
-    .check();
+    .getByRole("button", { name: "Leggi l'informativa" })
+    .click();
+  const notice = device.page.getByRole("dialog", {
+    name: "Informativa privacy",
+  });
+  await notice.getByRole("button", { name: "Chiudi" }).click();
+  await expect(notice).toBeHidden();
+  await device.page
+    .getByRole("button", { name: "Leggi l'informativa" })
+    .click();
+  await notice.getByRole("button", { name: "Ho letto l'informativa" }).click();
+  await expect(notice).toBeHidden();
+  await expect(
+    device.page.getByRole("checkbox", {
+      name: "Ho letto l'informativa privacy",
+    }),
+  ).toBeChecked();
   await device.page
     .getByRole("checkbox", { name: /Acconsento al trattamento/ })
     .check();
@@ -265,7 +298,7 @@ test("cliente nuovo: il secondo invito annulla il primo, attivazione in Onboardi
   await expect(device.page).toHaveURL(/\/app$/);
   await device.context.close();
 
-  // Senza email: entra con cellulare e password
+  // Entra anche con cellulare e password
   const phoneDevice = await newDevice(browser);
   await login(phoneDevice.page, fresh.typed, PASSWORD);
   await expect(phoneDevice.page).toHaveURL(/\/app$/);

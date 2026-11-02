@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import type { ClientEditableField } from "@/lib/constants/domain";
+import type { ClientProfileUpdate } from "@/server/validation/profile.schema";
 
 /*
  * Profilo dell'utente corrente (C-07). Sempre con il client dell'utente: le
@@ -16,7 +16,7 @@ export async function getOwnClient(clientId: string) {
   const { data, error } = await supabase
     .from("clients")
     .select(
-      "id, first_name, last_name, phone, email, birth_date, activated_at, push_enabled",
+      "id, first_name, last_name, phone, email, birth_date, height_cm, activated_at, push_enabled",
     )
     .eq("id", clientId)
     .maybeSingle();
@@ -26,14 +26,15 @@ export async function getOwnClient(clientId: string) {
 
 /** Dati personali del cliente: false se la riga non è visibile (sessione non più valida). */
 export async function updateOwnClient(
-  update: Record<ClientEditableField, string | null>,
+  update: ClientProfileUpdate,
 ): Promise<boolean> {
   const supabase = await createClient();
   const { error } = await supabase.rpc("update_my_client_profile", {
-    p_first_name: update.first_name ?? "",
+    p_first_name: update.first_name,
     p_last_name: update.last_name ?? "",
     // la RPC accetta null (data cancellata); i tipi generati non lo dicono
     p_birth_date: update.birth_date as string,
+    p_height_cm: update.height_cm,
   });
   if (error?.code === "P0002") return false;
   if (error) throw error;

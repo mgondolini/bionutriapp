@@ -291,6 +291,7 @@ export type Database = {
           created_at: string;
           email: string | null;
           first_name: string;
+          height_cm: number | null;
           id: string;
           journey_stage: string;
           last_name: string | null;
@@ -310,6 +311,7 @@ export type Database = {
           created_at?: string;
           email?: string | null;
           first_name: string;
+          height_cm?: number | null;
           id?: string;
           journey_stage?: string;
           last_name?: string | null;
@@ -328,6 +330,7 @@ export type Database = {
           created_at?: string;
           email?: string | null;
           first_name?: string;
+          height_cm?: number | null;
           id?: string;
           journey_stage?: string;
           last_name?: string | null;
@@ -753,6 +756,7 @@ export type Database = {
           effective_account_status: string | null;
           email: string | null;
           first_name: string | null;
+          height_cm: number | null;
           id: string | null;
           journey_stage: string | null;
           last_invite_created_at: string | null;
@@ -841,6 +845,7 @@ export type Database = {
         Args: {
           p_birth_date: string;
           p_first_name: string;
+          p_height_cm?: number;
           p_last_name: string;
         };
         Returns: undefined;

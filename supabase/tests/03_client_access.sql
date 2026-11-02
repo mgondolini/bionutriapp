@@ -9,7 +9,7 @@ select results_eq($$ select id from public.clients $$, $$ values (tests.id('c1')
 select results_eq($$ select id from public.client_files $$, $$ values (tests.id('f1')) $$, 'vede solo i propri file');
 select results_eq($$ select id from public.tracking_entries $$, $$ values (tests.id('e1')) $$, 'vede solo le proprie registrazioni');
 select results_eq($$ select id from public.studios $$, $$ values (tests.id('studio1')) $$, 'vede solo il proprio studio');
-select is((select count(*)::int from public.metrics), 9, 'vede le 9 misure attive del proprio studio');
+select is((select count(*)::int from public.metrics), 11, 'vede le 11 misure attive del proprio studio');
 select is_empty($$ select 1 from public.metrics where studio_id <> tests.id('studio1') $$, 'non vede misure di altri studi');
 
 select is_empty($$ select 1 from public.clients where id = tests.id('c2') $$, 'non legge un altro cliente dello stesso studio');

@@ -92,6 +92,15 @@ export const copy = {
     unauthorized: "Non hai i permessi per questa operazione.",
     comingSoon: "Disponibile a breve.",
     logoAlt: (studioName: string) => `Logo di ${studioName}`,
+    height: {
+      label: "Altezza",
+      unit: "cm",
+      value: (cm: number) => `${cm} cm`,
+      placeholder: "Per esempio 170",
+      required: "Inserisci l'altezza.",
+      invalid: (min: number, max: number) =>
+        `Inserisci l'altezza in centimetri, da ${min} a ${max}.`,
+    },
   },
   auth: {
     login: {
@@ -183,6 +192,7 @@ export const copy = {
       firstName: "Nome",
       lastName: "Cognome",
       birthDate: "Data di nascita",
+      height: "Altezza",
       noValue: "—",
       phone: "Cellulare",
       phoneHint: "Per cambiarlo contatta lo studio.",
@@ -473,10 +483,14 @@ export const copy = {
       },
       tracking: {
         overdue: (count: number, names: string) =>
-          `${count === 1 ? "1 circonferenza in ritardo" : `${count} circonferenze in ritardo`}: ${names}.`,
+          `${count === 1 ? "1 misura in ritardo" : `${count} misure in ritardo`}: ${names}.`,
         overdueHint: `Sono passati più di ${CIRCUMFERENCE_INTERVAL_DAYS} giorni dall'ultima registrazione.`,
+        height: {
+          value: (height: string) => `Altezza ${height}`,
+          missing: "Altezza non indicata: aggiungila nel profilo",
+        },
         sections: {
-          circumference: `In centimetri · una rilevazione ogni ${CIRCUMFERENCE_INTERVAL_DAYS} giorni`,
+          circumference: `Una rilevazione ogni ${CIRCUMFERENCE_INTERVAL_DAYS} giorni`,
           habit: (range: string) =>
             `Voto da 1 a 5 rispetto all'obiettivo · settimana ${range}`,
           workout: "Voto da 1 a 10 alla qualità di ogni sessione",
@@ -536,7 +550,7 @@ export const copy = {
         detail: {
           backAria: "Torna alla scheda Tracking",
           subtitle: {
-            circumference: `Centimetri · una rilevazione ogni ${CIRCUMFERENCE_INTERVAL_DAYS} giorni`,
+            circumference: `Una rilevazione ogni ${CIRCUMFERENCE_INTERVAL_DAYS} giorni`,
             habit: "Voto da 1 a 5 rispetto all'obiettivo",
             workout: "Voto da 1 a 10 alla qualità di ogni sessione",
           } satisfies Record<MetricKind, string>,
@@ -628,6 +642,8 @@ export const copy = {
           phone: "Cellulare",
           email: "Email",
           birthDate: "Data di nascita",
+          height: "Altezza (cm)",
+          heightValue: "Altezza",
           origin: "Origine",
           empty: "—",
           age: (date: string, years: number) =>
@@ -935,7 +951,7 @@ export const copy = {
   tracking: {
     kinds: {
       circumference: {
-        title: "Circonferenze",
+        title: "Peso e circonferenze",
         hint: `ogni ${CIRCUMFERENCE_INTERVAL_DAYS} giorni`,
       },
       habit: { title: "Abitudini giornaliere", hint: "voto da 1 a 5" },
@@ -1148,10 +1164,12 @@ export const copy = {
     firstName: "Nome",
     lastName: "Cognome",
     lastNamePlaceholder: "Inserisci il cognome",
-    email: "Email (facoltativa)",
+    email: "Email",
     emailPlaceholder: "nome@email.it",
-    emailHint: "Consigliata: ti serve per recuperare la password da solo.",
+    emailHint: "Ti serve per accedere e per recuperare la password da solo.",
     birthDate: "Data di nascita (facoltativa)",
+    height: "Altezza (cm)",
+    heightHint: "Serve al nutrizionista insieme al peso.",
     passwordTitle: "Scegli la password",
     password: "Password",
     passwordPlaceholder: "Scegli una password",
@@ -1160,7 +1178,9 @@ export const copy = {
     hidePassword: "Nascondi la password",
     consentTitle: "Privacy",
     privacyNotice: "Ho letto l'informativa privacy",
-    privacyNoticeLink: "Leggi l'informativa (si apre in una nuova scheda)",
+    privacyNoticeLink: "Leggi l'informativa",
+    privacyDialogTitle: "Informativa privacy",
+    privacyAccept: "Ho letto l'informativa",
     healthData:
       "Acconsento al trattamento dei miei dati sulla salute (misure, abitudini, piani alimentari) per il percorso con lo studio.",
     submit: "Attiva il mio account",
@@ -1177,11 +1197,12 @@ export const copy = {
     failed:
       "Non è stato possibile attivare l'account. Riprova o chiedi un nuovo invito allo studio.",
     duplicateEmail:
-      "Questa email è già usata da un altro cliente dello studio: usane un'altra o lasciala vuota.",
+      "Questa email è già usata da un altro cliente dello studio: usane un'altra.",
     validation: {
       firstNameRequired: "Inserisci il nome.",
       lastNameRequired: "Inserisci il cognome.",
       nameTooLong: "Massimo 80 caratteri.",
+      emailRequired: "Inserisci la tua email.",
       emailInvalid: "Inserisci un indirizzo email valido.",
       birthDateInvalid: "Data di nascita non valida.",
       privacyNoticeRequired:
@@ -1195,7 +1216,11 @@ export const copy = {
   privacy: {
     metaTitle: "Informativa privacy",
     title: "Informativa sul trattamento dei dati personali",
+    // true finché il testo è una bozza: mostra l'avviso in cima all'informativa
+    draft: true,
     reviewBanner: "DA FAR VERIFICARE AL CONSULENTE PRIVACY",
+    close: "Chiudi",
+    closeAria: "Chiudi l'informativa",
     reviewNote:
       "Bozza con testi segnaposto: non è ancora l'informativa definitiva dello studio.",
     version: (version: string) => `Versione ${version}`,
@@ -1211,8 +1236,8 @@ export const copy = {
       {
         title: "2. Dati trattati",
         body: [
-          "Dati identificativi e di contatto: nome, cognome, numero di cellulare, email (facoltativa), data di nascita (facoltativa).",
-          "Dati relativi alla salute (art. 9 GDPR): piani alimentari e altri documenti caricati dallo studio, misure delle circonferenze, abitudini (acqua, passi, sonno), allenamenti e note inserite da te.",
+          "Dati identificativi e di contatto: nome, cognome, numero di cellulare, email, data di nascita (facoltativa), altezza.",
+          "Dati relativi alla salute (art. 9 GDPR): piani alimentari e altri documenti caricati dallo studio, peso e circonferenze, abitudini (acqua, passi, sonno), allenamenti e note inserite da te.",
           "Dati tecnici: credenziali di accesso (la password è conservata solo in forma cifrata), sessioni e, se le attivi, l'indirizzo tecnico per le notifiche del tuo dispositivo.",
         ],
       },

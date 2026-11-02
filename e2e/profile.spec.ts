@@ -139,6 +139,7 @@ test("Esci da tutti i dispositivi chiude anche la sessione in un altro contesto"
     .getByRole("button", { name: "Modifica i dati personali" })
     .click();
   await other.page.getByLabel("Cognome").fill("Tuttissimi");
+  await other.page.getByLabel("Altezza (cm)").fill("170");
 
   await page.goto("/app/profilo");
   await page

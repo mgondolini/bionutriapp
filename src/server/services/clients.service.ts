@@ -182,6 +182,7 @@ export type ClientProfile = {
   birthDate: string | null;
   /** Anni compiuti oggi (null senza data di nascita). */
   age: number | null;
+  heightCm: number | null;
   origin: ClientOrigin;
   accountStatus: AccountStatus;
   journeyStage: JourneyStage;
@@ -212,6 +213,7 @@ export async function getClientProfile(
     email: row.email,
     birthDate: row.birth_date,
     age: row.birth_date ? ageOn(row.birth_date, new Date()) : null,
+    heightCm: row.height_cm,
     origin: row.origin as ClientOrigin,
     accountStatus: row.effective_account_status as AccountStatus,
     journeyStage: row.journey_stage as JourneyStage,
@@ -290,6 +292,7 @@ export async function updateClient(
     phone: input.phone,
     email: input.email,
     birthDate: input.birthDate,
+    heightCm: input.heightCm,
   });
   if (updated.ok) return { ok: true };
 

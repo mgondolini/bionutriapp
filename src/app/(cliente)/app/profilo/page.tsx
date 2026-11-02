@@ -40,6 +40,7 @@ export default async function ProfilePage() {
         firstName={profile.firstName}
         lastName={profile.lastName}
         birthDate={profile.birthDate}
+        heightCm={profile.heightCm}
         phone={profile.phone}
       />
       <EmailCard email={profile.email} hint={copy.profile.email.clientHint} />
