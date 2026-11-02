@@ -6,6 +6,7 @@ import { StudioThemeStyle } from "@/components/shared/studio-theme-style";
 import { Toaster } from "@/components/ui/sonner";
 import { APP_BACKGROUND_COLOR } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import { SPLASH_SCREENS, splashMedia, splashPath } from "@/lib/pwa/splash";
 import {
   getPublicStudio,
   resolveStudio,
@@ -33,6 +34,11 @@ export async function generateMetadata(): Promise<Metadata> {
       capable: true,
       title: studio.name,
       statusBarStyle: "default",
+      // schermata di avvio con logo e nome dello studio (Android la ricava dal manifest)
+      startupImage: SPLASH_SCREENS.map((screen) => ({
+        url: splashPath(screen),
+        media: splashMedia(screen),
+      })),
     },
     formatDetection: { telephone: false },
   };

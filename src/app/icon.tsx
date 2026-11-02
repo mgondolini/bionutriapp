@@ -7,8 +7,12 @@ import {
   getStudioLogoDataUrl,
 } from "@/server/services/studio.service";
 
-/** Icone della PWA (A-14): 192 e 512 px, più una "maskable" con margine di sicurezza. */
+/**
+ * Icone (A-14): 32 px per la scheda del browser (favicon), 192 e 512 px per
+ * la PWA, più una "maskable" con margine di sicurezza.
+ */
 const ICONS = [
+  { id: "32", size: 32, padding: 0.04 },
   { id: "192", size: 192, padding: 0.1 },
   { id: "512", size: 512, padding: 0.1 },
   { id: "maskable", size: 512, padding: 0.2 },
@@ -26,7 +30,7 @@ export default async function Icon({ id }: { id: Promise<string | number> }) {
   // Il branding si legge a ogni richiesta: cambia dalle impostazioni dello studio.
   await connection();
   const iconId = String(await id);
-  const icon = ICONS.find((item) => item.id === iconId) ?? ICONS[0];
+  const icon = ICONS.find((item) => item.id === iconId) ?? ICONS[1];
   const studio = await getPublicStudio();
   const logoDataUrl = await getStudioLogoDataUrl(studio);
 

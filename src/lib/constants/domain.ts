@@ -404,7 +404,10 @@ export function clientTrackingMetricPath(
 // PWA e notifiche push (fase 8)
 // ---------------------------------------------------------------------
 
-/** Attività programmate (fase 9): unico Route Handler, protetto da CRON_SECRET (DEV-05). */
+/** Schermate di avvio dell'app installata su iOS (`src/lib/pwa/splash.ts`), pubbliche come le icone. */
+export const SPLASH_PATH = "/splash";
+
+/** Attività programmate (fase 9): Route Handler protetto da CRON_SECRET (DEV-05). */
 export const CRON_PATH = "/api/cron";
 export const CRON_MAINTENANCE_PATH = `${CRON_PATH}/manutenzione`;
 /** Oggetti caricati ma mai confermati: eliminati dopo 24 ore. */

@@ -8,6 +8,7 @@ import {
   OFFLINE_PAGE_URL,
   ROUTES,
   SERVICE_WORKER_URL,
+  SPLASH_PATH,
 } from "@/lib/constants/domain";
 
 export type RouteRole = "anonymous" | "staff" | "client" | "client_disabled";
@@ -69,8 +70,8 @@ const AREA: Partial<Record<RouteRole, string>> = {
 };
 
 /**
- * Rotte sempre accessibili, senza leggere il ruolo (manifest, icone, service
- * worker e pagina offline della PWA, attivazione, informativa privacy).
+ * Rotte sempre accessibili, senza leggere il ruolo (manifest, icone,
+ * schermate di avvio, service worker e pagina offline della PWA, attivazione, informativa privacy).
  * Il cron si autorizza con il proprio segreto (Route Handler).
  */
 const ALWAYS_PUBLIC = [
@@ -79,7 +80,7 @@ const ALWAYS_PUBLIC = [
   OFFLINE_PAGE_URL,
   "/icon",
   "/apple-icon",
-  "/favicon.ico",
+  SPLASH_PATH,
   ROUTES.activate,
   ROUTES.newPassword,
   ROUTES.confirmEmail,
