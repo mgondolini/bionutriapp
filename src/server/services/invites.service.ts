@@ -218,11 +218,35 @@ export async function activate(
     };
   }
 
-  const signedIn = await authRepository.signInWithPassword(
-    { phone },
+  const signedIn = await signInActivatedAccount(
+    { phone, email: input.email },
     input.password,
   );
-  return { ok: true, signedIn: signedIn.ok };
+  return { ok: true, signedIn };
+}
+
+/**
+ * Accesso con l'account appena attivato. Prima si chiude la sessione già
+ * presente sul dispositivo (un altro cliente, lo staff che prova il link):
+ * se il login non riuscisse, il browser resterebbe nell'account precedente.
+ * Cellulare prima; se non riesce (es. provider Phone disattivato) e c'è
+ * un'email, con l'email.
+ */
+async function signInActivatedAccount(
+  account: { phone: string; email?: string | null },
+  password: string,
+): Promise<boolean> {
+  await authRepository.signOut("local");
+  const byPhone = await authRepository.signInWithPassword(
+    { phone: account.phone },
+    password,
+  );
+  if (byPhone.ok || !account.email) return byPhone.ok;
+  const byEmail = await authRepository.signInWithPassword(
+    { email: account.email },
+    password,
+  );
+  return byEmail.ok;
 }
 
 async function compensate(userId: string) {
@@ -263,9 +287,9 @@ export async function resetPasswordViaInvite(
   );
   if (!updated) return { ok: false, reason: "error" };
 
-  const signedIn = await authRepository.signInWithPassword(
-    { phone: invite.row!.client.phone },
+  const signedIn = await signInActivatedAccount(
+    { phone: invite.row!.client.phone, email: invite.row!.client.email },
     input.password,
   );
-  return { ok: true, signedIn: signedIn.ok };
+  return { ok: true, signedIn };
 }

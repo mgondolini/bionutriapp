@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { loginUrl } from "@/lib/auth/route-decision";
 import { ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import * as invitesService from "@/server/services/invites.service";
@@ -83,7 +84,10 @@ export async function activateAccountAction(
     }
     return fail(result.reason === "invalid" ? t.invalid : t.failed);
   }
-  redirect(result.signedIn ? ROUTES.client.home : ROUTES.login);
+  // Senza accesso automatico il login lo dice: la sessione precedente è già chiusa.
+  redirect(
+    result.signedIn ? ROUTES.client.home : loginUrl({ reason: "activated" }),
+  );
 }
 
 /** Nuovo link per un cliente già attivo (N-02): nuova password e accesso. */
@@ -102,5 +106,8 @@ export async function resetPasswordViaInviteAction(
   if (!result.ok) {
     return fail(result.reason === "invalid" ? t.invalid : t.failed);
   }
-  redirect(result.signedIn ? ROUTES.client.home : ROUTES.login);
+  // Senza accesso automatico il login lo dice: la sessione precedente è già chiusa.
+  redirect(
+    result.signedIn ? ROUTES.client.home : loginUrl({ reason: "activated" }),
+  );
 }

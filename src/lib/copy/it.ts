@@ -108,6 +108,7 @@ export const copy = {
       reasons: {
         loggedOut: "Sei uscito dall'app.",
         expired: "La sessione è scaduta, accedi di nuovo.",
+        activated: "Account attivato: accedi con le tue credenziali.",
       } satisfies Record<LoginReason, string>,
     },
     recover: {

@@ -23,6 +23,7 @@ export const LOGIN_REASON_PARAM = "motivo";
 export const LOGIN_REASONS = {
   loggedOut: "uscito",
   expired: "sessione-scaduta",
+  activated: "attivato",
 } as const;
 export type LoginReason = keyof typeof LOGIN_REASONS;
 

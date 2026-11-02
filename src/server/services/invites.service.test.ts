@@ -96,6 +96,7 @@ vi.mock("@/server/repositories/auth-admin.repository", () => ({
 
 vi.mock("@/server/repositories/auth.repository", () => ({
   signInWithPassword: vi.fn(async () => ({ ok: true })),
+  signOut: vi.fn(async () => ({ ok: true, error: null })),
 }));
 vi.mock("@/server/repositories/clients.repository", () => ({
   getClientProfile: vi.fn(),
@@ -203,6 +204,42 @@ describe("activate", () => {
       "password123",
     );
     expect(db.invites[0]!.usedAt).not.toBeNull();
+  });
+
+  it("chiude prima la sessione già presente sul dispositivo", async () => {
+    const token = seedInvite();
+    await invitesService.activate(input(token));
+    const signOutOrder = vi.mocked(authRepository.signOut).mock
+      .invocationCallOrder[0];
+    const signInOrder = vi.mocked(authRepository.signInWithPassword).mock
+      .invocationCallOrder[0];
+    expect(signOutOrder).toBeLessThan(signInOrder!);
+  });
+
+  it("se il login con il cellulare non riesce entra con l'email", async () => {
+    vi.mocked(authRepository.signInWithPassword)
+      .mockResolvedValueOnce({ ok: false })
+      .mockResolvedValueOnce({ ok: true });
+    const token = seedInvite();
+    const result = await invitesService.activate({
+      ...input(token),
+      email: "giulia@example.test",
+    });
+    expect(result).toEqual({ ok: true, signedIn: true });
+    expect(authRepository.signInWithPassword).toHaveBeenLastCalledWith(
+      { email: "giulia@example.test" },
+      "password123",
+    );
+  });
+
+  it("senza email e senza login riuscito non risulta autenticato", async () => {
+    vi.mocked(authRepository.signInWithPassword).mockResolvedValueOnce({
+      ok: false,
+    });
+    const token = seedInvite();
+    const result = await invitesService.activate(input(token));
+    expect(result).toEqual({ ok: true, signedIn: false });
+    expect(authRepository.signOut).toHaveBeenCalledWith("local");
   });
 
   it("token scaduto: nessun utente creato", async () => {
