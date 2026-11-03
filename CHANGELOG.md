@@ -6,6 +6,38 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Non rilasciato]
 
+## [1.2.0] - 2026-11-03
+
+Nuova interfaccia per tutte le schermate, peso, spalle e altezza del cliente, attivazione più robusta e app installata con il marchio dello studio.
+
+### Aggiunto
+
+- Peso tra le misure periodiche (in kg, ogni 30 giorni, come le circonferenze) e nuova circonferenza delle spalle.
+- Altezza del cliente: dato anagrafico obbligatorio all'attivazione, modificabile dal cliente nel profilo e dallo staff nella scheda; il nutrizionista la vede accanto a peso e circonferenze e nel dettaglio di ogni misura (se manca, il collegamento porta al profilo).
+- Home del cliente con le card degli altri file in corso (uno per categoria, con "Nuovo" finché non è aperto) oltre al file in evidenza (C5).
+- Informativa privacy leggibile in un pannello durante l'attivazione, con il pulsante "Ho letto l'informativa"; la pagina `/privacy` ha i pulsanti per chiuderla.
+- Favicon generata dal logo dello studio; schermata di avvio con logo e nome dello studio su iPhone e, subito dopo quella di sistema, su Android.
+
+### Modificato
+
+- Interfaccia di area cliente, area del nutrizionista e pagine di accesso portata al nuovo mockup (`docs/mockups/mockup.html`): colori derivati da quello dello studio, intestazioni e menu del cliente, card del tracking con mini-grafici, elenchi raggruppati, dialog e pulsanti ridisegnati.
+- Nella scheda Tracking dello staff i grafici e i pulsanti delle card sono allineati anche quando una card non ha variazione, nota o voto.
+- "Circ. Gluteo" si chiama ora "Circ. Fianchi"; la sezione diventa "Peso e circonferenze" e l'avviso parla di "misure in ritardo".
+- Email obbligatoria all'attivazione, così ogni cliente può accedere e recuperare la password da solo.
+- Messaggio dell'invito WhatsApp: "{studio} e il suo team ti invitano ad attivare l'account".
+- Il titolo della scheda del browser è il nome dello studio (prima "Area riservata").
+
+### Corretto
+
+- Dopo l'attivazione l'app poteva restare nell'account usato in precedenza sullo stesso telefono: ora la sessione precedente viene chiusa e si entra con il nuovo account, oppure si torna al login.
+- I link degli inviti generati su Netlify non possono più puntare a un indirizzo locale (la build si ferma).
+
+### Sviluppo
+
+- Migrazioni `20261102000000_misure_peso_spalle.sql` (peso, spalle, nome "Fianchi"; la chiave resta `circ_glutes`) e `20261102100000_altezza.sql` (`clients.height_cm`, viste, `guard_client`, `update_my_client_profile`, `activate_client`); test pgTAP `19_altezza.sql`.
+- Schemi condivisi dell'altezza in `height.schema.ts`; immagini di avvio per iOS da `src/app/splash/[size]/route.tsx`; `LaunchSplash` per Android.
+- Nuovi valori `DA CONFERMARE`: limiti del peso (20–300 kg), delle spalle (10–250 cm) e dell'altezza (100–230 cm).
+
 ## [1.1.0] - 2026-10-30
 
 Il nutrizionista può inserire e correggere le registrazioni del tracking dei clienti.
@@ -105,6 +137,7 @@ Il codice della 1.0 è completo, ma prima di usarlo con clienti e dati sanitari 
 - checklist su iPhone e Android reali (`docs/checklist-dispositivi.md`);
 - valori `DA CONFERMARE` (limiti delle circonferenze, obiettivi predefiniti e limiti degli obiettivi personali).
 
-[Non rilasciato]: https://github.com/mgondolini/bionutriapp/compare/v1.1.0...HEAD
+[Non rilasciato]: https://github.com/mgondolini/bionutriapp/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/mgondolini/bionutriapp/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/mgondolini/bionutriapp/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/mgondolini/bionutriapp/releases/tag/v1.0.0
