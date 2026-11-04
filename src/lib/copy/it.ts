@@ -361,6 +361,8 @@ export const copy = {
           `Link creato per ${name}: invia il messaggio da WhatsApp.`,
         popupBlocked:
           "Il browser ha bloccato la finestra di WhatsApp: consenti i popup per questo sito e riprova.",
+        upscaled: (px: number) =>
+          `Il ritaglio è di soli ${px} px: l'icona dell'app potrebbe risultare sfocata. Riduci lo zoom o usa "Adatta con margine".`,
         failed: "Non è stato possibile creare l'invito. Riprova.",
         disabled:
           "Il cliente è disattivato: riattivalo prima di inviare un invito.",
@@ -755,8 +757,33 @@ export const copy = {
       logoLabel: "Logo",
       logoChange: "Cambia logo",
       logoNone: "Nessun file selezionato",
+      logoReady: "Nuovo logo ritagliato: salva per applicarlo.",
       logoHint:
-        "Immagine quadrata PNG o JPEG, massimo 2 MB. È anche l'icona dell'app installata sul telefono.",
+        "Immagine PNG, JPEG o WebP di almeno 512 px di lato (meglio 1024): dopo averla scelta la ritagli in un quadrato. È anche l'icona dell'app installata sul telefono.",
+      crop: {
+        title: "Ritaglia il logo",
+        description:
+          "Sposta l'immagine e regola lo zoom: conta solo quello che resta nel quadrato.",
+        areaLabel:
+          "Area del ritaglio: trascina o usa le frecce per spostare l'immagine",
+        modeLabel: "Modalità",
+        fill: "Riempi",
+        fillHint: "Il quadrato è tutto immagine: per simboli e foto.",
+        fit: "Adatta con margine",
+        fitHint: "Il logo intero su fondo bianco: per le scritte lunghe.",
+        zoom: "Zoom",
+        previewTitle: "Come apparirà",
+        previewMenu: "Menu",
+        previewAndroid: "Android",
+        previewIphone: "iPhone",
+        confirm: "Usa questo ritaglio",
+        rendering: "Preparazione…",
+        cancel: "Annulla",
+        upscaled: (px: number) =>
+          `Il ritaglio è di soli ${px} px: l'icona dell'app potrebbe risultare sfocata. Riduci lo zoom o usa "Adatta con margine".`,
+        failed:
+          "Non è stato possibile preparare l'immagine: prova con un altro file.",
+      },
       colorLabel: "Colore principale",
       submit: "Salva impostazioni",
       submitting: "Salvataggio…",
@@ -774,8 +801,17 @@ export const copy = {
       validation: {
         nameRequired: "Inserisci il nome dello studio.",
         nameTooLong: "Il nome può avere al massimo 120 caratteri.",
-        logoType: "Il logo deve essere un'immagine PNG o JPEG.",
+        logoType: "Il logo deve essere un'immagine PNG.",
         logoSize: "Il logo può pesare al massimo 2 MB.",
+        logoSourceType: "Scegli un'immagine PNG, JPEG o WebP.",
+        logoSourceSize: "L'immagine può pesare al massimo 15 MB.",
+        logoSourceSmall: (width: number, height: number) =>
+          `L'immagine è di ${width} × ${height} px: serve almeno 512 px sul lato lungo, altrimenti l'icona dell'app risulterebbe sgranata.`,
+        logoPng: {
+          not_png: "Il logo deve essere un'immagine PNG.",
+          not_square: "Il logo deve essere quadrato: ritaglialo di nuovo.",
+          wrong_size: "Il logo deve misurare fra 512 e 1024 px di lato.",
+        },
       },
     },
   },
@@ -892,6 +928,10 @@ export const copy = {
         today: "Oggi",
         lastValue: (value: string, date: string) => `Ultima ${value} · ${date}`,
         never: "Mai registrata",
+        workoutToday: (score: string) => `Registrato oggi · ${score}`,
+        workoutLast: (date: string, score: string) =>
+          `Ultimo ${date} · ${score}`,
+        workoutNone: "Registra la tua prima sessione",
         allDone: "Tutto registrato: ottimo lavoro!",
         cta: "Vai al tracking",
       },

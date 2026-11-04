@@ -6,6 +6,11 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Non rilasciato]
 
+### Aggiunto
+
+- Ritaglio del logo nelle Impostazioni studio: dopo la scelta dell'immagine (PNG, JPEG o WebP, almeno 512 px sul lato lungo) si apre un pannello con zoom, "Riempi" o "Adatta con margine" e anteprime di menu, icona Android e iPhone; viene salvato un PNG quadrato da 1024 px su fondo bianco, ricontrollato dal server.
+- Nella home del cliente "Da registrare" mostra sempre gli allenamenti in fondo (con la spunta se c'è una sessione oggi), senza contarli tra le misure da registrare.
+
 ### Modificato
 
 - Impostazioni studio: solo nome e logo; il colore principale e l'anteprima non si modificano più dall'app.

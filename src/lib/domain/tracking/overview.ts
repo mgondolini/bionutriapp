@@ -209,7 +209,9 @@ export type ToRecordItem =
       kind: "circumference";
       item: CircumferenceOverview;
       status: Exclude<CircumferenceStatus, "ok">;
-    };
+    }
+  /** Sempre presente: invito a registrare la sessione, non una scadenza. */
+  | { kind: "workout"; item: WorkoutOverview };
 
 /** Gravità per l'ordinamento: prima i ritardi, poi le scadenze, poi le mai registrate. */
 const STATUS_ORDER: Record<Exclude<CircumferenceStatus, "ok">, number> = {
@@ -219,8 +221,9 @@ const STATUS_ORDER: Record<Exclude<CircumferenceStatus, "ok">, number> = {
 };
 
 /**
- * "Da registrare" della home (C-02, C5): check-in di oggi non completo e
- * circonferenze in ritardo, in scadenza entro 3 giorni o mai registrate.
+ * "Da registrare" della home (C-02, C5): check-in di oggi non completo,
+ * circonferenze in ritardo, in scadenza entro 3 giorni o mai registrate e,
+ * sempre in fondo, gli allenamenti (si registrano a ogni sessione).
  */
 export function toRecord(overview: readonly MetricOverview[]): ToRecordItem[] {
   const items: ToRecordItem[] = [];
@@ -240,5 +243,13 @@ export function toRecord(overview: readonly MetricOverview[]): ToRecordItem[] {
   for (const { item, status } of circumferences) {
     items.push({ kind: "circumference", item, status });
   }
+  for (const item of overview) {
+    if (item.kind === "workout") items.push({ kind: "workout", item });
+  }
   return items;
+}
+
+/** Voci che chiedono davvero una registrazione: gli allenamenti non scadono. */
+export function pendingCount(items: readonly ToRecordItem[]): number {
+  return items.filter((item) => item.kind !== "workout").length;
 }

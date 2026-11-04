@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import type { LogoMimeType } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import { checkLogoPng, PNG_HEADER_BYTES } from "@/lib/logo/png";
 import { getSession } from "@/server/services/session.service";
 import { updateStudioSettings } from "@/server/services/studio.service";
 import { studioSettingsSchema } from "@/server/validation/studio.schema";
@@ -37,6 +37,18 @@ export async function updateStudioSettingsAction(
     );
   }
 
+  if (parsed.data.logo) {
+    const header = new Uint8Array(
+      await parsed.data.logo.slice(0, PNG_HEADER_BYTES).arrayBuffer(),
+    );
+    const check = checkLogoPng(header);
+    if (check !== "ok") {
+      return fail(copy.common.invalidInput, {
+        logo: [copy.admin.settings.validation.logoPng[check]],
+      });
+    }
+  }
+
   try {
     const updated = await updateStudioSettings(
       { id, slug, logoPath },
@@ -45,7 +57,7 @@ export async function updateStudioSettingsAction(
         logo: parsed.data.logo
           ? {
               file: parsed.data.logo,
-              mimeType: parsed.data.logo.type as LogoMimeType,
+              mimeType: "image/png",
             }
           : undefined,
       },

@@ -21,8 +21,8 @@ import { PHONE_MEDIA_QUERY, useMediaQuery } from "@/lib/use-media-query";
 type ResponsiveDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Pulsante che apre il pannello (con il suo contenuto). */
-  trigger: React.ReactElement;
+  /** Pulsante che apre il pannello; senza, lo apre chi controlla `open`. */
+  trigger?: React.ReactElement;
   title: string;
   description?: React.ReactNode;
   /** Classi in più per il dialog su schermi larghi (es. larghezza per un testo lungo). */
@@ -48,7 +48,7 @@ export function ResponsiveDialog({
   if (phone) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetTrigger render={trigger} />
+        {trigger ? <SheetTrigger render={trigger} /> : null}
         <SheetContent
           side="bottom"
           className="max-h-[90dvh] gap-0 overflow-y-auto rounded-t-2xl"
@@ -68,7 +68,7 @@ export function ResponsiveDialog({
   }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger render={trigger} />
+      {trigger ? <DialogTrigger render={trigger} /> : null}
       <DialogContent className={dialogClassName}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

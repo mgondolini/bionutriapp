@@ -4,6 +4,7 @@ import {
   buildTrackingOverview,
   checkinStatus,
   effectiveGoal,
+  pendingCount,
   toRecord,
   type MetricConfig,
   type TrackingEntry,
@@ -155,9 +156,17 @@ describe("buildTrackingOverview", () => {
       items.map((item) =>
         item.kind === "checkin"
           ? `checkin:${item.missing.length}`
-          : `${item.item.metric.key}:${item.status}`,
+          : item.kind === "workout"
+            ? `${item.item.metric.key}:sempre`
+            : `${item.item.metric.key}:${item.status}`,
       ),
-    ).toEqual(["checkin:2", "circ_glutes:due_soon", "circ_navel:never"]);
+    ).toEqual([
+      "checkin:2",
+      "circ_glutes:due_soon",
+      "circ_navel:never",
+      "workouts:sempre",
+    ]);
+    expect(pendingCount(items)).toBe(3);
   });
 
   it("le circonferenze in ritardo vengono prima", () => {
@@ -178,7 +187,8 @@ describe("buildTrackingOverview", () => {
     );
     expect(
       items.map((item) => item.kind === "circumference" && item.status),
-    ).toEqual(["overdue", "due_soon"]);
+    ).toEqual(["overdue", "due_soon", false]);
+    expect(items.at(-1)?.kind).toBe("workout");
   });
 
   it("a parità di giorno conta l'ultima inserita", () => {

@@ -19,9 +19,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { FormMessage } from "@/components/shared/form-message";
 import { redirectIfSignedOut } from "@/lib/auth/session-expired";
-import { LOGO_MIME_TYPES } from "@/lib/constants/domain";
+import {
+  LOGO_SOURCE_MAX_BYTES,
+  LOGO_SOURCE_MIME_TYPES,
+} from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import { isLogoSourceLargeEnough } from "@/lib/logo/crop";
 import { useHydrated } from "@/lib/use-hydrated";
+import {
+  LogoCropDialog,
+  type LogoSource,
+} from "@/features/admin/logo/logo-crop-dialog";
+import { imageSize, loadImage } from "@/features/admin/logo/render-logo";
 import { updateStudioSettingsAction } from "@/server/actions/studio.actions";
 import {
   studioSettingsSchema,
@@ -64,6 +73,39 @@ export function StudioSettingsForm({ initial }: StudioSettingsFormProps) {
     name: ["name", "logo"],
   });
   const logoUrl = useLogoPreview(logo, initial.logoUrl);
+  const [cropSource, setCropSource] = useState<LogoSource | null>(null);
+
+  function closeCrop() {
+    if (cropSource) URL.revokeObjectURL(cropSource.url);
+    setCropSource(null);
+  }
+
+  /** Controlla l'immagine scelta e apre il ritaglio (il file non parte così com'è). */
+  async function chooseLogo(file: File) {
+    const v = t.validation;
+    const setLogoError = (message: string) =>
+      form.setError("logo", { message });
+    if (!(LOGO_SOURCE_MIME_TYPES as readonly string[]).includes(file.type)) {
+      return setLogoError(v.logoSourceType);
+    }
+    if (file.size > LOGO_SOURCE_MAX_BYTES) {
+      return setLogoError(v.logoSourceSize);
+    }
+    const url = URL.createObjectURL(file);
+    try {
+      const image = await loadImage(url);
+      const size = imageSize(image);
+      if (!isLogoSourceLargeEnough(size)) {
+        URL.revokeObjectURL(url);
+        return setLogoError(v.logoSourceSmall(size.width, size.height));
+      }
+      form.clearErrors("logo");
+      setCropSource({ url, image });
+    } catch {
+      URL.revokeObjectURL(url);
+      setLogoError(v.logoSourceType);
+    }
+  }
 
   const onSubmit = form.handleSubmit((values) => {
     setError(null);
@@ -138,13 +180,16 @@ export function StudioSettingsForm({ initial }: StudioSettingsFormProps) {
                       <input
                         id="studio-logo"
                         type="file"
-                        accept={LOGO_MIME_TYPES.join(",")}
+                        accept={LOGO_SOURCE_MIME_TYPES.join(",")}
                         aria-invalid={fieldState.invalid}
                         aria-describedby="studio-logo-file"
                         onBlur={field.onBlur}
-                        onChange={(event) =>
-                          field.onChange(event.target.files?.[0])
-                        }
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          // stesso file scelto di nuovo: deve riaprire il ritaglio
+                          event.target.value = "";
+                          if (file) void chooseLogo(file);
+                        }}
                         className="peer sr-only"
                       />
                       <label
@@ -162,11 +207,21 @@ export function StudioSettingsForm({ initial }: StudioSettingsFormProps) {
                         id="studio-logo-file"
                         className="min-w-0 truncate text-sm text-muted-foreground"
                       >
-                        {logo?.name ?? t.logoNone}
+                        {logo ? t.logoReady : t.logoNone}
                       </span>
                     </div>
                     <FieldDescription>{t.logoHint}</FieldDescription>
                     <FieldError errors={[fieldState.error]} />
+                    <LogoCropDialog
+                      key={cropSource?.url}
+                      source={cropSource}
+                      onCancel={closeCrop}
+                      onConfirm={(file) => {
+                        field.onChange(file);
+                        form.clearErrors("logo");
+                        closeCrop();
+                      }}
+                    />
                   </Field>
                 )}
               />

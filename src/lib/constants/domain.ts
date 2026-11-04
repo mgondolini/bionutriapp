@@ -104,6 +104,24 @@ export const STUDIO_ASSETS_BUCKET = "studio-assets";
 export const LOGO_MAX_BYTES = 2 * 1024 * 1024;
 export const LOGO_MIME_TYPES = ["image/png", "image/jpeg"] as const;
 export type LogoMimeType = (typeof LOGO_MIME_TYPES)[number];
+/**
+ * Ritaglio del logo nel browser: l'immagine scelta (anche grande, anche WebP)
+ * diventa un PNG quadrato da OUTPUT px; se supera LOGO_MAX_BYTES si riprova
+ * con i lati più piccoli, mai sotto MIN (icona da 512 px dell'app installata).
+ */
+export const LOGO_SIZE = {
+  output: 1024,
+  fallbacks: [768, 512],
+  min: 512,
+} as const;
+export const LOGO_SOURCE_MIME_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+] as const;
+export const LOGO_SOURCE_MAX_BYTES = 15 * 1024 * 1024;
+/** Margine per lato in "Adatta con margine" (quota del lato). */
+export const LOGO_FIT_MARGIN = 0.08;
 
 export const PASSWORD_MIN_LENGTH = 8;
 /** bcrypt (Supabase Auth) considera al massimo 72 byte. */
