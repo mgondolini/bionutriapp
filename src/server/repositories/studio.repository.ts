@@ -44,7 +44,7 @@ export async function getStudioBrandingBySlug(
 /** Aggiorna il branding: la RLS consente l'update solo al titolare dello studio. */
 export async function updateStudio(
   studioId: string,
-  values: { name: string; primary_color: string; logo_path?: string },
+  values: { name: string; logo_path?: string },
 ) {
   const supabase = await createClient();
   const { data, error } = await supabase

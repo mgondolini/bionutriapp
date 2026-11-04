@@ -14,7 +14,6 @@ export default async function StudioSettingsPage() {
       <StudioSettingsForm
         initial={{
           name: studio.name,
-          primaryColor: studio.primaryColor,
           logoUrl: studio.logoUrl,
         }}
       />

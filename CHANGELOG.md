@@ -8,6 +8,7 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ### Modificato
 
+- Impostazioni studio: solo nome e logo; il colore principale e l'anteprima non si modificano più dall'app.
 - Nuovo sistema colore (`docs/mockups/mockup-v2.html`): neutri salvia, menu laterale scuro nell'area del nutrizionista, menta derivata dal colore dello studio per file in evidenza, check-in e badge "In percorso"/"Nuovo", pesca solo per ciò che richiede attenzione, colori propri per le categorie Allenamento e Report, pulsanti secondari con il bordo nel colore dello studio. Colore predefinito `#1F7A5C`.
 
 ## [1.2.0] - 2026-11-03

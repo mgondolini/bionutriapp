@@ -28,7 +28,6 @@ export async function updateStudioSettingsAction(
   const logo = formData.get("logo");
   const parsed = studioSettingsSchema.safeParse({
     name: formData.get("name"),
-    primaryColor: formData.get("primaryColor"),
     logo: logo instanceof File && logo.size > 0 ? logo : undefined,
   });
   if (!parsed.success) {
@@ -43,7 +42,6 @@ export async function updateStudioSettingsAction(
       { id, slug, logoPath },
       {
         name: parsed.data.name,
-        primaryColor: parsed.data.primaryColor,
         logo: parsed.data.logo
           ? {
               file: parsed.data.logo,
@@ -61,7 +59,7 @@ export async function updateStudioSettingsAction(
     return fail(copy.common.genericError);
   }
 
-  // Colore e logo compaiono in entrambe le aree e nel manifest.
+  // Nome e logo compaiono in entrambe le aree e nel manifest.
   revalidatePath("/", "layout");
   return ok();
 }

@@ -747,8 +747,7 @@ export const copy = {
     },
     settings: {
       title: "Impostazioni studio",
-      description:
-        "Nome, logo e colore principale: li vedono i tuoi clienti nell'app.",
+      description: "Nome e logo: li vedono i tuoi clienti nell'app.",
       identityTitle: "Identità dello studio",
       nameLabel: "Nome dello studio",
       nameHint:
@@ -759,13 +758,6 @@ export const copy = {
       logoHint:
         "Immagine quadrata PNG o JPEG, massimo 2 MB. È anche l'icona dell'app installata sul telefono.",
       colorLabel: "Colore principale",
-      colorHint: "Formato esadecimale, per esempio #1F7A5C.",
-      contrast: (ratio: string, textLabel: string) =>
-        `Contrasto con il testo ${textLabel}: ${ratio}:1. Il minimo per la leggibilità è 4,5:1 (WCAG AA).`,
-      contrastLow:
-        "Il contrasto è sotto il minimo consigliato: scegli un colore più scuro o più chiaro.",
-      textWhite: "bianco",
-      textDark: "scuro",
       submit: "Salva impostazioni",
       submitting: "Salvataggio…",
       saved: "Impostazioni salvate.",
@@ -782,7 +774,6 @@ export const copy = {
       validation: {
         nameRequired: "Inserisci il nome dello studio.",
         nameTooLong: "Il nome può avere al massimo 120 caratteri.",
-        colorInvalid: "Inserisci un colore nel formato #RRGGBB.",
         logoType: "Il logo deve essere un'immagine PNG o JPEG.",
         logoSize: "Il logo può pesare al massimo 2 MB.",
       },
