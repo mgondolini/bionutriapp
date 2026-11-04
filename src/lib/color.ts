@@ -7,6 +7,7 @@ import {
   LIGHT_SURFACE_COLOR,
   LIGHT_TEXT_COLOR,
   MIN_TEXT_CONTRAST,
+  SIDEBAR_ACTIVE_COLOR,
 } from "@/lib/constants/domain";
 
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
@@ -97,31 +98,15 @@ function darken(hex: string, amount: number): string {
   );
 }
 
-/** Colore sovrapposto al 10% su una superficie (le "pillole" bg-primary/10). */
-function tint(hex: string, surface: string, alpha: number): string {
-  const a = normalizeHexColor(hex);
-  const b = normalizeHexColor(surface);
-  return toHex(
-    [1, 3, 5].map(
-      (i) =>
-        parseInt(a.slice(i, i + 2), 16) * alpha +
-        parseInt(b.slice(i, i + 2), 16) * (1 - alpha),
-    ),
-  );
-}
-
 /**
  * Colore dello studio per testi, icone e anelli del focus su sfondo chiaro
  * (--primary-ink, NF-09): il colore stesso se ha già contrasto AA con lo
- * sfondo e con le pillole bg-primary/10, altrimenti scurito quanto basta.
+ * sfondo e con le pillole della tinta, altrimenti scurito quanto basta.
  * Con un colore chiaro (es. giallo) text-primary sarebbe illeggibile.
  */
 export function inkColor(primaryColor: string | null | undefined): string {
   const primary = normalizeHexColor(primaryColor);
-  const surfaces = [
-    LIGHT_SURFACE_COLOR,
-    tint(primary, LIGHT_SURFACE_COLOR, 0.1),
-  ];
+  const surfaces = [LIGHT_SURFACE_COLOR, tintColor(primary)];
   for (let step = 0; step <= 20; step++) {
     const candidate = darken(primary, step * 0.05);
     if (
@@ -133,17 +118,83 @@ export function inkColor(primaryColor: string | null | undefined): string {
   return DARK_TEXT_COLOR;
 }
 
+function toHsl(hex: string): [number, number, number] {
+  const color = normalizeHexColor(hex);
+  const [r, g, b] = [1, 3, 5].map(
+    (i) => parseInt(color.slice(i, i + 2), 16) / 255,
+  );
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  const d = max - min;
+  if (d === 0) return [0, 0, l];
+  const s = d / (1 - Math.abs(2 * l - 1));
+  const h =
+    max === r
+      ? ((g - b) / d + (g < b ? 6 : 0)) * 60
+      : max === g
+        ? ((b - r) / d + 2) * 60
+        : ((r - g) / d + 4) * 60;
+  return [h, s, l];
+}
+
+function fromHsl(h: number, s: number, l: number): string {
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - c / 2;
+  const [r, g, b] =
+    h < 60
+      ? [c, x, 0]
+      : h < 120
+        ? [x, c, 0]
+        : h < 180
+          ? [0, c, x]
+          : h < 240
+            ? [0, x, c]
+            : h < 300
+              ? [x, 0, c]
+              : [c, 0, x];
+  return toHex([r, g, b].map((v) => (v + m) * 255));
+}
+
 /**
- * Fondo dei riquadri dentro una superficie del colore dello studio (nota del
- * file in corso, C5/C7): si allontana dal testo sopra il primario, quindi il
- * contrasto con quel testo cresce sempre. Scurito se il testo è bianco,
- * schiarito se è scuro.
+ * Tonalità chiara del colore dello studio: stessa tinta, saturazione
+ * contenuta (un grigio resta grigio), luminosità fissa.
  */
-export function deepColor(primaryColor: string | null | undefined): string {
+function lightShade(
+  primaryColor: string,
+  lightness: number,
+  maxSaturation: number,
+): string {
+  const [h, s] = toHsl(primaryColor);
+  return fromHsl(h, Math.min(s, maxSaturation), lightness);
+}
+
+/**
+ * Menta (mockup v2): superfici in evidenza dell'area cliente (file in corso,
+ * check-in), badge "In percorso" e "Nuovo", voce attiva del menu laterale.
+ * Sopra si scrive sempre con il testo scuro (#1F3A34 su #98E2C6 = 8,2:1) ed
+ * è il testo della voce attiva del menu scuro: se una tinta (blu, viola) non
+ * raggiunge 4,5:1 con entrambi, si schiarisce.
+ */
+export function mintColor(primaryColor: string | null | undefined): string {
   const primary = normalizeHexColor(primaryColor);
-  return pickForeground(primary).color === LIGHT_TEXT_COLOR
-    ? darken(primary, 0.18)
-    : tint(primary, LIGHT_TEXT_COLOR, 0.7);
+  for (let lightness = 0.74; lightness < 0.95; lightness += 0.02) {
+    const candidate = lightShade(primary, lightness, 0.56);
+    if (
+      [DARK_TEXT_COLOR, SIDEBAR_ACTIVE_COLOR].every(
+        (surface) => contrastRatio(candidate, surface) >= MIN_TEXT_CONTRAST,
+      )
+    ) {
+      return candidate;
+    }
+  }
+  return lightShade(primary, 0.95, 0.56);
+}
+
+/** Tinta (mockup v2): fondo tenue del primario per badge, pillole e voce attiva. */
+export function tintColor(primaryColor: string | null | undefined): string {
+  return lightShade(normalizeHexColor(primaryColor), 0.875, 0.5);
 }
 
 /** Variabili CSS del tema derivate dal colore principale dello studio. */
@@ -157,7 +208,8 @@ export function themeVariables(
     "--primary": primary,
     "--primary-foreground": foreground,
     "--primary-ink": ink,
-    "--primary-deep": deepColor(primary),
+    "--primary-tint": tintColor(primary),
+    "--mint": mintColor(primary),
     // anello del focus sempre visibile (contrasto 3:1 anche con colori chiari)
     "--ring": ink,
     "--sidebar-primary": primary,

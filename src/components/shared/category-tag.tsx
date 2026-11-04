@@ -10,8 +10,8 @@ const categoryTagVariants = cva(
     variants: {
       category: {
         diet: "bg-primary-tint text-primary-ink",
-        workout: "bg-info text-info-foreground",
-        report: "bg-muted text-secondary-foreground",
+        workout: "bg-file-workout text-foreground",
+        report: "bg-file-report text-foreground",
       } satisfies Record<FileCategory, string>,
     },
   },

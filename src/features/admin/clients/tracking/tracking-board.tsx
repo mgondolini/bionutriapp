@@ -429,7 +429,7 @@ function GoalsSection({
             key={key}
             className="flex items-center gap-3 rounded-xl bg-background px-3.5 py-3"
           >
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-card text-primary-ink">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-file-workout text-foreground">
               <MetricIcon name={icon} />
             </span>
             <div className="flex flex-col">

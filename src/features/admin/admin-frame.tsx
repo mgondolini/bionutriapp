@@ -66,19 +66,14 @@ function UserMenu({
   const { signOut, isPending } = useSignOut();
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex min-h-11 w-full items-center gap-3 rounded-xl bg-background p-3.5 text-left transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50">
+      <DropdownMenuTrigger className="flex min-h-11 w-full items-center gap-3 rounded-xl bg-white/8 p-3.5 text-left text-primary-tint transition-colors outline-none hover:bg-sidebar-accent focus-visible:ring-3 focus-visible:ring-sidebar-ring">
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="text-sm leading-snug font-bold">
+          <span className="text-sm leading-snug font-bold text-sidebar-foreground">
             {user.displayName}
           </span>
-          <span className="text-[13px] text-muted-foreground">
-            {user.roleLabel}
-          </span>
+          <span className="text-[13px]">{user.roleLabel}</span>
         </span>
-        <ChevronsUpDown
-          aria-hidden="true"
-          className="size-4 text-muted-foreground"
-        />
+        <ChevronsUpDown aria-hidden="true" className="size-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent side="top" align="start" className="w-56">
         <MenuPrimitive.LinkItem
@@ -110,9 +105,14 @@ function SidebarContent({
 }: Omit<AdminFrameProps, "children"> & { onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
-    <div className="flex h-full flex-col gap-7 px-5 py-7">
+    <div className="flex h-full flex-col gap-7 bg-sidebar px-5 py-7 text-sidebar-foreground">
       <div className="flex items-center gap-2.5">
-        <StudioLogo name={studio.name} logoUrl={studio.logoUrl} size="sm" />
+        <StudioLogo
+          name={studio.name}
+          logoUrl={studio.logoUrl}
+          size="sm"
+          tone="mint"
+        />
         <span className="text-[17px] leading-tight font-bold tracking-tight">
           {studio.name}
         </span>
@@ -130,10 +130,10 @@ function SidebarContent({
                   onClick={onNavigate}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex min-h-11 items-center gap-2.5 rounded-[10px] px-3.5 py-2 text-[15px] leading-tight transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                    "flex min-h-11 items-center gap-2.5 rounded-[10px] px-3.5 py-2 text-[15px] leading-tight transition-colors outline-none focus-visible:ring-3 focus-visible:ring-sidebar-ring",
                     active
-                      ? "bg-primary-tint font-semibold text-primary-ink"
-                      : "text-secondary-foreground/85 hover:bg-sidebar-accent",
+                      ? "bg-sidebar-accent font-semibold text-mint"
+                      : "text-primary-tint hover:bg-sidebar-accent",
                   )}
                 >
                   <Icon aria-hidden="true" className="size-[18px] shrink-0" />
@@ -161,14 +161,14 @@ export function AdminFrame({ studio, user, items, children }: AdminFrameProps) {
   return (
     <div className="flex min-h-full flex-1">
       <SkipLink />
-      <aside className="hidden w-[220px] shrink-0 border-r bg-sidebar lg:block">
+      <aside className="hidden w-[220px] shrink-0 bg-sidebar lg:block">
         <div className="sticky top-0 h-dvh">
           <SidebarContent studio={studio} user={user} items={items} />
         </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center gap-3 border-b bg-sidebar px-4 py-2 lg:hidden">
+        <header className="flex items-center gap-3 bg-sidebar px-4 py-2 text-sidebar-foreground lg:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger
               render={
@@ -176,12 +176,16 @@ export function AdminFrame({ studio, user, items, children }: AdminFrameProps) {
                   variant="ghost"
                   size="icon"
                   aria-label={copy.admin.openMenu}
+                  className="hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:ring-sidebar-ring aria-expanded:bg-sidebar-accent aria-expanded:text-sidebar-foreground"
                 />
               }
             >
               <Menu aria-hidden="true" />
             </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-0">
+            <SheetContent
+              side="left"
+              className="w-72 border-0 bg-sidebar p-0 text-sidebar-foreground"
+            >
               <SheetTitle className="sr-only">{copy.admin.navLabel}</SheetTitle>
               <SidebarContent
                 studio={studio}
@@ -191,7 +195,12 @@ export function AdminFrame({ studio, user, items, children }: AdminFrameProps) {
               />
             </SheetContent>
           </Sheet>
-          <StudioLogo name={studio.name} logoUrl={studio.logoUrl} size="sm" />
+          <StudioLogo
+            name={studio.name}
+            logoUrl={studio.logoUrl}
+            size="sm"
+            tone="mint"
+          />
           <span className="truncate font-semibold">{studio.name}</span>
         </header>
 

@@ -21,7 +21,7 @@ import {
  */
 
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
-const SEED_COLOR = "#2E6A4E";
+const SEED_COLOR = "#1F7A5C";
 const COLORS = [
   { name: "colore del seed", hex: SEED_COLOR },
   { name: "colore scuro", hex: "#1F2A44" },

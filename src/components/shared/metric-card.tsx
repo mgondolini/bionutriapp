@@ -56,12 +56,12 @@ const iconVariants = cva(
   {
     variants: {
       kind: {
-        circumference: "bg-primary-tint text-primary-ink",
-        habit: "bg-info text-info-foreground",
-        workout: "bg-muted text-secondary-foreground",
+        circumference: "bg-primary-tint text-secondary-foreground",
+        habit: "bg-file-workout text-secondary-foreground",
+        workout: "bg-primary-tint text-secondary-foreground",
       } satisfies Record<MetricKind, string>,
       late: {
-        true: "bg-warning text-warning-foreground",
+        true: "bg-warning text-secondary-foreground",
         false: "",
       },
     },
@@ -89,9 +89,7 @@ const cardVariants = cva("flex text-card-foreground", {
       false: "",
     },
   },
-  compoundVariants: [
-    { layout: "panel", late: true, className: "border-[#e9c9a5]" },
-  ],
+  compoundVariants: [{ layout: "panel", late: true, className: "border-warm" }],
   defaultVariants: { interactive: false, late: false },
 });
 

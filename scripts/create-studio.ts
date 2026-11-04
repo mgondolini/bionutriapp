@@ -6,7 +6,7 @@
  * Uso:
  *   pnpm studio:create --name "Studio Verde" --slug studio-verde \
  *     --email titolare@example.com --first-name Elena --last-name Verdi [--title "Dott.ssa"] \
- *     [--color "#2E6A4E"] [--env .env.local]
+ *     [--color "#1F7A5C"] [--env .env.local]
  *
  * Stampa il link con cui il titolare sceglie la propria password (valido un'ora).
  * Lo script è uno strumento separato dall'app: non passa dai repository, che
@@ -138,7 +138,9 @@ async function main() {
     type: "recovery",
   });
   console.log(`Studio "${name}" creato (slug: ${slug}, id: ${studio.id}).`);
-  console.log(`Titolare: ${[title, firstName, lastName].filter(Boolean).join(" ")} <${email}>`);
+  console.log(
+    `Titolare: ${[title, firstName, lastName].filter(Boolean).join(" ")} <${email}>`,
+  );
   console.log("Link per scegliere la password (valido un'ora):");
   console.log(`${appUrl}/nuova-password?${params.toString()}`);
 }

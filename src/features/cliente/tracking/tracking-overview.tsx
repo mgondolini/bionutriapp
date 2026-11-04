@@ -72,7 +72,7 @@ function CheckinCard({
   return (
     <section
       aria-labelledby="checkin-card"
-      className="flex flex-col gap-3 rounded-[18px] bg-primary p-5 text-primary-foreground"
+      className="flex flex-col gap-3 rounded-[18px] bg-mint p-5 text-mint-foreground"
     >
       <div className="flex items-baseline justify-between gap-3">
         <h2
@@ -96,7 +96,7 @@ function CheckinCard({
         <Link
           href={checkinUrl()}
           className={buttonVariants({
-            variant: done ? "inverse-outline" : "inverse",
+            variant: done ? "mint-outline" : "default",
             className: "h-12 w-full rounded-xl",
           })}
         >

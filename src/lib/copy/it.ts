@@ -759,7 +759,7 @@ export const copy = {
       logoHint:
         "Immagine quadrata PNG o JPEG, massimo 2 MB. È anche l'icona dell'app installata sul telefono.",
       colorLabel: "Colore principale",
-      colorHint: "Formato esadecimale, per esempio #2E6A4E.",
+      colorHint: "Formato esadecimale, per esempio #1F7A5C.",
       contrast: (ratio: string, textLabel: string) =>
         `Contrasto con il testo ${textLabel}: ${ratio}:1. Il minimo per la leggibilità è 4,5:1 (WCAG AA).`,
       contrastLow:

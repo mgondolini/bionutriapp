@@ -37,7 +37,12 @@
   --color-primary: var(--primary);
   --color-primary-ink: var(--primary-ink);
   --color-primary-tint: var(--primary-tint);
-  --color-primary-deep: var(--primary-deep);
+  --color-mint: var(--mint);
+  --color-mint-foreground: var(--mint-foreground);
+  --color-warm: var(--warm);
+  --color-warm-soft: var(--warm-soft);
+  --color-file-workout: var(--file-workout);
+  --color-file-report: var(--file-report);
   --color-subtle: var(--subtle);
   --color-line-strong: var(--line-strong);
   --color-popover-foreground: var(--popover-foreground);
@@ -60,56 +65,70 @@
 }
 
 :root {
-  /* Design system NF-07. --primary e --primary-foreground vengono sovrascritti
-     dal colore dello studio (StudioThemeStyle), con contrasto calcolato. */
-  --background: #f5f6f2;
-  --foreground: #18211d;
+  /* Design system NF-07, mockup v2 (docs/mockups/mockup-v2.html, tavola DS).
+     Dal colore dello studio (StudioThemeStyle, src/lib/color.ts) arrivano
+     --primary, --primary-foreground, --primary-ink, --primary-tint, --mint e
+     --ring: i valori qui sotto valgono solo come ripiego. */
+  --background: #edf3ef;
+  --foreground: #1f3a34;
   --card: #ffffff;
-  --card-foreground: #18211d;
+  --card-foreground: #1f3a34;
   --popover: #ffffff;
-  --popover-foreground: #18211d;
-  --primary: #2e6a4e;
+  --popover-foreground: #1f3a34;
+  /* Azione: pulsanti primari, focus, selezione */
+  --primary: #1f7a5c;
   --primary-foreground: #ffffff;
-  /* primario per testi e icone su sfondo chiaro (inkColor in src/lib/color.ts) */
-  --primary-ink: #2e6a4e;
-  /* fondo tenue del primario: voce attiva, pillole, icone (accent-tint del mockup) */
-  /* riquadri su superfici del primario (deepColor in src/lib/color.ts) */
-  --primary-deep: #265740;
-  --primary-tint: color-mix(in oklab, var(--primary) 12%, white);
-  --secondary: #eef1ec;
-  --secondary-foreground: #18211d;
-  --muted: #eef1ec;
-  --muted-foreground: #55605a;
-  --accent: #eef1ec;
-  --accent-foreground: #18211d;
+  /* primario per testi e icone su sfondo chiaro e sulla tinta (inkColor) */
+  --primary-ink: #176248;
+  /* Tinta: badge "Attivo", pillole, icone, righe attive (tintColor) */
+  --primary-tint: #cfefe2;
+  /* Menta: superfici in evidenza del cliente, badge "In percorso" e "Nuovo",
+     voce attiva del menu (mintColor); sopra sempre il testo Profondo */
+  --mint: #98e2c6;
+  --mint-foreground: #1f3a34;
+  /* Pesca: SOLO "richiede attenzione" (in ritardo, onboarding, invito scaduto) */
+  --warm: #fdbba3;
+  --warm-soft: #fff4ef;
+  /* schede dei file per categoria */
+  --file-workout: #c9e4f5;
+  --file-report: #fbefc4;
+  /* Neutro: riempimenti, "In pausa"; testo secondario scuro (ink2) */
+  --secondary: #e6f3ee;
+  --secondary-foreground: #2f4a43;
+  --muted: #e6f3ee;
+  --muted-foreground: #4b6159;
+  --accent: #e6f3ee;
+  --accent-foreground: #1f3a34;
   --destructive: #b42318;
-  --border: #dde2db;
-  --input: #c9d0c7;
-  /* bordo di bottoni secondari, campi e caselle (line2 del mockup) */
-  --line-strong: #c9d0c7;
+  /* Bordo card: contorno decorativo di card e liste */
+  --border: #d5e6df;
+  /* Bordo controlli: campi, pulsanti secondari, caselle (3:1) */
+  --input: #6f8c80;
+  --line-strong: #6f8c80;
   /* intestazioni di tabella e zone di rilascio */
-  --subtle: #fafbf8;
-  --ring: #2e6a4e;
+  --subtle: #f6fbf9;
+  --ring: #176248;
   --info: #e2ecf7;
-  --info-foreground: #1f4e80;
-  --warning: #fbebd9;
-  --warning-foreground: #8a4513;
-  --success: #e3efe7;
-  --success-foreground: #1f5139;
-  --chart-1: #2e6a4e;
-  --chart-2: #1f4e80;
-  --chart-3: #8a4513;
-  --chart-4: #55605a;
-  --chart-5: #18211d;
+  --info-foreground: #1f5c86;
+  --warning: #ffe6dc;
+  --warning-foreground: #8a3a1e;
+  --success: #cfefe2;
+  --success-foreground: #176248;
+  --chart-1: #1f7a5c;
+  --chart-2: #1f5c86;
+  --chart-3: #8a3a1e;
+  --chart-4: #4b6159;
+  --chart-5: #1f3a34;
   --radius: 0.75rem;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #18211d;
-  --sidebar-primary: #2e6a4e;
+  /* menu laterale dell'area admin su Profondo */
+  --sidebar: #1f3a34;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #1f7a5c;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #eef1ec;
-  --sidebar-accent-foreground: #18211d;
-  --sidebar-border: #dde2db;
-  --sidebar-ring: #2e6a4e;
+  --sidebar-accent: rgb(255 255 255 / 0.12);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #1f3a34;
+  --sidebar-ring: #98e2c6;
 }
 
 .dark {

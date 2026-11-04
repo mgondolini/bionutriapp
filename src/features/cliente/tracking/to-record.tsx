@@ -52,7 +52,7 @@ export function ToRecord({ items }: { items: ToRecordItem[] }) {
                       )}
                     </span>
                   </span>
-                  <span className="rounded-full bg-info px-2.5 py-1 text-xs leading-none font-semibold text-info-foreground">
+                  <span className="rounded-full bg-mint px-2.5 py-1 text-xs leading-none font-semibold text-mint-foreground">
                     {t.today}
                   </span>
                 </Link>

@@ -29,14 +29,14 @@ const ICONS: Record<ClientNavKey, LucideIcon> = {
 export function OnboardingHome({ studioName }: { studioName: string }) {
   return (
     <div className="flex flex-col gap-4">
-      <section className="flex flex-col gap-3 rounded-[18px] bg-primary p-5 text-primary-foreground">
-        <p className="self-start rounded-full bg-primary-deep px-2.5 py-1 text-[12.5px] leading-none font-bold">
+      <section className="flex flex-col gap-3 rounded-[18px] bg-mint p-5 text-mint-foreground">
+        <p className="self-start rounded-full bg-mint-foreground px-2.5 py-1 text-[12.5px] leading-none font-bold text-mint">
           {t.welcome}
         </p>
         <h2 className="text-[21px] leading-tight font-bold tracking-tight">
           {t.title(studioName)}
         </h2>
-        <p className="rounded-xl bg-primary-deep px-3.5 py-3 text-sm leading-normal">
+        <p className="rounded-xl bg-white/60 px-3.5 py-3 text-sm leading-normal">
           {t.description(studioName)}
         </p>
       </section>

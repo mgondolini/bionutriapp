@@ -19,9 +19,9 @@ const ICONS: Record<FileCategory, LucideIcon> = {
 const cardVariants = cva("flex min-h-44 flex-col gap-1 rounded-2xl p-3.5", {
   variants: {
     category: {
-      diet: "bg-primary-tint text-primary-ink",
-      workout: "bg-info text-info-foreground",
-      report: "bg-muted text-secondary-foreground",
+      diet: "bg-primary-tint text-foreground",
+      workout: "bg-file-workout text-foreground",
+      report: "bg-file-report text-foreground",
     } satisfies Record<FileCategory, string>,
   },
 });
@@ -62,7 +62,7 @@ export function OtherCurrentFiles({ files }: { files: FileItem[] }) {
               <h3 className="text-[15px] leading-tight font-bold break-words text-foreground">
                 {file.title}
               </h3>
-              <span className="text-[12.5px] text-muted-foreground">
+              <span className="text-[12.5px]">
                 {formatLongDate(file.validFrom ?? file.uploadedAt)}
               </span>
               <OpenFileButton

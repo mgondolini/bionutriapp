@@ -49,7 +49,7 @@ export function ClientsTable({ items }: { items: ClientListItem[] }) {
               data-onboarding={isHighlighted(item) || undefined}
               className={cn(
                 isHighlighted(item) &&
-                  "bg-[#fff9f1] shadow-[inset_4px_0_0_#d9a066] hover:bg-[#fff4e6]",
+                  "bg-warm-soft shadow-[inset_4px_0_0_var(--warm)] hover:bg-warm-soft",
               )}
             >
               <TableCell>

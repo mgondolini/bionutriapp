@@ -88,14 +88,16 @@ export const ADMIN_NAV = [
 export type AdminNavKey = (typeof ADMIN_NAV)[number]["key"];
 
 /** Branding predefinito (NF-07), usato quando lo studio non è disponibile. */
-export const DEFAULT_PRIMARY_COLOR = "#2E6A4E";
-export const DARK_TEXT_COLOR = "#18211D";
+export const DEFAULT_PRIMARY_COLOR = "#1F7A5C";
+export const DARK_TEXT_COLOR = "#1F3A34";
 export const LIGHT_TEXT_COLOR = "#FFFFFF";
-export const APP_BACKGROUND_COLOR = "#F5F6F2";
+export const APP_BACKGROUND_COLOR = "#EDF3EF";
 /** Contrasto minimo per il testo normale (WCAG AA). */
 export const MIN_TEXT_CONTRAST = 4.5;
+/** Voce attiva del menu laterale: bianco al 12% sul Profondo (DARK_TEXT_COLOR). */
+export const SIDEBAR_ACTIVE_COLOR = "#3A524C";
 /** Sfondo chiaro più scuro su cui compare il testo nel colore dello studio (--background). */
-export const LIGHT_SURFACE_COLOR = "#F5F6F2";
+export const LIGHT_SURFACE_COLOR = "#EDF3EF";
 
 /** Logo dello studio (bucket studio-assets). */
 export const STUDIO_ASSETS_BUCKET = "studio-assets";

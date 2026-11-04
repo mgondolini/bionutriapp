@@ -8,7 +8,7 @@
  *
  * Cambiare VERSION a ogni modifica di questo file o di offline.html.
  */
-const VERSION = "v2";
+const VERSION = "v3";
 const CACHE = `offline-${VERSION}`;
 const OFFLINE_URL = "/offline.html";
 const DEFAULT_URL = "/app";

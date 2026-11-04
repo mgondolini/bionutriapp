@@ -65,7 +65,12 @@ export function PushBanner({
         ) : null}
       </div>
       {state === "ask" ? (
-        <Button onClick={enable} disabled={isPending} className="shrink-0">
+        <Button
+          variant="outline"
+          onClick={enable}
+          disabled={isPending}
+          className="shrink-0"
+        >
           {isPending ? t.ask.pending : t.ask.action}
         </Button>
       ) : null}
@@ -73,6 +78,7 @@ export function PushBanner({
         <Button
           nativeButton={false}
           render={<Link href={ROUTES.client.install} />}
+          variant="outline"
           className="shrink-0"
         >
           {t.install.action}

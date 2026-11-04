@@ -25,7 +25,7 @@ export function ClientsCards({ items }: { items: ClientListItem[] }) {
           className={cn(
             "flex flex-col gap-3 rounded-[14px] border bg-card p-4",
             isHighlighted(item) &&
-              "bg-[#fff9f1] shadow-[inset_4px_0_0_#d9a066]",
+              "bg-warm-soft shadow-[inset_4px_0_0_var(--warm)]",
           )}
         >
           <div className="flex items-start justify-between gap-3">

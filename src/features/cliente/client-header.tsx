@@ -85,10 +85,11 @@ const tileVariants = cva(
   {
     variants: {
       tone: {
-        primary: "bg-primary-tint text-primary-ink",
-        info: "bg-info text-info-foreground",
-        neutral: "bg-muted text-secondary-foreground",
-        warning: "bg-warning text-warning-foreground",
+        // mockup v2: fondi tinta, azzurro e pesca, icone sempre in ink2
+        primary: "bg-primary-tint text-secondary-foreground",
+        info: "bg-file-workout text-secondary-foreground",
+        neutral: "bg-primary-tint text-secondary-foreground",
+        warning: "bg-warning text-secondary-foreground",
       } satisfies Record<TileTone, string>,
     },
   },
