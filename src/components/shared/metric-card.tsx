@@ -57,8 +57,8 @@ const iconVariants = cva(
     variants: {
       kind: {
         circumference: "bg-primary-tint text-secondary-foreground",
-        habit: "bg-file-workout text-secondary-foreground",
-        workout: "bg-primary-tint text-secondary-foreground",
+        habit: "bg-file-report text-secondary-foreground",
+        workout: "bg-file-workout text-secondary-foreground",
       } satisfies Record<MetricKind, string>,
       late: {
         true: "bg-warning text-secondary-foreground",

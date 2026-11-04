@@ -111,7 +111,7 @@ export function CheckinForm({ checkin }: { checkin: Checkin }) {
             render={({ field }) => (
               <fieldset className="flex flex-col gap-3.5 rounded-2xl border bg-card p-[18px]">
                 <div className="flex items-center gap-3">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-file-workout text-secondary-foreground">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-file-report text-secondary-foreground">
                     <MetricIcon name={habit.icon} />
                   </span>
                   <legend className="text-[17px] font-bold">
