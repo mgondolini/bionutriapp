@@ -995,6 +995,7 @@ export const copy = {
       never: "Da registrare",
     } satisfies Record<CircumferenceStatus, string>,
     recordedAria: "Registrata nel periodo corrente",
+    pendingAria: "Da compilare oggi",
     entries: (count: number) =>
       count === 1 ? "1 registrazione" : `${count} registrazioni`,
     sessions: (count: number) =>
@@ -1012,6 +1013,7 @@ export const copy = {
     weekAverage: (name: string) => `${name}, media della settimana`,
     delta: (delta: string) => `${delta} rispetto alla scorsa settimana`,
     deltaShort: (delta: string) => `${delta} rispetto alla scorsa`,
+    deltaShortSuffix: "rispetto alla scorsa",
     deltaZero: "uguale alla scorsa settimana",
     noWeekValues: "Nessun voto questa settimana",
     chartTitle: "Andamento",
@@ -1160,6 +1162,7 @@ export const copy = {
     notRead: "Non ancora letto",
     meta: (date: string, size: string) => `${date} · ${size}`,
     noteLabel: "Nota dello studio",
+    quotedNote: (note: string) => `“${note}”`,
     downloadFallback: "documento",
     uploadErrors: {
       not_pdf: "Puoi caricare solo file PDF.",

@@ -50,6 +50,8 @@ const ADMIN_PAGES = [
 const CLIENT_PAGES = [
   "/app",
   "/app/diete",
+  "/app/allenamenti",
+  "/app/report",
   "/app/tracking",
   "/app/tracking/check-in",
   "/app/tracking/water",

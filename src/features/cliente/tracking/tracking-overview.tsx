@@ -12,11 +12,7 @@ import {
   type MetricKind,
 } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
-import {
-  averageText,
-  habitDeltaText,
-  scoreText,
-} from "@/lib/domain/tracking/labels";
+import { averageText, scoreText } from "@/lib/domain/tracking/labels";
 import {
   checkinStatus,
   type MetricOverview,
@@ -24,6 +20,7 @@ import {
 import {
   formatDayMonthLong,
   formatDayMonthShort,
+  formatSignedDelta,
   formatWeekdayShort,
 } from "@/lib/format";
 
@@ -107,6 +104,21 @@ function CheckinCard({
   );
 }
 
+/** " · +0,6 rispetto alla scorsa", con la sola differenza in evidenza. */
+function WeekDelta({ delta }: { delta: number | null }) {
+  if (delta === null) return null;
+  if (delta === 0) return <>{` · ${tt.deltaZero}`}</>;
+  return (
+    <>
+      {" · "}
+      <span className="font-semibold text-foreground">
+        {formatSignedDelta(delta)}
+      </span>{" "}
+      {tt.deltaShortSuffix}
+    </>
+  );
+}
+
 function HabitAverages({ items }: { items: MetricOverview[] }) {
   const habits = items.filter(
     (item) => item.kind === "habit" && item.stats.average !== null,
@@ -125,9 +137,7 @@ function HabitAverages({ items }: { items: MetricOverview[] }) {
             </span>
             <span className="text-[12.5px] text-muted-foreground">
               {tt.weekAverage(item.metric.name)}
-              {habitDeltaText(item.stats.delta, true)
-                ? ` · ${habitDeltaText(item.stats.delta, true)}`
-                : null}
+              <WeekDelta delta={item.stats.delta} />
             </span>
           </li>
         ) : null,

@@ -51,13 +51,22 @@ export function RecordedTick() {
   );
 }
 
+/** Abitudine ancora da compilare oggi: cerchio tratteggiato al posto della spunta. */
+export function PendingTick() {
+  return (
+    <span className="flex size-7 shrink-0 rounded-full border-2 border-dashed border-line-strong">
+      <span className="sr-only">{t.pendingAria}</span>
+    </span>
+  );
+}
+
 const iconVariants = cva(
   "flex size-10 shrink-0 items-center justify-center rounded-xl",
   {
     variants: {
       kind: {
         circumference: "bg-primary-tint text-secondary-foreground",
-        habit: "bg-file-report text-secondary-foreground",
+        habit: "bg-primary-tint text-secondary-foreground",
         workout: "bg-file-workout text-secondary-foreground",
       } satisfies Record<MetricKind, string>,
       late: {
@@ -173,6 +182,8 @@ export function MetricCard({
           <MetricStatusBadge status={status} />
         ) : recorded ? (
           <RecordedTick />
+        ) : kind === "habit" && recorded === false ? (
+          <PendingTick />
         ) : null}
         {children}
       </>

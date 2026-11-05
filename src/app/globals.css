@@ -43,6 +43,8 @@
   --color-warm-soft: var(--warm-soft);
   --color-file-workout: var(--file-workout);
   --color-file-report: var(--file-report);
+  --color-file-workout-line: var(--file-workout-line);
+  --color-file-report-line: var(--file-report-line);
   --color-subtle: var(--subtle);
   --color-line-strong: var(--line-strong);
   --color-popover-foreground: var(--popover-foreground);
@@ -92,6 +94,9 @@
   /* schede dei file per categoria */
   --file-workout: #c9e4f5;
   --file-report: #fbefc4;
+  /* filo sopra l'archivio di Allenamenti e Report: dice in che sezione sei */
+  --file-workout-line: #8ec3e6;
+  --file-report-line: #e3c86a;
   /* Neutro: riempimenti, "In pausa"; testo secondario scuro (ink2) */
   --secondary: #e6f3ee;
   --secondary-foreground: #2f4a43;
