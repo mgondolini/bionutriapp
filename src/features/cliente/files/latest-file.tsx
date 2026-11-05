@@ -27,7 +27,11 @@ export function LatestFile({ file }: { file: FileItem | null }) {
           meta={formatLongDate(file.uploadedAt)}
           note={file.note}
         >
-          <FileButtons id={file.id} title={file.title} />
+          <FileButtons
+            id={file.id}
+            title={file.title}
+            category={file.category}
+          />
         </FileCard>
       ) : (
         <EmptyState

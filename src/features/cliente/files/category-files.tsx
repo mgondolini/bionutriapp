@@ -69,7 +69,11 @@ export function CategoryFiles({
             }
             note={current.note}
           >
-            <FileButtons id={current.id} title={current.title} />
+            <FileButtons
+              id={current.id}
+              title={current.title}
+              category={category}
+            />
           </FileCard>
         </section>
       ) : null}

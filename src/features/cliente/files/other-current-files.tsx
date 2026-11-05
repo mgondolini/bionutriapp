@@ -1,6 +1,5 @@
 import { cva } from "class-variance-authority";
-import { ChartColumn, Dumbbell, Utensils, type LucideIcon } from "lucide-react";
-
+import { FILE_CATEGORY_ICONS } from "@/components/shared/file-card";
 import { OpenFileButton } from "@/components/shared/open-file-button";
 import type { FileCategory } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
@@ -8,12 +7,6 @@ import { formatLongDate } from "@/lib/format";
 import type { FileItem } from "@/server/services/files.service";
 
 const t = copy.client.home;
-
-const ICONS: Record<FileCategory, LucideIcon> = {
-  diet: Utensils,
-  workout: Dumbbell,
-  report: ChartColumn,
-};
 
 /** Colore della card per categoria, come le voci del menu (C5, C6). */
 const cardVariants = cva("flex min-h-44 flex-col gap-1 rounded-2xl p-3.5", {
@@ -40,7 +33,7 @@ export function OtherCurrentFiles({ files }: { files: FileItem[] }) {
       </h2>
       <ul className="grid grid-cols-2 gap-3">
         {files.map((file) => {
-          const Icon = ICONS[file.category];
+          const Icon = FILE_CATEGORY_ICONS[file.category];
           return (
             <li
               key={file.id}

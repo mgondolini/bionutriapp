@@ -1,5 +1,11 @@
 import { cva } from "class-variance-authority";
-import { FileText } from "lucide-react";
+import {
+  ChartColumn,
+  Dumbbell,
+  FileText,
+  Utensils,
+  type LucideIcon,
+} from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { FileCategory } from "@/lib/constants/domain";
@@ -8,6 +14,13 @@ import { cn } from "@/lib/utils";
 
 /** Badge di un file: non ancora letto dal cliente, in corso, da leggere (archivio). */
 export type FileBadge = "new" | "current" | "toRead";
+
+/** Icona di ogni categoria: menu, mini-card della home, card in evidenza. */
+export const FILE_CATEGORY_ICONS: Record<FileCategory, LucideIcon> = {
+  diet: Utensils,
+  workout: Dumbbell,
+  report: ChartColumn,
+};
 
 const BADGE_LABELS: Record<FileBadge, string> = {
   new: copy.files.newBadge,
@@ -30,7 +43,7 @@ const badgeVariants = cva(
         report: "",
       } satisfies Record<FileCategory, string>,
     },
-    // "Nuovo" e "Da leggere" nel colore intenso della categoria
+    // "Nuovo" e "Da leggere" nel colore della categoria
     compoundVariants: [
       {
         badge: ["new", "toRead"],
@@ -40,12 +53,12 @@ const badgeVariants = cva(
       {
         badge: ["new", "toRead"],
         category: "workout",
-        className: "bg-file-workout-strong text-foreground",
+        className: "bg-file-workout text-foreground",
       },
       {
         badge: ["new", "toRead"],
         category: "report",
-        className: "bg-file-report-strong text-foreground",
+        className: "bg-file-report text-foreground",
       },
     ],
     defaultVariants: { category: "diet" },
@@ -71,33 +84,51 @@ export function FileBadgeLabel({
 const cardVariants = cva("flex text-card-foreground", {
   variants: {
     variant: {
-      /** File in evidenza nel colore intenso della categoria: home (C5) e file in corso (C7). */
-      featured: "flex-col gap-3 rounded-[18px] p-5 text-mint-foreground",
+      /** File in evidenza: home (C5) e file in corso (C7). */
+      featured: "flex-col gap-3 rounded-[18px] p-5",
       /** Riga compatta: archivio (C7, in un elenco raggruppato) e scheda File su schermi stretti. */
       row: "min-h-16 flex-wrap items-center gap-3 bg-card px-4 py-3",
     },
   },
 });
 
-/** Colori della categoria: Diete sulla menta dello studio, Allenamenti azzurro, Report giallo. */
+/**
+ * Colori della categoria. Diete: card sulla menta, che nasce dal colore dello
+ * studio e quindi si accorda sempre con il pulsante primario. Allenamenti
+ * (azzurro) e Report (giallo) hanno colori fissi: card bianca con l'icona
+ * della categoria, così il pulsante dello studio non stona con nessun colore.
+ */
 const CATEGORY_TONES: Record<
   FileCategory,
-  { surface: string; pill: string; tile: string }
+  {
+    surface: string;
+    pill: string;
+    note: string;
+    tile: string;
+    /** Icona della categoria in cima alla card in evidenza. */
+    featuredIcon: boolean;
+  }
 > = {
   diet: {
-    surface: "bg-mint",
-    pill: "text-mint",
+    surface: "bg-mint text-mint-foreground",
+    pill: "bg-mint-foreground text-mint",
+    note: "bg-white/60",
     tile: "bg-primary-tint text-primary-ink",
+    featuredIcon: false,
   },
   workout: {
-    surface: "bg-file-workout-strong",
-    pill: "text-file-workout-strong",
+    surface: "border bg-card",
+    pill: "bg-file-workout text-foreground",
+    note: "bg-muted",
     tile: "bg-file-workout text-secondary-foreground",
+    featuredIcon: true,
   },
   report: {
-    surface: "bg-file-report-strong",
-    pill: "text-file-report-strong",
+    surface: "border bg-card",
+    pill: "bg-file-report text-foreground",
+    note: "bg-muted",
     tile: "bg-file-report text-secondary-foreground",
+    featuredIcon: true,
   },
 };
 
@@ -164,16 +195,24 @@ export function FileCard({
     );
   }
 
+  const Icon = FILE_CATEGORY_ICONS[category];
   return (
     <article className={cn(cardVariants({ variant }), tone.surface, className)}>
       <div className="flex flex-wrap items-center justify-between gap-2 text-[12.5px]">
         <span className="flex flex-wrap items-center gap-2 font-bold">
-          {badge ? (
+          {tone.featuredIcon ? (
             <span
               className={cn(
-                "rounded-full bg-mint-foreground px-2.5 py-1 leading-none",
-                tone.pill,
+                "flex size-10 shrink-0 items-center justify-center rounded-xl",
+                tone.tile,
               )}
+            >
+              <Icon aria-hidden="true" className="size-5" />
+            </span>
+          ) : null}
+          {badge ? (
+            <span
+              className={cn("rounded-full px-2.5 py-1 leading-none", tone.pill)}
             >
               {BADGE_LABELS[badge]}
             </span>
@@ -188,7 +227,10 @@ export function FileCard({
       {note ? (
         <blockquote
           aria-label={copy.files.noteLabel}
-          className="rounded-xl bg-white/60 px-3.5 py-3 text-sm leading-normal whitespace-pre-line"
+          className={cn(
+            "rounded-xl px-3.5 py-3 text-sm leading-normal whitespace-pre-line",
+            tone.note,
+          )}
         >
           {note}
         </blockquote>
