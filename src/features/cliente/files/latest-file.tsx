@@ -20,6 +20,7 @@ export function LatestFile({ file }: { file: FileItem | null }) {
       {file ? (
         <FileCard
           variant="featured"
+          category={file.category}
           title={file.title}
           badge={file.firstReadAt ? "current" : "new"}
           eyebrow={copy.domain.fileCategory[file.category]}

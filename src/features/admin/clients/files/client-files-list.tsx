@@ -221,6 +221,7 @@ export function ClientFilesList({
               <li key={file.id}>
                 <FileCard
                   variant="row"
+                  category={file.category}
                   title={file.title}
                   badge={file.current ? "current" : null}
                   meta={

@@ -78,16 +78,18 @@ function useClientShell(): ClientShell {
   return shell;
 }
 
-type TileTone = "primary" | "info" | "neutral" | "warning";
+type TileTone = "primary" | "info" | "report" | "neutral" | "warning";
 
 const tileVariants = cva(
   "flex size-10 shrink-0 items-center justify-center rounded-xl",
   {
     variants: {
       tone: {
-        // mockup v2: fondi tinta, azzurro e pesca, icone sempre in ink2
+        // mockup v2: fondi tinta, azzurro, giallo e pesca, icone sempre in
+        // ink2; le categorie dei file hanno i colori delle loro pagine
         primary: "bg-primary-tint text-secondary-foreground",
         info: "bg-file-workout text-secondary-foreground",
+        report: "bg-file-report text-secondary-foreground",
         neutral: "bg-primary-tint text-secondary-foreground",
         warning: "bg-warning text-secondary-foreground",
       } satisfies Record<TileTone, string>,
@@ -101,7 +103,7 @@ const ICONS: Record<
 > = {
   diets: { icon: Utensils, tone: "primary" },
   workouts: { icon: Dumbbell, tone: "info" },
-  reports: { icon: ChartColumn, tone: "neutral" },
+  reports: { icon: ChartColumn, tone: "report" },
   tracking: { icon: Activity, tone: "warning" },
   profile: { icon: UserRound, tone: "neutral" },
 };

@@ -43,6 +43,8 @@
   --color-warm-soft: var(--warm-soft);
   --color-file-workout: var(--file-workout);
   --color-file-report: var(--file-report);
+  --color-file-workout-strong: var(--file-workout-strong);
+  --color-file-report-strong: var(--file-report-strong);
   --color-subtle: var(--subtle);
   --color-line-strong: var(--line-strong);
   --color-popover-foreground: var(--popover-foreground);
@@ -89,9 +91,12 @@
   /* Pesca: SOLO "richiede attenzione" (in ritardo, onboarding, invito scaduto) */
   --warm: #fdbba3;
   --warm-soft: #fff4ef;
-  /* schede dei file per categoria */
+  /* categorie Allenamento (azzurro) e Report (giallo): tinta chiara per tile,
+     badge e tag; intensa (come la menta per le diete) per la card in evidenza */
   --file-workout: #c9e4f5;
   --file-report: #fbefc4;
+  --file-workout-strong: #9fcfee;
+  --file-report-strong: #f5dc85;
   /* Neutro: riempimenti, "In pausa"; testo secondario scuro (ink2) */
   --secondary: #e6f3ee;
   --secondary-foreground: #2f4a43;
