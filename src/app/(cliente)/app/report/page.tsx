@@ -17,7 +17,6 @@ export default async function ReportsPage() {
   );
   return (
     <CategoryFiles
-      category="report"
       title={t.title}
       subtitle={t.subtitle(studio.name)}
       emptyIcon={FileText}

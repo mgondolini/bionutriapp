@@ -14,7 +14,6 @@ export default async function DietsPage() {
   const { current, archive } = await getClientCategoryFiles(client.id, "diet");
   return (
     <CategoryFiles
-      category="diet"
       title={t.title}
       subtitle={t.subtitle(studio.name)}
       emptyIcon={Salad}

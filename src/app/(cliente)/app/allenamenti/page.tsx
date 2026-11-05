@@ -17,7 +17,6 @@ export default async function WorkoutsPage() {
   );
   return (
     <CategoryFiles
-      category="workout"
       title={t.title}
       subtitle={t.subtitle(studio.name)}
       emptyIcon={Dumbbell}

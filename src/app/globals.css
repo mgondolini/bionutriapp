@@ -89,8 +89,7 @@
   /* Pesca: SOLO "richiede attenzione" (in ritardo, onboarding, invito scaduto) */
   --warm: #fdbba3;
   --warm-soft: #fff4ef;
-  /* categorie Allenamento (azzurro) e Report (giallo): tile, badge, tag e
-     voci del menu */
+  /* schede dei file per categoria */
   --file-workout: #c9e4f5;
   --file-report: #fbefc4;
   /* Neutro: riempimenti, "In pausa"; testo secondario scuro (ink2) */

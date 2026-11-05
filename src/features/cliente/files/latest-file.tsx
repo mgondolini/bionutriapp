@@ -20,18 +20,13 @@ export function LatestFile({ file }: { file: FileItem | null }) {
       {file ? (
         <FileCard
           variant="featured"
-          category={file.category}
           title={file.title}
           badge={file.firstReadAt ? "current" : "new"}
           eyebrow={copy.domain.fileCategory[file.category]}
           meta={formatLongDate(file.uploadedAt)}
           note={file.note}
         >
-          <FileButtons
-            id={file.id}
-            title={file.title}
-            category={file.category}
-          />
+          <FileButtons id={file.id} title={file.title} />
         </FileCard>
       ) : (
         <EmptyState

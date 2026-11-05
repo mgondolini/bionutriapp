@@ -4,7 +4,6 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { FileCard } from "@/components/shared/file-card";
 import { OpenFileButton } from "@/components/shared/open-file-button";
 import { ClientPageHeader } from "@/features/cliente/client-header";
-import type { FileCategory } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { formatFileSize, formatLongDate } from "@/lib/format";
 import type { FileItem } from "@/server/services/files.service";
@@ -14,8 +13,6 @@ import { FileButtons } from "./file-buttons";
 const t = copy.client.files;
 
 type CategoryFilesProps = {
-  /** Colori della pagina: card in evidenza, icone e badge dell'archivio. */
-  category: FileCategory;
   title: string;
   subtitle: string;
   emptyIcon: LucideIcon;
@@ -29,7 +26,6 @@ type CategoryFilesProps = {
 
 /** Pagine Diete, Allenamenti e Report (C-04, schermata C7): file in corso in evidenza e archivio. */
 export function CategoryFiles({
-  category,
   title,
   subtitle,
   emptyIcon,
@@ -59,7 +55,6 @@ export function CategoryFiles({
           </h2>
           <FileCard
             variant="featured"
-            category={category}
             title={current.title}
             badge={current.firstReadAt ? "current" : "new"}
             meta={
@@ -69,11 +64,7 @@ export function CategoryFiles({
             }
             note={current.note}
           >
-            <FileButtons
-              id={current.id}
-              title={current.title}
-              category={category}
-            />
+            <FileButtons id={current.id} title={current.title} />
           </FileCard>
         </section>
       ) : null}
@@ -93,7 +84,6 @@ export function CategoryFiles({
               <li key={file.id}>
                 <FileCard
                   variant="row"
-                  category={category}
                   title={file.title}
                   badge={file.firstReadAt ? null : "toRead"}
                   meta={
