@@ -5,6 +5,7 @@ import { useId, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { FormMessage } from "@/components/shared/form-message";
+import { PagedList, usePagedItems } from "@/components/shared/paged-list";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,7 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { redirectIfSignedOut } from "@/lib/auth/session-expired";
-import { CSV_MAX_BYTES } from "@/lib/constants/domain";
+import { CSV_MAX_BYTES, CSV_PREVIEW_PAGE_SIZE } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import type { CleanResult } from "@/lib/csv/clean-clients";
 import { formatShortDate } from "@/lib/format";
@@ -58,6 +59,7 @@ function StepIndicator({ current }: { current: Step }) {
 /** Anteprima: righe valide, righe con dati corretti e righe scartate con il motivo. */
 function ImportPreview({ result }: { result: CleanResult }) {
   const withWarnings = result.valid.filter((row) => row.warnings.length > 0);
+  const valid = usePagedItems(result.valid, CSV_PREVIEW_PAGE_SIZE);
   return (
     <div className="flex max-h-[50vh] flex-col gap-4 overflow-y-auto pr-1">
       <dl className="grid grid-cols-2 gap-3">
@@ -82,8 +84,10 @@ function ImportPreview({ result }: { result: CleanResult }) {
       {result.discarded.length > 0 ? (
         <section className="flex flex-col gap-2">
           <h3 className="text-sm font-semibold">{t.discardedTitle}</h3>
-          <ul className="flex flex-col divide-y divide-muted rounded-xl border text-sm">
-            {result.discarded.map((row) => (
+          <PagedList
+            pageSize={CSV_PREVIEW_PAGE_SIZE}
+            className="flex flex-col divide-y divide-muted rounded-xl border text-sm"
+            items={result.discarded.map((row) => (
               <li
                 key={row.line}
                 className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3.5 py-3"
@@ -100,15 +104,17 @@ function ImportPreview({ result }: { result: CleanResult }) {
                 </span>
               </li>
             ))}
-          </ul>
+          />
         </section>
       ) : null}
 
       {withWarnings.length > 0 ? (
         <section className="flex flex-col gap-2">
           <h3 className="text-sm font-semibold">{t.warningsTitle}</h3>
-          <ul className="flex flex-col divide-y divide-muted rounded-xl border text-sm">
-            {withWarnings.map((row) => (
+          <PagedList
+            pageSize={CSV_PREVIEW_PAGE_SIZE}
+            className="flex flex-col divide-y divide-muted rounded-xl border text-sm"
+            items={withWarnings.map((row) => (
               <li key={row.line} className="flex flex-wrap gap-x-3 px-3.5 py-3">
                 <span className="w-16 shrink-0 text-muted-foreground">
                   {t.columns.line} {row.line}
@@ -118,7 +124,7 @@ function ImportPreview({ result }: { result: CleanResult }) {
                 </span>
               </li>
             ))}
-          </ul>
+          />
         </section>
       ) : null}
 
@@ -145,7 +151,7 @@ function ImportPreview({ result }: { result: CleanResult }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-muted">
-                {result.valid.map((row) => (
+                {valid.visible.map((row) => (
                   <tr key={row.line}>
                     <td className="px-3.5 py-3 text-muted-foreground">
                       {row.line}
@@ -167,6 +173,7 @@ function ImportPreview({ result }: { result: CleanResult }) {
               </tbody>
             </table>
           </div>
+          {valid.controls}
         </section>
       ) : (
         <FormMessage>{t.noValidRows}</FormMessage>

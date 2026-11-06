@@ -3,8 +3,9 @@ import { ChartColumn, Dumbbell, type LucideIcon } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
 import { FileCard } from "@/components/shared/file-card";
 import { OpenFileButton } from "@/components/shared/open-file-button";
+import { PagedList } from "@/components/shared/paged-list";
 import { ClientPageHeader } from "@/features/cliente/client-header";
-import type { FileCategory } from "@/lib/constants/domain";
+import { FILES_PAGE_SIZE, type FileCategory } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { formatFileSize, formatLongDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -181,8 +182,10 @@ export function CategoryFiles({
             </span>
           </div>
           {category === "diet" ? (
-            <ul className="flex flex-col divide-y divide-muted overflow-hidden rounded-[14px] border bg-card">
-              {archive.map((file) => (
+            <PagedList
+              pageSize={FILES_PAGE_SIZE}
+              className="flex flex-col divide-y divide-muted overflow-hidden rounded-[14px] border bg-card"
+              items={archive.map((file) => (
                 <li key={file.id}>
                   <FileCard
                     variant="row"
@@ -201,15 +204,15 @@ export function CategoryFiles({
                   </FileCard>
                 </li>
               ))}
-            </ul>
+            />
           ) : (
-            <ul
+            <PagedList
+              pageSize={FILES_PAGE_SIZE}
               className={cn(
                 "flex flex-col divide-y divide-muted overflow-hidden rounded-[14px] border border-t-4 bg-card",
                 SECTION_TONES[category].line,
               )}
-            >
-              {archive.map((file) => (
+              items={archive.map((file) => (
                 <li key={file.id}>
                   <ArchiveFileRow
                     fileId={file.id}
@@ -219,7 +222,7 @@ export function CategoryFiles({
                   />
                 </li>
               ))}
-            </ul>
+            />
           )}
         </section>
       ) : null}

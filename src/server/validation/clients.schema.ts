@@ -13,6 +13,7 @@ import { copy } from "@/lib/copy/it";
 import { parseBirthDate } from "@/lib/csv/clean-clients";
 import { normalizePhone } from "@/lib/phone";
 import { optionalHeight } from "@/server/validation/height.schema";
+import { firstValue, pageParamSchema } from "@/server/validation/page.schema";
 
 const v = copy.admin.clients.validation;
 
@@ -89,10 +90,6 @@ export type CreateClientFormValues = {
   birthDate: string;
 };
 
-/** Primo valore di un parametro dell'URL (searchParams può contenere array). */
-const firstValue = (value: unknown) =>
-  Array.isArray(value) ? value[0] : value;
-
 /** Filtri, ricerca e pagina dell'elenco dall'URL; i valori non validi vengono ignorati. */
 export const clientListParamsSchema = z
   .object({
@@ -108,10 +105,7 @@ export const clientListParamsSchema = z
         z.string().trim().max(CLIENT_SEARCH_MAX_LENGTH).optional(),
       )
       .catch(undefined),
-    // oltre l'ultima pagina la riporta indietro paginate()
-    [CLIENT_LIST_PARAMS.page]: z
-      .preprocess(firstValue, z.coerce.number().int().min(1).default(1))
-      .catch(1),
+    [CLIENT_LIST_PARAMS.page]: pageParamSchema,
   })
   .transform((params) => ({
     filters: {

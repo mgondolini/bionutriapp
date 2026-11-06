@@ -199,6 +199,8 @@ export const DEFAULT_PHONE_COUNTRY = "IT";
 /** Import da CSV (A-05): limiti validati nel browser e sul server. */
 export const CSV_MAX_ROWS = 1000;
 export const CSV_MAX_BYTES = 1024 * 1024;
+/** Righe per pagina nell'anteprima dell'import. */
+export const CSV_PREVIEW_PAGE_SIZE = 20;
 
 /** Motivi per cui una riga del CSV viene scartata. */
 export const CSV_DISCARD_REASONS = [
@@ -289,7 +291,12 @@ export const CLIENT_FILE_ROUTES: Record<FileCategory, string> = {
 };
 
 /** Parametro dell'URL del filtro per categoria nella scheda File. */
-export const FILE_LIST_PARAMS = { category: "categoria" } as const;
+export const FILE_LIST_PARAMS = {
+  category: "categoria",
+  page: "pagina",
+} as const;
+/** File per pagina: scheda File dello staff e archivio del cliente. */
+export const FILES_PAGE_SIZE = 10;
 
 /** Percorso in Storage: {studio_id}/{client_id}/{file_id}.pdf, costruito solo sul server. */
 export function clientFilePath(
@@ -304,9 +311,14 @@ export function clientFilePath(
 export function clientFilesUrl(
   clientId: string,
   category: FileCategory | null = null,
+  page = 1,
 ): string {
+  const params = new URLSearchParams();
+  if (category) params.set(FILE_LIST_PARAMS.category, category);
+  if (page > 1) params.set(FILE_LIST_PARAMS.page, String(page));
+  const search = params.toString();
   const path = clientDetailPath(clientId, "file");
-  return category ? `${path}?${FILE_LIST_PARAMS.category}=${category}` : path;
+  return search ? `${path}?${search}` : path;
 }
 
 /*
@@ -353,6 +365,8 @@ export const MEASURE_DECIMALS = 1;
 export const TRACKING_NOTE_MAX = 500;
 /** Righe per pagina nello storico di una misura (il grafico le usa tutte). */
 export const HISTORY_PAGE_SIZE = 10;
+/** Cambi di fase per pagina nella scheda Profilo (ST-04). */
+export const STAGE_HISTORY_PAGE_SIZE = 10;
 /** Finestra delle statistiche recenti degli allenamenti (schermata A11). */
 export const WORKOUT_RECENT_DAYS = 30;
 
