@@ -8,6 +8,7 @@ if (process.env.E2E_ENV_FILE) process.loadEnvFile(process.env.E2E_ENV_FILE);
 loadEnvConfig(process.cwd());
 
 const remoteBaseURL = process.env.PLAYWRIGHT_BASE_URL;
+const PUSH_SERVICE_CERT = "e2e/fixtures/push-service/cert.pem";
 const baseURL =
   remoteBaseURL ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -40,5 +41,7 @@ export default defineConfig({
         url: `${baseURL}/login`,
         reuseExistingServer: true,
         timeout: 180_000,
+        // servizio push finto del test delle notifiche (HTTPS autofirmato)
+        env: { NODE_EXTRA_CA_CERTS: PUSH_SERVICE_CERT },
       },
 });

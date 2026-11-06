@@ -8,7 +8,7 @@
  *
  * Cambiare VERSION a ogni modifica di questo file o di offline.html.
  */
-const VERSION = "v3";
+const VERSION = "v4";
 const CACHE = `offline-${VERSION}`;
 const OFFLINE_URL = "/offline.html";
 const DEFAULT_URL = "/app";
@@ -47,14 +47,29 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-/** Solo indirizzi di questo sito: un url esterno nel payload diventa /app. */
+/**
+ * Solo percorsi relativi di questo sito ("/app/…"): un url assoluto o
+ * "//host" nel payload viene ignorato e il tocco apre /app.
+ */
 function safeUrl(value) {
+  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) {
+    return null;
+  }
   try {
     const url = new URL(value, self.location.origin);
     return url.origin === self.location.origin ? url.href : null;
   } catch {
     return null;
   }
+}
+
+/*
+ * Badge monocromatico per tipo (Android; iOS lo ignora e mostra l'icona della
+ * PWA, non è un errore). Stessi tipi di NOTIFICATION_TYPES in domain.ts.
+ */
+const BADGE_TYPES = ["file_diet", "file_workout", "file_report", "daily_checkin"];
+function badgeFor(type) {
+  return BADGE_TYPES.includes(type) ? `/notification-badges/${type}.png` : undefined;
 }
 
 self.addEventListener("push", (event) => {
@@ -68,7 +83,8 @@ self.addEventListener("push", (event) => {
   const title = typeof data.title === "string" ? data.title : "";
   const options = {
     body: typeof data.body === "string" ? data.body : "",
-    icon: typeof data.icon === "string" ? data.icon : undefined,
+    icon: safeUrl(data.icon) ?? undefined,
+    badge: badgeFor(data.type),
     tag: typeof data.tag === "string" ? data.tag : undefined,
     renotify: typeof data.tag === "string",
     data: {

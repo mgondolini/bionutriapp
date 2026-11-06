@@ -2,15 +2,15 @@ import "server-only";
 
 import webpush, { WebPushError } from "web-push";
 
-import { PUSH_TTL_SECONDS } from "@/lib/constants/domain";
-import type { NotificationPayload } from "@/lib/notifications/payload";
+import { PUSH_MAX_CONSECUTIVE_FAILURES } from "@/lib/constants/domain";
+import type { NotificationPayload } from "@/lib/notifications/catalog";
 import * as pushRepository from "@/server/repositories/push.repository";
 import type { PushSubscriptionData } from "@/server/validation/push.schema";
 
 /*
  * Web Push (N-04): chiavi VAPID, nessun servizio a pagamento. Registrazione
- * ed eliminazione per l'utente della sessione; l'invio lo chiama solo
- * notifications.service (N-06).
+ * ed eliminazione per l'utente della sessione; l'invio (sendToUser) lo
+ * chiama solo notifications.service (N-06).
  */
 
 /** Salva la sottoscrizione di questo browser per l'utente corrente. */
@@ -49,47 +49,47 @@ function vapidDetails() {
   return { publicKey, privateKey, subject };
 }
 
-export type SendOutcome =
+export type DeliveryOutcome =
+  | { status: "skipped"; reason: "no_devices" | "not_configured" }
   | {
-      status: "skipped";
-      reason: "not_found" | "inactive" | "no_devices" | "not_configured";
-    }
-  | { status: "sent"; delivered: number; removed: number; failed: number };
+      status: "sent" | "partial" | "failed";
+      delivered: number;
+      failed: number;
+      removed: number;
+    };
 
 /**
- * Invia la notifica a tutti i dispositivi del cliente. Le sottoscrizioni che
- * rispondono 404 o 410 vengono eliminate; gli altri errori restano nei log
- * con il solo codice di stato. Non lancia mai per un singolo dispositivo.
+ * Invia il payload a tutti i dispositivi dell'utente. 404/410 = sottoscrizione
+ * eliminata subito; gli altri errori contano come fallimento consecutivo e
+ * oltre PUSH_MAX_CONSECUTIVE_FAILURES la sottoscrizione si elimina. Nei log
+ * solo i codici di stato: mai endpoint o contenuto. Non lancia mai per un
+ * singolo dispositivo.
  */
-export async function sendToClient(
-  clientId: string,
-  buildPayload: (studio: { name: string }) => NotificationPayload,
-): Promise<SendOutcome> {
+export async function sendToUser(
+  userId: string,
+  payload: NotificationPayload,
+  ttlSeconds: number,
+): Promise<DeliveryOutcome> {
   const vapid = vapidDetails();
   if (!vapid) return { status: "skipped", reason: "not_configured" };
 
-  const targets = await pushRepository.getClientPushTargets(clientId);
-  if (!targets) return { status: "skipped", reason: "not_found" };
-  // un cliente disattivato non accede all'app: nessun avviso
-  if (targets.accountStatus !== "active") {
-    return { status: "skipped", reason: "inactive" };
-  }
-  if (targets.subscriptions.length === 0) {
+  const subscriptions = await pushRepository.listSubscriptionsOfUser(userId);
+  if (subscriptions.length === 0) {
     return { status: "skipped", reason: "no_devices" };
   }
 
-  const payload = JSON.stringify(buildPayload({ name: targets.studioName }));
+  const body = JSON.stringify(payload);
   const results = await Promise.allSettled(
-    targets.subscriptions.map((target) =>
+    subscriptions.map((target) =>
       webpush.sendNotification(
         {
           endpoint: target.endpoint,
           keys: { p256dh: target.p256dh, auth: target.auth },
         },
-        payload,
+        body,
         {
           vapidDetails: vapid,
-          TTL: PUSH_TTL_SECONDS,
+          TTL: ttlSeconds,
           urgency: "normal",
           timeout: 10_000,
         },
@@ -97,39 +97,50 @@ export async function sendToClient(
     ),
   );
 
+  const succeeded: string[] = [];
   const expired: string[] = [];
-  const failures: (number | string)[] = [];
+  const failing: string[] = [];
+  const codes: (number | string)[] = [];
   results.forEach((result, index) => {
-    if (result.status === "fulfilled") return;
+    const endpoint = subscriptions[index].endpoint;
+    if (result.status === "fulfilled") {
+      succeeded.push(endpoint);
+      return;
+    }
     const statusCode =
       result.reason instanceof WebPushError
         ? result.reason.statusCode
         : undefined;
-    if (isExpiredSubscription(statusCode)) {
-      expired.push(targets.subscriptions[index].endpoint);
-    } else {
-      failures.push(statusCode ?? "network");
+    if (isExpiredSubscription(statusCode)) expired.push(endpoint);
+    else {
+      failing.push(endpoint);
+      codes.push(statusCode ?? "network");
     }
   });
 
-  if (expired.length > 0) {
-    try {
-      await pushRepository.deleteSubscriptions(expired);
-    } catch (error) {
-      console.error("[push] sottoscrizioni scadute non eliminate", {
-        clientId,
-        code: (error as { code?: string }).code,
-      });
-    }
+  let removed = expired.length;
+  try {
+    await pushRepository.deleteSubscriptions(expired);
+    removed += await pushRepository.recordPushResults(
+      succeeded,
+      failing,
+      PUSH_MAX_CONSECUTIVE_FAILURES,
+    );
+  } catch (error) {
+    console.error("[push] esito degli invii non salvato", {
+      code: (error as { code?: string }).code,
+    });
   }
-  if (failures.length > 0) {
-    // solo id del cliente e codici: niente endpoint né contenuto
-    console.error("[push] invio non riuscito", { clientId, codes: failures });
+  if (codes.length > 0) {
+    // solo i codici: niente endpoint né contenuto
+    console.error("[push] invio non riuscito", { codes });
   }
+
+  const failed = expired.length + failing.length;
   return {
-    status: "sent",
-    delivered: results.length - expired.length - failures.length,
-    removed: expired.length,
-    failed: failures.length,
+    status: succeeded.length === 0 ? "failed" : failed > 0 ? "partial" : "sent",
+    delivered: succeeded.length,
+    failed,
+    removed,
   };
 }

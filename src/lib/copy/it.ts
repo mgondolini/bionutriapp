@@ -260,7 +260,7 @@ export const copy = {
     notifications: {
       title: "Notifiche",
       label: "Avvisi sul telefono",
-      description: "Ricevi una notifica quando arriva un nuovo file.",
+      description: "Nuovi file e promemoria serale del check-in.",
       status: {
         loading: "Controllo in corso…",
         active: "Attive su questo dispositivo.",
@@ -274,6 +274,21 @@ export const copy = {
       installLink: "Come installare l'app",
       saved: (enabled: boolean) =>
         enabled ? "Notifiche attivate." : "Notifiche disattivate.",
+      preferences: {
+        title: "Cosa ricevere",
+        hint: "Valgono per tutti i tuoi dispositivi.",
+        filesEnabled: {
+          label: "Nuovi file",
+          description:
+            "Diete, schede di allenamento e report appena pubblicati.",
+        },
+        dailyReminderEnabled: {
+          label: "Promemoria serale",
+          description: "Alle 20, se mancano le abitudini di oggi.",
+        },
+        saved: "Preferenza salvata.",
+        failed: "Non è stato possibile salvare la preferenza. Riprova.",
+      },
     },
     install: {
       title: "App sul telefono",
@@ -1333,8 +1348,16 @@ export const copy = {
     description: (studioName: string) => `L'area riservata di ${studioName}`,
   },
   // Testo delle notifiche push (N-05): generico, mai dati del file
+  /** Catalogo dei testi delle notifiche (N-05): mai dati del file o misure. */
   notifications: {
-    filePublished: "Hai un nuovo documento nella tua area riservata",
+    body: {
+      file_diet: "È disponibile il tuo nuovo piano alimentare.",
+      file_workout: "È disponibile la tua nuova scheda di allenamento.",
+      file_report: "È disponibile il tuo nuovo report.",
+      daily_checkin: "Com'è andata oggi? Un minuto per passi, sonno e acqua.",
+      daily_checkin_workout:
+        "Com'è andata oggi? Un minuto per passi, sonno e acqua, e se ti sei allenato il voto dell'allenamento.",
+    },
   },
   push: {
     errors: {
@@ -1346,7 +1369,8 @@ export const copy = {
     banner: {
       ask: {
         title: "Attiva le notifiche",
-        description: "Ti avvisiamo quando arriva un nuovo file.",
+        description:
+          "Ti avvisiamo dei nuovi file e la sera ti ricordiamo il check-in.",
         action: "Attiva",
         pending: "Attivazione…",
       },

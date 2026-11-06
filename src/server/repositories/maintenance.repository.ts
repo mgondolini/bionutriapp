@@ -48,3 +48,13 @@ export async function purgeExpiredInvites(days: number): Promise<number> {
   if (error) throw error;
   return data;
 }
+
+/** Elimina le righe del registro delle notifiche più vecchie di `days` giorni. */
+export async function purgeNotificationLog(days: number): Promise<number> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase.rpc("purge_notification_log", {
+    p_older_than_days: days,
+  });
+  if (error) throw error;
+  return data;
+}

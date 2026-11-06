@@ -461,12 +461,40 @@ export const SERVICE_WORKER_SCOPE = "/app";
 /** Pagina mostrata dal service worker senza rete: statica, senza dati. */
 export const OFFLINE_PAGE_URL = "/offline.html";
 
-/** Icona delle notifiche: quella della PWA, con il branding dello studio del dominio. */
+/** Endpoint del promemoria serale, chiamato ogni ora da pg_cron (stesso segreto del cron). */
+export const INTERNAL_API_PATH = "/api/internal";
+export const DAILY_CHECKIN_CRON_PATH = `${INTERNAL_API_PATH}/notifications/daily-checkin`;
+
+/**
+ * Tipi di notifica (N-06). Testi in `copy.notifications`, pagina, tag e
+ * icone in `src/lib/notifications/catalog.ts`.
+ */
+export const NOTIFICATION_TYPES = [
+  "file_diet",
+  "file_workout",
+  "file_report",
+  "daily_checkin",
+] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+/** Icona grande delle notifiche: quella della PWA, generata dal logo dello studio. */
 export const NOTIFICATION_ICON_URL = "/icon/192";
-/** Pagina aperta dal tocco sulla notifica. */
-export const NOTIFICATION_TARGET_URL = ROUTES.client.home;
+/** Badge monocromatici per Android (`pnpm notifications:badges`); iOS li ignora. */
+export const NOTIFICATION_BADGES_PATH = "/notification-badges";
 /** Per quanto il servizio push conserva una notifica se il telefono è spento. */
-export const PUSH_TTL_SECONDS = 72 * 60 * 60;
+export const PUSH_TTL_FILE_SECONDS = 24 * 60 * 60;
+/** Il promemoria delle 20 dopo le 22 non serve più. */
+export const PUSH_TTL_CHECKIN_SECONDS = 2 * 60 * 60;
+/** Fallimenti consecutivi dopo cui una sottoscrizione si elimina. */
+export const PUSH_MAX_CONSECUTIVE_FAILURES = 5;
+/** Ora locale (fuso dello studio) del promemoria serale. */
+export const DAILY_REMINDER_HOUR = 20;
+/** Fuso di uno studio senza indicazione diversa. */
+export const DEFAULT_STUDIO_TIMEZONE = "Europe/Rome";
+/** Clienti elaborati in parallelo dal promemoria serale. */
+export const DAILY_REMINDER_CONCURRENCY = 5;
+/** Righe del registro delle notifiche conservate per 90 giorni. */
+export const NOTIFICATION_LOG_RETENTION_DAYS = 90;
 
 /**
  * Servizi push a cui il server accetta di inviare (gli endpoint arrivano dal

@@ -2,17 +2,20 @@ import "server-only";
 
 import {
   EXPIRED_INVITE_RETENTION_DAYS,
+  NOTIFICATION_LOG_RETENTION_DAYS,
   ORPHAN_UPLOAD_MAX_AGE_HOURS,
 } from "@/lib/constants/domain";
 import * as maintenanceRepository from "@/server/repositories/maintenance.repository";
 
-export type MaintenanceStep = "keepAlive" | "orphanUploads" | "expiredInvites";
+export type MaintenanceStep =
+  "keepAlive" | "orphanUploads" | "expiredInvites" | "notificationLog";
 
 export type MaintenanceReport = {
   ok: boolean;
   durationMs: number;
   orphanUploadsRemoved: number;
   expiredInvitesDeleted: number;
+  notificationLogDeleted: number;
   failed: MaintenanceStep[];
 };
 
@@ -64,17 +67,28 @@ export async function runMaintenance(): Promise<MaintenanceReport> {
     0,
   );
 
+  const notificationLogDeleted = await step(
+    "notificationLog",
+    () =>
+      maintenanceRepository.purgeNotificationLog(
+        NOTIFICATION_LOG_RETENTION_DAYS,
+      ),
+    0,
+  );
+
   const report: MaintenanceReport = {
     ok: failed.length === 0,
     durationMs: Date.now() - started,
     orphanUploadsRemoved,
     expiredInvitesDeleted,
+    notificationLogDeleted,
     failed,
   };
   console.info(
     `[manutenzione] ${report.ok ? "completata" : "completata con errori"}: ` +
       `oggetti orfani eliminati ${orphanUploadsRemoved}, ` +
       `inviti scaduti eliminati ${expiredInvitesDeleted}, ` +
+      `notifiche eliminate dal registro ${notificationLogDeleted}, ` +
       `durata ${report.durationMs} ms`,
   );
   return report;

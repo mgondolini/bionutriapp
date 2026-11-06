@@ -5,6 +5,7 @@
  */
 import {
   CRON_PATH,
+  INTERNAL_API_PATH,
   OFFLINE_PAGE_URL,
   ROUTES,
   SERVICE_WORKER_URL,
@@ -87,6 +88,7 @@ const ALWAYS_PUBLIC = [
   ROUTES.confirmEmail,
   ROUTES.privacy,
   CRON_PATH,
+  INTERNAL_API_PATH,
 ];
 
 /** Pagine per chi non ha ancora una sessione: un utente autenticato va alla propria area. */

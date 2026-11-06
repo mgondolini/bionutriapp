@@ -104,6 +104,8 @@ pnpm supabase db push                                    # applica; il seed NON 
 
 Poi, in *Database › Advisors* del pannello, controlla che non ci siano avvisi di sicurezza (RLS disattivata, funzioni esposte).
 
+Infine salva nel Vault URL dell'app e `CRON_SECRET` per il promemoria serale delle 20 (vedi [8](#promemoria-serale-del-check-in-pg_cron)): senza, il job di pg_cron gira ma non invia nulla.
+
 ### 3.4 Netlify (pannello di Netlify)
 
 1. *Add new site › Import an existing project* → GitHub → repository → branch di produzione `main`. La build usa `netlify.toml` (`pnpm build`, Node 22).
@@ -194,6 +196,7 @@ Regole:
 - `.env.example` elenca le variabili senza valori. I file `.env*` reali non si committano: lo impedisce `.gitignore`.
 - Segreti fuori da Netlify:
   - GitHub Actions: `APP_URL`, `CRON_SECRET`;
+  - Vault di Supabase: `notifications_app_url`, `notifications_cron_secret` (promemoria serale);
   - Brevo: chiave SMTP, salvata solo nel pannello di Supabase;
   - password del database: solo nel gestore di password.
 
@@ -218,10 +221,10 @@ Vedi [12](#cambiare-le-chiavi). Cambiarle obbliga i clienti a riattivare le noti
 
 1. `openssl rand -hex 32`.
 2. Aggiorna `CRON_SECRET` su Netlify e fai il deploy.
-3. Subito dopo aggiorna il secret `CRON_SECRET` su GitHub.
+3. Subito dopo aggiorna il secret `CRON_SECRET` su GitHub e il segreto `notifications_cron_secret` nel Vault di Supabase (vedi [8](#8-attività-programmate-cron)).
 4. *Actions › Manutenzione › Run workflow* → deve finire in verde.
 
-Tra il passo 2 e il 3 il workflow risponde 401: non è un problema, perché parte una volta al giorno.
+Tra il passo 2 e il 3 il workflow e il promemoria rispondono 401: si perde al massimo un'esecuzione oraria del promemoria, che alle 20 vuol dire saltare la sera. Meglio farlo di mattina.
 
 ### Chiave SMTP di Brevo
 
@@ -313,6 +316,33 @@ La risposta e i log contengono solo conteggi e durata (`[manutenzione] completat
 
   ```bash
   curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://<dominio>/api/cron/manutenzione
+  ```
+
+La manutenzione elimina anche le righe del registro delle notifiche più vecchie di 90 giorni (`purge_notification_log`).
+
+### Promemoria serale del check-in (pg_cron)
+
+`POST /api/internal/notifications/daily-checkin`, protetto dallo stesso `CRON_SECRET`. Lo chiama **ogni ora al minuto 0** il job `promemoria-checkin` di pg_cron nel database (migrazione `20261106000000_notifiche.sql`), con pg_net: più puntuale di GitHub Actions e dentro l'UE. È l'app a scegliere gli studi che in quel momento sono alle 20 nel proprio fuso (`studios.timezone`, default `Europe/Rome`): l'ora legale non va gestita.
+
+URL e segreto stanno nel **Vault** di Supabase; senza, il job gira ma non chiama nulla (sviluppo locale, anteprime). Una volta per progetto, dal *SQL Editor*:
+
+```sql
+select vault.create_secret('https://app.studio.it', 'notifications_app_url');
+select vault.create_secret('<stesso valore di CRON_SECRET>', 'notifications_cron_secret');
+```
+
+Per cambiarli: `select vault.update_secret((select id from vault.secrets where name = 'notifications_cron_secret'), '<nuovo>');`.
+
+**Controlli:**
+
+- Esecuzioni del job: `select * from cron.job_run_details order by start_time desc limit 20;`.
+- Risposte dell'app: `select status_code, created from net._http_response order by created desc limit 20;` (200 = ok, 401 = segreto diverso da Netlify).
+- Log dell'app: `[promemoria] { studios, queued, skipped, duplicates }` in *Netlify › Logs › Functions*.
+- Esito delle notifiche: tabella `notification_log` (`status`, `skipped_reason`), solo id e riferimenti.
+- Una seconda chiamata nella stessa ora non invia nulla (dedupe sul registro), quindi si può provare a mano:
+
+  ```bash
+  curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://<dominio>/api/internal/notifications/daily-checkin
   ```
 
 ## 9. Backup e ripristino

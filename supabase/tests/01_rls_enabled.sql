@@ -21,7 +21,7 @@ select is_empty(
 select tables_are('public', array[
   'studios', 'studio_members', 'clients', 'client_stage_events', 'client_invites',
   'client_files', 'metrics', 'client_metric_goals', 'tracking_entries', 'push_subscriptions',
-  'privacy_consents'
+  'privacy_consents', 'notification_log', 'notification_preferences'
 ], 'lo schema public contiene esattamente le tabelle della v1.0');
 
 select is_empty(

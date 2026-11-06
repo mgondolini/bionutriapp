@@ -20,7 +20,7 @@ import { downloadFileName, hasPdfHeader } from "@/lib/files/file-checks";
 import { dayInRome } from "@/lib/format";
 import * as clientsRepository from "@/server/repositories/clients.repository";
 import * as filesRepository from "@/server/repositories/files.repository";
-import { notifyClient } from "@/server/services/notifications.service";
+import { notifyNewFile } from "@/server/services/notifications.service";
 import type {
   ConfirmUploadData,
   PrepareUploadInput,
@@ -171,7 +171,7 @@ async function discardObject(path: string, fileId: string) {
 /**
  * Terzo passaggio: verifica l'oggetto REALE (esiste, al massimo 10 MB, inizia
  * con "%PDF-") e solo allora crea la riga. Se la verifica fallisce, l'oggetto
- * viene eliminato. Con "Avvisa il cliente" passa da notifyClient (N-06).
+ * viene eliminato. Con "Avvisa il cliente" passa da notifyNewFile (N-06).
  */
 export async function confirmUpload(
   studioId: string,
@@ -219,7 +219,7 @@ export async function confirmUpload(
 
   // L'invio parte dopo la risposta (after): un errore della push non
   // annulla né rallenta la pubblicazione.
-  if (input.notify) notifyClient(input.clientId, { type: "file_published" });
+  if (input.notify) notifyNewFile(input.fileId);
   return { ok: true };
 }
 

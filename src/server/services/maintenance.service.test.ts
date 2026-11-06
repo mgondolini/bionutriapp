@@ -12,6 +12,7 @@ vi.mock("@/server/repositories/maintenance.repository", () => ({
   listOrphanUploads: vi.fn(async () => [ORPHAN]),
   removeClientFileObjects: vi.fn(async (paths: string[]) => paths.length),
   purgeExpiredInvites: vi.fn(async () => 3),
+  purgeNotificationLog: vi.fn(async () => 7),
 }));
 
 const repository = await import("@/server/repositories/maintenance.repository");
@@ -42,6 +43,7 @@ describe("runMaintenance", () => {
     expect(repository.listOrphanUploads).toHaveBeenCalledWith(24);
     expect(repository.removeClientFileObjects).toHaveBeenCalledWith([ORPHAN]);
     expect(repository.purgeExpiredInvites).toHaveBeenCalledWith(90);
+    expect(repository.purgeNotificationLog).toHaveBeenCalledWith(90);
   });
 
   it("un passaggio fallito non ferma gli altri", async () => {

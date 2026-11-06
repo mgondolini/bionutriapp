@@ -8,6 +8,7 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ### Aggiunto
 
+- Notifiche push per tipo: nuovo piano alimentare, scheda di allenamento o report, con il link diretto alla sezione e un badge per tipo su Android; promemoria serale alle 20 (fuso dello studio) se mancano le abitudini del giorno, con un richiamo all'allenamento se non ce n'è uno. Solo clienti attivi e In percorso. Nel profilo del cliente gli interruttori "Nuovi file" e "Promemoria serale". Registro delle notifiche con deduplicazione (nessun doppio invio) e conservazione di 90 giorni; sottoscrizioni eliminate dopo 5 fallimenti consecutivi.
 - Ritaglio del logo nelle Impostazioni studio: dopo la scelta dell'immagine (PNG, JPEG o WebP, almeno 512 px sul lato lungo) si apre un pannello con zoom, "Riempi" o "Adatta con margine" e anteprime di menu, icona Android e iPhone; viene salvato un PNG quadrato da 1024 px su fondo bianco, ricontrollato dal server.
 - Nella home del cliente "Da registrare" mostra sempre gli allenamenti in fondo (con la spunta se c'è una sessione oggi), senza contarli tra le misure da registrare.
 - Paginazione: elenco clienti del nutrizionista 20 per pagina e scheda File 10 per pagina (pagina nell'URL); storico delle misure, archivio dei file del cliente e storico delle fasi 10 per pagina, anteprima dell'import CSV 20 righe per pagina, con le frecce e senza ricaricare. Lo storico delle misure ora mostra tutte le registrazioni, non più solo le ultime 60.

@@ -2,7 +2,7 @@
 
 import { BellRing } from "lucide-react";
 import Link from "next/link";
-import { useId } from "react";
+import { useId, type ReactNode } from "react";
 
 import { ProfileSection } from "@/components/shared/profile-section";
 import { Switch } from "@/components/ui/switch";
@@ -23,11 +23,14 @@ export function NotificationsCard({
   platform,
   pending,
   onChange,
+  children,
 }: {
   state: PushState | "loading";
   platform: DevicePlatform | null;
   pending: boolean;
   onChange: (enabled: boolean) => void;
+  /** Preferenze per tipo di notifica, sotto l'interruttore del dispositivo. */
+  children?: ReactNode;
 }) {
   const labelId = useId();
   const statusId = useId();
@@ -65,6 +68,7 @@ export function NotificationsCard({
           {t.installLink}
         </Link>
       ) : null}
+      {children}
     </ProfileSection>
   );
 }

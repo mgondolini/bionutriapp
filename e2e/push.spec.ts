@@ -141,7 +141,7 @@ test("Attiva salva la sottoscrizione, il banner scompare, il profilo la gestisce
   const banner = page.getByRole("region", { name: "Attiva le notifiche" });
   await expect(banner).toBeVisible();
   await expect(banner).toContainText(
-    "Ti avvisiamo quando arriva un nuovo file.",
+    "Ti avvisiamo dei nuovi file e la sera ti ricordiamo il check-in.",
   );
   expect(await subscriptionsOf(client.userId)).toEqual([]);
   expect(await pushEnabled(client.clientId)).toBe(false);

@@ -421,6 +421,103 @@ export type Database = {
           },
         ];
       };
+      notification_log: {
+        Row: {
+          client_id: string;
+          created_at: string;
+          dedupe_key: string;
+          error: string | null;
+          id: string;
+          payload: NonNullable<Json>;
+          sent_at: string | null;
+          skipped_reason: string | null;
+          status: string;
+          studio_id: string;
+          type: string;
+          user_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          client_id: string;
+          created_at?: string;
+          dedupe_key: string;
+          error?: string | null;
+          id?: string;
+          payload?: NonNullable<Json>;
+          sent_at?: string | null;
+          skipped_reason?: string | null;
+          status?: string;
+          studio_id: string;
+          type: string;
+          user_id?: string | null;
+        };
+        Update: {
+          client_id?: string;
+          created_at?: string;
+          dedupe_key?: string;
+          error?: string | null;
+          id?: string;
+          payload?: NonNullable<Json>;
+          sent_at?: string | null;
+          skipped_reason?: string | null;
+          status?: string;
+          studio_id?: string;
+          type?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notification_log_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "client_list";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notification_log_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notification_log_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients_with_status";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notification_log_studio_id_fkey";
+            columns: ["studio_id"];
+            isOneToOne: false;
+            referencedRelation: "studios";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      notification_preferences: {
+        Row: {
+          daily_reminder_enabled: boolean;
+          files_enabled: boolean;
+          updated_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          daily_reminder_enabled?: boolean;
+          files_enabled?: boolean;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Update: {
+          daily_reminder_enabled?: boolean;
+          files_enabled?: boolean;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       privacy_consents: {
         Row: {
           accepted_at: string;
@@ -483,7 +580,10 @@ export type Database = {
           auth: string;
           created_at: string;
           endpoint: string;
+          failure_count: number;
           id: string;
+          last_failure_at: string | null;
+          last_success_at: string | null;
           p256dh: string;
           user_agent: string | null;
           user_id: string;
@@ -493,7 +593,10 @@ export type Database = {
           auth: string;
           created_at?: string;
           endpoint: string;
+          failure_count?: number;
           id?: string;
+          last_failure_at?: string | null;
+          last_success_at?: string | null;
           p256dh: string;
           user_agent?: string | null;
           user_id?: string;
@@ -502,7 +605,10 @@ export type Database = {
           auth?: string;
           created_at?: string;
           endpoint?: string;
+          failure_count?: number;
           id?: string;
+          last_failure_at?: string | null;
+          last_success_at?: string | null;
           p256dh?: string;
           user_agent?: string | null;
           user_id?: string;
@@ -560,6 +666,7 @@ export type Database = {
           name: string;
           primary_color: string;
           slug: string;
+          timezone: string;
           updated_at: string;
         };
         ComputedFields: never;
@@ -571,6 +678,7 @@ export type Database = {
           name: string;
           primary_color?: string;
           slug: string;
+          timezone?: string;
           updated_at?: string;
         };
         Update: {
@@ -581,6 +689,7 @@ export type Database = {
           name?: string;
           primary_color?: string;
           slug?: string;
+          timezone?: string;
           updated_at?: string;
         };
         Relationships: [];
@@ -790,6 +899,15 @@ export type Database = {
         Returns: string;
       };
       client_account_status: { Args: { p_client_id: string }; Returns: string };
+      daily_reminder_candidates: {
+        Args: { p_day: string; p_studio: string };
+        Returns: {
+          client_id: string;
+          habits_done: boolean;
+          user_id: string;
+          workout_done: boolean;
+        }[];
+      };
       get_studio_branding: {
         Args: { p_slug: string };
         Returns: {
@@ -817,6 +935,18 @@ export type Database = {
       my_email_available: { Args: { p_email: string }; Returns: boolean };
       purge_expired_invites: {
         Args: { p_older_than_days?: number };
+        Returns: number;
+      };
+      purge_notification_log: {
+        Args: { p_older_than_days?: number };
+        Returns: number;
+      };
+      record_push_results: {
+        Args: {
+          p_failed: string[];
+          p_max_failures?: number;
+          p_succeeded: string[];
+        };
         Returns: number;
       };
       register_push_subscription: {

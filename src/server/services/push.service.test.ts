@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /*
- * Invio Web Push con repository e libreria simulati: tutti i dispositivi del
- * cliente, sottoscrizioni scadute (404, 410) eliminate, altri errori solo
- * nei log, nessun invio per clienti disattivati o senza chiavi VAPID.
+ * Invio Web Push con repository e libreria simulati: tutti i dispositivi
+ * dell'utente, sottoscrizioni scadute (404, 410) eliminate, altri errori
+ * contati come fallimenti consecutivi, esito sent/partial/failed.
  */
 
 vi.mock("web-push", () => {
@@ -21,8 +21,9 @@ vi.mock("web-push", () => {
   };
 });
 vi.mock("@/server/repositories/push.repository", () => ({
-  getClientPushTargets: vi.fn(),
+  listSubscriptionsOfUser: vi.fn(),
   deleteSubscriptions: vi.fn(async () => undefined),
+  recordPushResults: vi.fn(async () => 0),
   registerOwnSubscription: vi.fn(async () => true),
   deleteOwnSubscription: vi.fn(async () => undefined),
   listOwnEndpoints: vi.fn(async () => []),
@@ -32,19 +33,21 @@ const webpush = await import("web-push");
 const repo = await import("@/server/repositories/push.repository");
 const service = await import("./push.service");
 
-const CLIENT = "c1";
+const USER = "u1";
 const target = (id: string) => ({
   endpoint: `https://fcm.googleapis.com/fcm/send/${id}`,
   p256dh: "p",
   auth: "a",
 });
-const payload = (studio: { name: string }) => ({
-  title: studio.name,
-  body: "Hai un nuovo documento nella tua area riservata",
+const payload = {
+  type: "file_diet" as const,
+  title: "Studio Verde",
+  body: "È disponibile il tuo nuovo piano alimentare.",
   icon: "/icon/192",
-  url: "/app",
-  tag: "file_published",
-});
+  url: "/app/diete",
+  tag: "files:file_diet",
+};
+const TTL = 24 * 60 * 60;
 const pushError = (statusCode: number) =>
   new webpush.WebPushError("x", statusCode, {}, "", "");
 
@@ -53,17 +56,17 @@ beforeEach(() => {
   vi.stubEnv("NEXT_PUBLIC_VAPID_PUBLIC_KEY", "pub");
   vi.stubEnv("VAPID_PRIVATE_KEY", "priv");
   vi.stubEnv("VAPID_SUBJECT", "mailto:test@example.test");
-  vi.mocked(repo.getClientPushTargets).mockResolvedValue({
-    accountStatus: "active",
-    studioName: "Studio Verde",
-    subscriptions: [target("a"), target("b"), target("c")],
-  });
+  vi.mocked(repo.listSubscriptionsOfUser).mockResolvedValue([
+    target("a"),
+    target("b"),
+    target("c"),
+  ]);
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
-describe("sendToClient", () => {
-  it("invia a tutti i dispositivi del cliente con il contenuto costruito", async () => {
-    const outcome = await service.sendToClient(CLIENT, payload);
+describe("sendToUser", () => {
+  it("invia a tutti i dispositivi con TTL e urgenza, e azzera i fallimenti", async () => {
+    const outcome = await service.sendToUser(USER, payload, TTL);
     expect(outcome).toEqual({
       status: "sent",
       delivered: 3,
@@ -78,82 +81,86 @@ describe("sendToClient", () => {
       endpoint: target("a").endpoint,
       keys: { p256dh: "p", auth: "a" },
     });
-    expect(JSON.parse(body as string)).toMatchObject({
-      title: "Studio Verde",
-      url: "/app",
-    });
+    expect(JSON.parse(body as string)).toEqual(payload);
     expect(options).toMatchObject({
-      TTL: 72 * 60 * 60,
+      TTL,
+      urgency: "normal",
       vapidDetails: { publicKey: "pub", privateKey: "priv" },
     });
+    expect(repo.recordPushResults).toHaveBeenCalledWith(
+      [target("a").endpoint, target("b").endpoint, target("c").endpoint],
+      [],
+      5,
+    );
   });
 
-  it("elimina le sottoscrizioni che rispondono 404 o 410 e tiene le altre", async () => {
+  it("404 e 410 eliminano la sottoscrizione; gli altri errori contano un fallimento: esito parziale", async () => {
     vi.mocked(webpush.default.sendNotification)
       .mockRejectedValueOnce(pushError(410))
       .mockRejectedValueOnce(pushError(500))
-      .mockRejectedValueOnce(pushError(404));
-    const outcome = await service.sendToClient(CLIENT, payload);
+      .mockResolvedValueOnce({ statusCode: 201, body: "", headers: {} });
+    vi.mocked(repo.recordPushResults).mockResolvedValueOnce(0);
+    const outcome = await service.sendToUser(USER, payload, TTL);
     expect(outcome).toEqual({
-      status: "sent",
-      delivered: 0,
-      removed: 2,
-      failed: 1,
+      status: "partial",
+      delivered: 1,
+      removed: 1,
+      failed: 2,
     });
     expect(repo.deleteSubscriptions).toHaveBeenCalledWith([
       target("a").endpoint,
-      target("c").endpoint,
     ]);
+    expect(repo.recordPushResults).toHaveBeenCalledWith(
+      [target("c").endpoint],
+      [target("b").endpoint],
+      5,
+    );
   });
 
-  it("un errore di rete non lancia e non elimina nulla", async () => {
+  it("404 su tutti i dispositivi: esito fallito, tutte eliminate", async () => {
+    vi.mocked(webpush.default.sendNotification).mockRejectedValue(
+      pushError(404),
+    );
+    expect(await service.sendToUser(USER, payload, TTL)).toEqual({
+      status: "failed",
+      delivered: 0,
+      removed: 3,
+      failed: 3,
+    });
+  });
+
+  it("le sottoscrizioni eliminate per troppi fallimenti contano tra le rimosse", async () => {
     vi.mocked(webpush.default.sendNotification).mockRejectedValue(
       new Error("ECONNREFUSED"),
     );
-    const outcome = await service.sendToClient(CLIENT, payload);
-    expect(outcome).toMatchObject({ status: "sent", failed: 3 });
-    expect(repo.deleteSubscriptions).not.toHaveBeenCalled();
+    vi.mocked(repo.recordPushResults).mockResolvedValueOnce(2);
+    const outcome = await service.sendToUser(USER, payload, TTL);
+    expect(outcome).toMatchObject({ status: "failed", failed: 3, removed: 2 });
+    expect(repo.deleteSubscriptions).toHaveBeenCalledWith([]);
   });
 
   it("nei log niente endpoint né contenuto", async () => {
     vi.mocked(webpush.default.sendNotification).mockRejectedValue(
       pushError(500),
     );
-    await service.sendToClient(CLIENT, payload);
+    await service.sendToUser(USER, payload, TTL);
     const logged = JSON.stringify(vi.mocked(console.error).mock.calls);
     expect(logged).not.toContain("fcm.googleapis.com");
-    expect(logged).not.toContain("Hai un nuovo documento");
+    expect(logged).not.toContain("piano alimentare");
   });
 
-  it("nessun invio a un cliente disattivato o senza dispositivi", async () => {
-    vi.mocked(repo.getClientPushTargets).mockResolvedValueOnce({
-      accountStatus: "disabled",
-      studioName: "Studio Verde",
-      subscriptions: [target("a")],
-    });
-    expect(await service.sendToClient(CLIENT, payload)).toEqual({
-      status: "skipped",
-      reason: "inactive",
-    });
-    vi.mocked(repo.getClientPushTargets).mockResolvedValueOnce({
-      accountStatus: "active",
-      studioName: "Studio Verde",
-      subscriptions: [],
-    });
-    expect(await service.sendToClient(CLIENT, payload)).toEqual({
+  it("senza dispositivi o senza chiavi VAPID non invia", async () => {
+    vi.mocked(repo.listSubscriptionsOfUser).mockResolvedValueOnce([]);
+    expect(await service.sendToUser(USER, payload, TTL)).toEqual({
       status: "skipped",
       reason: "no_devices",
     });
-    expect(webpush.default.sendNotification).not.toHaveBeenCalled();
-  });
-
-  it("senza chiavi VAPID non invia", async () => {
     vi.stubEnv("VAPID_PRIVATE_KEY", "");
-    expect(await service.sendToClient(CLIENT, payload)).toEqual({
+    expect(await service.sendToUser(USER, payload, TTL)).toEqual({
       status: "skipped",
       reason: "not_configured",
     });
-    expect(repo.getClientPushTargets).not.toHaveBeenCalled();
+    expect(webpush.default.sendNotification).not.toHaveBeenCalled();
   });
 });
 
