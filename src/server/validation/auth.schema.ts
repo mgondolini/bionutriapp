@@ -58,12 +58,8 @@ export const newPasswordSchema = z
   });
 export type NewPasswordInput = z.infer<typeof newPasswordSchema>;
 
-/**
- * Uscita (fase 7): `local` = questo dispositivo, `global` = tutti. L'endpoint
- * è quello della sottoscrizione push del browser (fase 8), da eliminare.
- */
+/** Uscita (fase 7): `local` = questo dispositivo, `global` = tutti. */
 export const signOutSchema = z.object({
   scope: z.enum(["local", "global"]),
-  endpoint: z.url().max(2048).nullable(),
 });
 export type SignOutInput = z.infer<typeof signOutSchema>;

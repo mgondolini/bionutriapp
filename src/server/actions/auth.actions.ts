@@ -50,7 +50,7 @@ export async function loginAction(input: LoginInput): Promise<ActionResult> {
 
 /**
  * "Esci" ed "Esci da tutti i dispositivi" (fase 7), chiamata dal browser:
- * elimina le sottoscrizioni push e chiude la sessione. Il browser poi fa una
+ * chiude la sessione (con `global` elimina anche le sottoscrizioni push). Il browser poi fa una
  * navigazione completa con `replace` verso il login ("Sei uscito dall'app"),
  * che azzera lo stato della pagina e la cache del router.
  */
@@ -59,10 +59,9 @@ export async function signOutAction(
 ): Promise<ActionResult> {
   const parsed = signOutSchema.safeParse(input);
   const scope = parsed.success ? parsed.data.scope : "local";
-  const endpoint = parsed.success ? parsed.data.endpoint : null;
   const session = await getSession();
   const userId = session.kind === "anonymous" ? null : session.userId;
-  await authService.signOut(scope, endpoint, userId);
+  await authService.signOut(scope, userId);
   return ok();
 }
 
@@ -71,7 +70,6 @@ export async function logoutAction(): Promise<void> {
   const session = await getSession();
   await authService.signOut(
     "local",
-    null,
     session.kind === "anonymous" ? null : session.userId,
   );
   redirect(loginUrl({ reason: "loggedOut" }), RedirectType.replace);

@@ -32,21 +32,20 @@ export async function signIn(
 export type SignOutScope = "local" | "global";
 
 /**
- * Uscita (fase 7). Prima si eliminano le sottoscrizioni push (serve ancora
- * la sessione per la RLS): con `local` solo quella di questo dispositivo,
- * cercata per endpoint; con `global` tutte quelle dell'utente. Poi si chiude
- * la sessione. Un errore sulle sottoscrizioni non impedisce l'uscita.
+ * Uscita (fase 7). Con `local` le notifiche push di questo dispositivo
+ * restano attive: al nuovo accesso dello stesso utente non vanno riattivate
+ * (il testo è sempre generico, N-05). Con `global` (sicurezza: telefono
+ * perso) si eliminano tutte le sottoscrizioni dell'utente, prima di chiudere
+ * le sessioni perché serve ancora la RLS. Un errore sulle sottoscrizioni non
+ * impedisce l'uscita.
  */
 export async function signOut(
   scope: SignOutScope,
-  endpoint: string | null,
   userId: string | null,
 ): Promise<void> {
   try {
     if (scope === "global" && userId) {
       await pushRepository.deleteAllOwnSubscriptions(userId);
-    } else if (endpoint) {
-      await pushRepository.deleteOwnSubscription(endpoint);
     }
   } catch (error) {
     // nessun endpoint nei log: solo il codice
