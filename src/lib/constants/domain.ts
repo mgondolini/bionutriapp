@@ -185,7 +185,10 @@ export const CLIENT_LIST_PARAMS = {
   status: "stato",
   stage: "fase",
   query: "q",
+  page: "pagina",
 } as const;
+/** Clienti per pagina nell'elenco dello staff. */
+export const CLIENTS_PAGE_SIZE = 20;
 export const CLIENT_SEARCH_MAX_LENGTH = 100;
 /** Cifre minime perché la ricerca consideri anche il cellulare. */
 export const PHONE_SEARCH_MIN_DIGITS = 3;
@@ -348,8 +351,8 @@ export const DUE_SOON_DAYS = 3;
 /** Cifre decimali dei valori delle circonferenze (precisione del metro). */
 export const MEASURE_DECIMALS = 1;
 export const TRACKING_NOTE_MAX = 500;
-/** Righe mostrate nello storico di una misura (il grafico le usa tutte). */
-export const HISTORY_LIMIT = 60;
+/** Righe per pagina nello storico di una misura (il grafico le usa tutte). */
+export const HISTORY_PAGE_SIZE = 10;
 /** Finestra delle statistiche recenti degli allenamenti (schermata A11). */
 export const WORKOUT_RECENT_DAYS = 30;
 

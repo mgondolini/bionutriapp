@@ -93,7 +93,7 @@ export type CreateClientFormValues = {
 const firstValue = (value: unknown) =>
   Array.isArray(value) ? value[0] : value;
 
-/** Filtri e ricerca dell'elenco dall'URL; i valori non validi vengono ignorati. */
+/** Filtri, ricerca e pagina dell'elenco dall'URL; i valori non validi vengono ignorati. */
 export const clientListParamsSchema = z
   .object({
     [CLIENT_LIST_PARAMS.status]: z
@@ -108,11 +108,18 @@ export const clientListParamsSchema = z
         z.string().trim().max(CLIENT_SEARCH_MAX_LENGTH).optional(),
       )
       .catch(undefined),
+    // oltre l'ultima pagina la riporta indietro paginate()
+    [CLIENT_LIST_PARAMS.page]: z
+      .preprocess(firstValue, z.coerce.number().int().min(1).default(1))
+      .catch(1),
   })
   .transform((params) => ({
-    status: params[CLIENT_LIST_PARAMS.status],
-    stage: params[CLIENT_LIST_PARAMS.stage],
-    query: params[CLIENT_LIST_PARAMS.query] || undefined,
+    filters: {
+      status: params[CLIENT_LIST_PARAMS.status],
+      stage: params[CLIENT_LIST_PARAMS.stage],
+      query: params[CLIENT_LIST_PARAMS.query] || undefined,
+    },
+    page: params[CLIENT_LIST_PARAMS.page],
   }));
 
 /** Il CSV arriva alla Server Action come testo (massimo 1 MB). */

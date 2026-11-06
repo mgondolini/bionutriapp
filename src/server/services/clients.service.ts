@@ -8,6 +8,7 @@ import {
   type FacetCounts,
 } from "@/lib/clients/list-filters";
 import {
+  CLIENTS_PAGE_SIZE,
   ORIGIN_BY_CREATION_MODE,
   type AccountStatus,
   type ClientOrigin,
@@ -18,6 +19,7 @@ import {
 import { cleanClientRows, type CleanResult } from "@/lib/csv/clean-clients";
 import { planStageChange } from "@/lib/domain/journey";
 import { ageOn } from "@/lib/format";
+import { paginate, type Page } from "@/lib/pagination";
 import { parseClientsCsv } from "@/lib/csv/parse-clients-csv";
 import * as authAdminRepository from "@/server/repositories/auth-admin.repository";
 import * as clientsRepository from "@/server/repositories/clients.repository";
@@ -53,7 +55,9 @@ function toListItem(row: ListRow): ClientListItem {
 }
 
 export type ClientList = {
+  /** Clienti della pagina richiesta, dopo filtri e ricerca. */
   items: ClientListItem[];
+  page: Omit<Page<ClientListItem>, "items">;
   counts: FacetCounts;
   /** Totale dei clienti dello studio, senza filtri. */
   total: number;
@@ -63,10 +67,17 @@ export type ClientList = {
 export async function getClientList(
   studioId: string,
   filters: ClientListFilters,
+  page = 1,
 ): Promise<ClientList> {
   const all = (await clientsRepository.listClients(studioId)).map(toListItem);
+  const { items, ...pageInfo } = paginate(
+    filterClients(all, filters),
+    page,
+    CLIENTS_PAGE_SIZE,
+  );
   return {
-    items: filterClients(all, filters),
+    items,
+    page: pageInfo,
     counts: facetCounts(all, filters),
     total: all.length,
   };

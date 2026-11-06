@@ -1044,8 +1044,6 @@ export const copy = {
       diaryTitle: "Ultime sessioni",
       editHintShort: "correggi o elimina",
       daysTitle: "Ultimi giorni",
-      limited: (count: number) =>
-        `Sono mostrate le ultime ${count} registrazioni.`,
     },
     edit: {
       title: "Correggi la registrazione",
@@ -1141,6 +1139,13 @@ export const copy = {
       duplicateDay:
         "Per questo giorno c'è già un voto: correggi quello esistente.",
     },
+  },
+  pagination: {
+    label: "Paginazione",
+    summary: (from: number, to: number, total: number) =>
+      `${from}–${to} di ${total}`,
+    previous: "Pagina precedente",
+    next: "Pagina successiva",
   },
   files: {
     open: "Apri PDF",

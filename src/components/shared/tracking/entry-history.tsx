@@ -1,5 +1,5 @@
 import { StatusBadge } from "@/components/shared/status-badge";
-import { HISTORY_LIMIT } from "@/lib/constants/domain";
+import { HISTORY_PAGE_SIZE } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { measureHistory } from "@/lib/domain/tracking/circumferences";
 import {
@@ -20,6 +20,7 @@ import {
 } from "@/lib/format";
 import type { MetricLimits } from "@/server/validation/tracking.schema";
 
+import { PagedList } from "../paged-list";
 import { DeleteEntryDialog } from "./delete-entry-dialog";
 import { EditEntryDialog } from "./edit-entry-dialog";
 
@@ -45,7 +46,8 @@ function detailFor(
 
 /**
  * Storico di una misura nelle due aree (C10, C11, C12, A10, A11): righe
- * impilate dalla più recente, leggibili anche a 375 px (A-17). L'etichetta
+ * impilate dalla più recente, 10 per pagina con le frecce, leggibili anche a
+ * 375 px (A-17). L'etichetta
  * dell'autore (A-16) e i pulsanti di correzione ed eliminazione per riga
  * seguono canEditEntry: lo staff tutto, il cliente In percorso solo ciò che
  * ha inserito lui (T-03). `clientId` solo nell'area admin.
@@ -63,7 +65,7 @@ export function EntryHistory({
   viewer: EntryViewer;
   clientId?: string;
 }) {
-  const rows = measureHistory(item.entries).slice(0, HISTORY_LIMIT);
+  const rows = measureHistory(item.entries);
   const anyEditable = rows.some((row) => canEditEntry(row, viewer));
   const title =
     item.kind === "circumference"
@@ -86,8 +88,10 @@ export function EntryHistory({
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">{tt.noEntries}</p>
       ) : (
-        <ul className="flex flex-col divide-y divide-muted rounded-[14px] border bg-card">
-          {rows.map((row) => {
+        <PagedList
+          pageSize={HISTORY_PAGE_SIZE}
+          className="flex flex-col divide-y divide-muted rounded-[14px] border bg-card"
+          items={rows.map((row) => {
             const dateLabel = formatLongDate(row.recordedOn);
             const valueLabel =
               item.kind === "circumference"
@@ -139,13 +143,8 @@ export function EntryHistory({
               </li>
             );
           })}
-        </ul>
+        />
       )}
-      {item.entries.length > HISTORY_LIMIT ? (
-        <p className="text-xs text-muted-foreground">
-          {t.limited(HISTORY_LIMIT)}
-        </p>
-      ) : null}
     </section>
   );
 }

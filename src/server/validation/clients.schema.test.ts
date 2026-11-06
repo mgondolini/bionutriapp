@@ -96,17 +96,17 @@ describe("createClientSchema", () => {
 });
 
 describe("clientListParamsSchema", () => {
-  it("legge filtri e ricerca dall'URL e ignora i valori non validi", () => {
+  it("legge filtri, ricerca e pagina dall'URL e ignora i valori non validi", () => {
     expect(
       clientListParamsSchema.parse({
         stato: "active",
         fase: "onboarding",
         q: " 333 ",
+        pagina: "2",
       }),
     ).toEqual({
-      status: "active",
-      stage: "onboarding",
-      query: "333",
+      filters: { status: "active", stage: "onboarding", query: "333" },
+      page: 2,
     });
     expect(
       clientListParamsSchema.parse({
@@ -115,10 +115,12 @@ describe("clientListParamsSchema", () => {
         q: "",
       }),
     ).toEqual({
-      status: undefined,
-      stage: "paused",
-      query: undefined,
+      filters: { status: undefined, stage: "paused", query: undefined },
+      page: 1,
     });
+    for (const pagina of ["0", "-1", "abc", "1.5"]) {
+      expect(clientListParamsSchema.parse({ pagina }).page).toBe(1);
+    }
   });
 });
 
