@@ -15,6 +15,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ### Modificato
 
+- Obiettivi predefiniti delle abitudini: 10.000 passi, 8 ore di sonno e 2 L di acqua (prima 8.000 passi e 7 ore). Gli studi esistenti con i vecchi valori vengono aggiornati; gli obiettivi personali dei clienti non cambiano.
+- Abitudini giornaliere: icone su fondo lilla (righe del tracking, home, check-in e obiettivi nella scheda dello staff), così si distinguono dalle circonferenze; le spunte "fatto oggi" restano nel colore dello studio.
 - "Nuovo cliente": un solo form con i dati completi e la scelta della fase (In percorso o Onboarding); dopo la creazione il pannello propone subito "Invia invito su WhatsApp" per il link della password. Import CSV: la fase si sceglie per tutto il file (prima entravano sempre In percorso).
 - "Esci" non disattiva più le notifiche push del dispositivo: al nuovo accesso restano attive (prima andavano riattivate ogni volta). "Esci da tutti i dispositivi" continua a eliminarle tutte.
 - Impostazioni studio: solo nome e logo; il colore principale e l'anteprima non si modificano più dall'app.

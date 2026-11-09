@@ -395,8 +395,7 @@ export const copy = {
           },
           onboarding: {
             label: "Onboarding",
-            description:
-              "Cliente nuovo: all'attivazione completerà i dati, poi lo porti In percorso.",
+            description: "Cliente nuovo: all'attivazione completerà i dati.",
           },
         },
         firstName: "Nome",

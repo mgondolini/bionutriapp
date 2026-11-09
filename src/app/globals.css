@@ -42,6 +42,7 @@
   --color-warm: var(--warm);
   --color-warm-soft: var(--warm-soft);
   --color-file-workout: var(--file-workout);
+  --color-habit: var(--habit);
   --color-file-report: var(--file-report);
   --color-file-workout-line: var(--file-workout-line);
   --color-file-report-line: var(--file-report-line);
@@ -94,6 +95,8 @@
   /* schede dei file per categoria */
   --file-workout: #c9e4f5;
   --file-report: #fbefc4;
+  /* Lilla: tile delle icone delle abitudini giornaliere (le spunte restano nel primario) */
+  --habit: #ece7f6;
   /* filo sopra l'archivio di Allenamenti e Report: dice in che sezione sei */
   --file-workout-line: #8ec3e6;
   --file-report-line: #e3c86a;
