@@ -27,7 +27,8 @@ function workoutMeta({ metric, stats, recordedInPeriod }: WorkoutOverview) {
 /**
  * Riepilogo "Da registrare" della home (C-02, schermata C5). Gli allenamenti
  * ci sono sempre (riga in fondo con la spunta se c'è una sessione oggi), ma
- * non contano tra le misure da registrare.
+ * non contano tra le misure da registrare. Misure e check-in da fare hanno
+ * l'icona su pesca ("richiede attenzione"); gli allenamenti restano azzurri.
  */
 export function ToRecord({ items }: { items: ToRecordItem[] }) {
   const pending = pendingCount(items);
@@ -58,7 +59,7 @@ export function ToRecord({ items }: { items: ToRecordItem[] }) {
                   href={checkinUrl()}
                   className="flex min-h-16 items-center gap-3 bg-card px-4 py-3 transition-colors hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-inset"
                 >
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-tint text-primary-ink">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-warning text-secondary-foreground">
                     <CalendarCheck aria-hidden="true" className="size-5" />
                   </span>
                   <span className="flex min-w-0 flex-1 flex-col">
@@ -109,6 +110,7 @@ export function ToRecord({ items }: { items: ToRecordItem[] }) {
                       : t.never
                   }
                   status={item.status}
+                  attention
                   href={trackingMetricPath(item.item.metric.key)}
                 />
               </li>

@@ -133,6 +133,8 @@ type MetricCardProps = {
   recorded?: boolean;
   /** Dettaglio della misura: la riga diventa un link; nel pannello lo diventa il titolo. */
   href?: string;
+  /** Riga da registrare (home, "Da registrare"): icona su pesca come "In ritardo". */
+  attention?: boolean;
   /** Contenuto della card (valori, medie, pulsanti). */
   children?: ReactNode;
   className?: string;
@@ -154,6 +156,7 @@ export function MetricCard({
   status,
   recorded,
   href,
+  attention = false,
   children,
   className,
 }: MetricCardProps) {
@@ -166,7 +169,7 @@ export function MetricCard({
     );
     const content = (
       <>
-        <span className={iconVariants({ kind, late })}>
+        <span className={iconVariants({ kind, late: late || attention })}>
           <MetricIcon name={icon} />
         </span>
         <div className="flex min-w-0 flex-1 flex-col">
