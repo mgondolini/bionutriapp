@@ -88,6 +88,7 @@ export async function confirmImportAction(
   const result = await clientsService.importClients(
     session.studio.id,
     parsed.data.csv,
+    parsed.data.stage,
   );
   if (!result.ok) {
     if (result.error === "conflict") return fail(t.import.conflict);

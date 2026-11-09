@@ -384,18 +384,19 @@ export const copy = {
       },
       create: {
         title: "Nuovo cliente",
-        description: "Scegli come inserire il cliente.",
-        modeLabel: "Modalità",
-        modes: {
-          new: {
-            label: "Nuovo cliente",
+        description:
+          "Inserisci i dati e scegli la fase. Poi gli mandi il link su WhatsApp per scegliere la password.",
+        stageLabel: "Fase",
+        stages: {
+          in_progress: {
+            label: "In percorso",
             description:
-              "Solo nome e cellulare: completerà i dati all'attivazione.",
+              "Cliente già seguito: all'attivazione verificherà i dati.",
           },
-          full: {
-            label: "Con dati completi",
+          onboarding: {
+            label: "Onboarding",
             description:
-              "Cliente già seguito: verificherà i dati all'attivazione.",
+              "Cliente nuovo: all'attivazione completerà i dati, poi lo porti In percorso.",
           },
         },
         firstName: "Nome",
@@ -411,6 +412,10 @@ export const copy = {
         submitting: "Creazione…",
         cancel: "Annulla",
         created: (name: string) => `Cliente ${name} creato.`,
+        createdTitle: (name: string) => `${name} è nell'elenco`,
+        createdHint:
+          "Mandagli il link su WhatsApp: con il link sceglie la password e attiva l'account. Puoi farlo anche più tardi dalla riga del cliente.",
+        addAnother: "Aggiungi un altro cliente",
         duplicatePhone:
           "Esiste già un cliente con questo cellulare nello studio.",
         duplicateEmail: "Esiste già un cliente con questa email nello studio.",
@@ -436,7 +441,10 @@ export const copy = {
         summaryValidLabel: "clienti pronti da importare",
         summaryDiscardedLabel: "righe scartate",
         validTitle: "Clienti da importare",
-        validHint: "Entreranno con fase In percorso e stato Da invitare.",
+        validHint: (stage: string) =>
+          `Entreranno con fase ${stage} e stato Da invitare. Gli inviti WhatsApp si mandano dalla riga di ogni cliente.`,
+        stageLabel: "Fase dei clienti importati",
+        stageHint: "Vale per tutte le righe del file.",
         discardedTitle: "Righe scartate",
         warningsTitle: "Dati corretti",
         columns: {
@@ -475,6 +483,7 @@ export const copy = {
       },
       validation: {
         firstNameRequired: "Inserisci il nome.",
+        stageRequired: "Scegli la fase del cliente.",
         lastNameRequired: "Inserisci il cognome.",
         nameTooLong: "Massimo 80 caratteri.",
         phoneRequired: "Inserisci il cellulare.",

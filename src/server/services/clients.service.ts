@@ -9,11 +9,12 @@ import {
 } from "@/lib/clients/list-filters";
 import {
   CLIENTS_PAGE_SIZE,
-  ORIGIN_BY_CREATION_MODE,
+  ORIGIN_BY_CREATION_STAGE,
   type AccountStatus,
   type ClientOrigin,
   type CsvFileError,
   type FileCategory,
+  type CreationStage,
   type JourneyStage,
 } from "@/lib/constants/domain";
 import { cleanClientRows, type CleanResult } from "@/lib/csv/clean-clients";
@@ -113,7 +114,7 @@ export type CreateClientResult =
   | { ok: true; id: string }
   | { ok: false; reason: "duplicate_phone" | "duplicate_email" | "duplicate" };
 
-/** Crea un cliente; la modalità decide l'origine (e quindi la fase iniziale). */
+/** Crea un cliente; la fase scelta decide l'origine (e quindi la fase iniziale). */
 export async function createClient(
   studioId: string,
   input: CreateClientInput,
@@ -121,11 +122,11 @@ export async function createClient(
   const result = await clientsRepository.insertClients(studioId, [
     {
       firstName: input.firstName,
-      lastName: input.mode === "full" ? input.lastName : null,
+      lastName: input.lastName,
       phone: input.phone,
-      email: input.mode === "full" ? input.email : null,
-      birthDate: input.mode === "full" ? input.birthDate : null,
-      origin: ORIGIN_BY_CREATION_MODE[input.mode],
+      email: input.email,
+      birthDate: input.birthDate,
+      origin: ORIGIN_BY_CREATION_STAGE[input.stage],
     },
   ]);
   return result.ok ? { ok: true, id: result.ids[0]! } : result;
@@ -161,6 +162,7 @@ export type ImportResult =
 export async function importClients(
   studioId: string,
   csvText: string,
+  stage: CreationStage,
 ): Promise<ImportResult> {
   const analysis = await analyzeImport(studioId, csvText);
   if (!analysis.ok) return analysis;
@@ -169,7 +171,7 @@ export async function importClients(
 
   const inserted = await clientsRepository.insertClients(
     studioId,
-    valid.map((row) => ({ ...row, origin: "imported" as const })),
+    valid.map((row) => ({ ...row, origin: ORIGIN_BY_CREATION_STAGE[stage] })),
   );
   if (!inserted.ok) return { ok: false, error: "conflict" };
   return { ok: true, imported: inserted.ids.length };

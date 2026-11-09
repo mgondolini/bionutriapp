@@ -15,6 +15,7 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ### Modificato
 
+- "Nuovo cliente": un solo form con i dati completi e la scelta della fase (In percorso o Onboarding); dopo la creazione il pannello propone subito "Invia invito su WhatsApp" per il link della password. Import CSV: la fase si sceglie per tutto il file (prima entravano sempre In percorso).
 - "Esci" non disattiva più le notifiche push del dispositivo: al nuovo accesso restano attive (prima andavano riattivate ogni volta). "Esci da tutti i dispositivi" continua a eliminarle tutte.
 - Impostazioni studio: solo nome e logo; il colore principale e l'anteprima non si modificano più dall'app.
 - Nuovo sistema colore (`docs/mockups/mockup-v2.html`): neutri salvia, menu laterale scuro nell'area del nutrizionista, menta derivata dal colore dello studio per file in evidenza, check-in e badge "In percorso"/"Nuovo", pesca solo per ciò che richiede attenzione, colori propri per le categorie Allenamento e Report, pulsanti secondari con il bordo nel colore dello studio. Colore predefinito `#1F7A5C`.

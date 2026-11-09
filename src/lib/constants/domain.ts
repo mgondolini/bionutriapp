@@ -171,14 +171,17 @@ export const INITIAL_STAGE_BY_ORIGIN: Record<ClientOrigin, JourneyStage> = {
   new: "onboarding",
 };
 
-/** Modalità del dialog "Nuovo cliente" (A-04) e origine corrispondente. */
-export const CLIENT_CREATION_MODES = ["new", "full"] as const;
-export type ClientCreationMode = (typeof CLIENT_CREATION_MODES)[number];
-export const ORIGIN_BY_CREATION_MODE: Record<ClientCreationMode, ClientOrigin> =
-  {
-    new: "new",
-    full: "imported",
-  };
+/**
+ * Fase scelta alla creazione e all'import (A-04, A-05). Il database la ricava
+ * dall'origine (trigger guard_client) e attivate_client la conferma, quindi
+ * la scelta si salva come origine: In percorso = 'imported', Onboarding = 'new'.
+ */
+export const CREATION_STAGES = ["in_progress", "onboarding"] as const;
+export type CreationStage = (typeof CREATION_STAGES)[number];
+export const ORIGIN_BY_CREATION_STAGE: Record<CreationStage, ClientOrigin> = {
+  in_progress: "imported",
+  onboarding: "new",
+};
 
 /** Nomi dei parametri dell'URL dell'elenco clienti (filtri e ricerca condivisibili). */
 export const CLIENT_LIST_PARAMS = {

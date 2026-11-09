@@ -6,8 +6,9 @@ import {
   CLIENT_LIST_PARAMS,
   CLIENT_SEARCH_MAX_LENGTH,
   CSV_MAX_BYTES,
+  CREATION_STAGES,
   JOURNEY_STAGES,
-  type ClientCreationMode,
+  type CreationStage,
 } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { parseBirthDate } from "@/lib/csv/clean-clients";
@@ -54,35 +55,23 @@ const optionalBirthDate = z
   )
   .transform((value) => (value ? parseBirthDate(value) : null));
 
-/** "Nuovo cliente": solo nome e cellulare → origine 'new', fase Onboarding. */
-export const newClientSchema = z.object({
-  mode: z.literal("new"),
-  firstName,
-  phone: phoneSchema,
-});
+/** Fase scelta alla creazione o all'import: In percorso o Onboarding. */
+const creationStage = z.enum(CREATION_STAGES, v.stageRequired);
 
-/** "Con dati completi" → origine 'imported', fase In percorso. */
-export const fullClientSchema = z.object({
-  mode: z.literal("full"),
+/** "Nuovo cliente" (A-04): dati completi e fase iniziale scelta dallo staff. */
+export const createClientSchema = z.object({
+  stage: creationStage,
   firstName,
   lastName,
   phone: phoneSchema,
   email: optionalEmail,
   birthDate: optionalBirthDate,
 });
-
-export const createClientSchema = z.discriminatedUnion("mode", [
-  newClientSchema,
-  fullClientSchema,
-]);
 export type CreateClientInput = z.output<typeof createClientSchema>;
 
-/**
- * Valori del form "Nuovo cliente": tutti i campi, qualunque sia la modalità.
- * Lo schema sceglie la variante in base a `mode` e scarta i campi dell'altra.
- */
+/** Valori del form "Nuovo cliente" (stringhe come le digita lo staff). */
 export type CreateClientFormValues = {
-  mode: ClientCreationMode;
+  stage: CreationStage;
   firstName: string;
   lastName: string;
   phone: string;
@@ -118,6 +107,8 @@ export const clientListParamsSchema = z
 
 /** Il CSV arriva alla Server Action come testo (massimo 1 MB). */
 export const csvImportSchema = z.object({
+  /** Una fase per tutte le righe del file. */
+  stage: creationStage,
   csv: z
     .string()
     .refine(
