@@ -253,7 +253,7 @@ export function FileUploadForm({ clientId }: { clientId: string }) {
                         className={cn(
                           "flex h-11 cursor-pointer items-center gap-2.5 rounded-[10px] border border-line-strong bg-card px-3.5 text-sm font-semibold transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
                           field.value === category
-                            ? "border-foreground ring-3 ring-primary/20"
+                            ? "border-primary ring-3 ring-mint"
                             : "hover:bg-muted",
                         )}
                       >
@@ -316,7 +316,7 @@ export function FileUploadForm({ clientId }: { clientId: string }) {
             <div id={fieldId("file-status")} aria-live="polite">
               {file ? (
                 <div className="flex items-center gap-3 rounded-xl border bg-card px-3.5 py-3 text-sm">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-primary-tint text-primary-ink">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-primary-tint text-secondary-foreground">
                     <FileText aria-hidden="true" className="size-5" />
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col">
@@ -403,7 +403,7 @@ export function FileUploadForm({ clientId }: { clientId: string }) {
                     disabled={busy}
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldId("note-count")}
-                    className="min-h-21 w-full rounded-[10px] border border-input bg-card px-3.5 py-2.5 text-base outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/25 disabled:opacity-50 aria-invalid:border-warning-foreground md:text-sm"
+                    className="min-h-21 w-full rounded-[10px] border border-input bg-card px-3.5 py-2.5 text-base outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-mint disabled:opacity-50 aria-invalid:border-warning-foreground md:text-sm"
                   />
                   <FieldDescription id={fieldId("note-count")}>
                     {t.noteCount(note.length, FILE_NOTE_MAX)}

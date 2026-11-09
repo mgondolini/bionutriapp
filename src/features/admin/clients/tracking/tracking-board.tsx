@@ -288,7 +288,7 @@ function WorkoutCard({ item, href, action }: CardProps<WorkoutOverview>) {
         chart={<MiniBars values={sessions} max={metric.maxValue} />}
         note={
           stats.last?.note ? (
-            <blockquote className="border-l-2 border-line-strong pl-3 text-[13px] whitespace-pre-line text-muted-foreground">
+            <blockquote className="border-l-3 border-primary-tint pl-3 text-[13px] whitespace-pre-line text-secondary-foreground">
               {stats.last.note}
             </blockquote>
           ) : null

@@ -124,7 +124,7 @@ export function CheckinForm({ checkin }: { checkin: Checkin }) {
                 >
                   {habit.instructions ?? habit.name}
                 </p>
-                <p className="flex items-center gap-1.5 self-start rounded-full bg-primary-tint px-2.5 py-1 text-[12.5px] font-semibold text-primary-ink">
+                <p className="flex items-center gap-1.5 self-start rounded-full bg-muted px-2.5 py-1 text-[12.5px] font-semibold text-secondary-foreground">
                   <Flag aria-hidden="true" className="size-3.5" />
                   {habit.goal
                     ? t.goal(

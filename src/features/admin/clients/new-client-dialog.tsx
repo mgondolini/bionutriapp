@@ -172,7 +172,7 @@ export function NewClientDialog() {
                       className={cn(
                         "flex cursor-pointer flex-col gap-0.5 rounded-xl border border-line-strong bg-card p-4 text-sm transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
                         field.value === option
-                          ? "border-primary ring-3 ring-primary/20"
+                          ? "border-primary ring-3 ring-mint"
                           : "hover:bg-muted",
                       )}
                     >

@@ -192,7 +192,7 @@ export function LogoCropDialog({
               {MODES.map((value) => (
                 <label
                   key={value}
-                  className="flex min-h-11 cursor-pointer gap-3 rounded-xl border border-line-strong bg-card p-3 has-checked:border-primary has-checked:bg-primary-tint has-focus-visible:ring-3 has-focus-visible:ring-ring/50"
+                  className="flex min-h-11 cursor-pointer gap-3 rounded-xl border border-line-strong bg-card p-3 has-checked:border-primary has-checked:ring-3 has-checked:ring-mint has-focus-visible:ring-3 has-focus-visible:ring-ring/50"
                 >
                   <input
                     type="radio"

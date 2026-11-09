@@ -215,7 +215,7 @@ function StagePicker({
             className={cn(
               "flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-line-strong bg-card px-3.5 py-2.5 text-sm font-semibold transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
               value === option
-                ? "border-primary ring-3 ring-primary/20"
+                ? "border-primary ring-3 ring-mint"
                 : "hover:bg-muted",
             )}
           >

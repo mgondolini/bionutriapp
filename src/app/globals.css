@@ -107,7 +107,8 @@
   --muted-foreground: #4b6159;
   --accent: #e6f3ee;
   --accent-foreground: #1f3a34;
-  --destructive: #b42318;
+  /* errori dei form: mattone del mockup (warn), nessun rosso nella palette */
+  --destructive: #8a3a1e;
   /* Bordo card: contorno decorativo di card e liste */
   --border: #d5e6df;
   /* Bordo controlli: campi, pulsanti secondari, caselle (3:1) */

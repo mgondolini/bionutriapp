@@ -15,6 +15,7 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ### Modificato
 
+- Colori allineati al mockup v2: errori dei form color mattone invece del rosso; alone menta su campi attivi e scelte selezionate; pillola dell'obiettivo del check-in neutra; icone scure sulle tile (banner notifiche, archivio Diete, file dello staff) e tile del profilo come le altre; nota dell'allenamento nella scheda Tracking e anteprima WhatsApp con i colori del mockup.
 - Home del cliente, "Da registrare": icone di misure e check-in su fondo pesca (richiede attenzione); gli allenamenti restano azzurri.
 - Obiettivi predefiniti delle abitudini: 10.000 passi, 8 ore di sonno e 2 L di acqua (prima 8.000 passi e 7 ore). Gli studi esistenti con i vecchi valori vengono aggiornati; gli obiettivi personali dei clienti non cambiano.
 - Abitudini giornaliere: icone su fondo lilla (righe del tracking, home, check-in e obiettivi nella scheda dello staff), così si distinguono dalle circonferenze; le spunte "fatto oggi" restano nel colore dello studio.

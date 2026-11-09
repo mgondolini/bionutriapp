@@ -144,7 +144,7 @@ export function WorkoutForm({
               placeholder={t.notePlaceholder}
               disabled={isPending}
               aria-invalid={fieldState.invalid}
-              className="min-h-21 w-full rounded-[10px] border border-input bg-card px-3.5 py-2.5 text-base outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/25 disabled:opacity-50 aria-invalid:border-warning-foreground md:text-sm"
+              className="min-h-21 w-full rounded-[10px] border border-input bg-card px-3.5 py-2.5 text-base outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-mint disabled:opacity-50 aria-invalid:border-warning-foreground md:text-sm"
             />
             <FieldError errors={[fieldState.error]} />
           </Field>

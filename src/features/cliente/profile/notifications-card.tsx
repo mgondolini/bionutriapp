@@ -38,7 +38,7 @@ export function NotificationsCard({
   return (
     <ProfileSection title={t.title}>
       <div className="flex items-center gap-4">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-ink">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-tint text-secondary-foreground">
           <BellRing aria-hidden="true" className="size-5" />
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">

@@ -201,7 +201,7 @@ export function ClientFilesList({
                 <TableRow key={file.id}>
                   <TableCell className="max-w-80 whitespace-normal">
                     <div className="flex items-center gap-3">
-                      <span className="flex size-[34px] shrink-0 items-center justify-center rounded-[10px] bg-primary-tint text-primary-ink">
+                      <span className="flex size-[34px] shrink-0 items-center justify-center rounded-[10px] bg-primary-tint text-secondary-foreground">
                         <FileText aria-hidden="true" className="size-4" />
                       </span>
                       <span className="flex-1 font-semibold">{file.title}</span>

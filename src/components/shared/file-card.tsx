@@ -82,7 +82,7 @@ export function FileCard({
   if (variant === "row") {
     return (
       <article className={cn(cardVariants({ variant }), className)}>
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-tint text-primary-ink">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-tint text-secondary-foreground">
           <FileText aria-hidden="true" className="size-5" />
         </span>
         <div className="flex min-w-40 flex-1 flex-col gap-0.5">

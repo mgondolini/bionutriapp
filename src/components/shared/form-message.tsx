@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 const formMessageVariants = cva("rounded-xl px-4 py-3 text-sm", {
   variants: {
     tone: {
-      error: "bg-destructive/10 text-destructive",
+      error: "bg-warning text-warning-foreground",
       warning: "bg-warning text-warning-foreground",
       info: "bg-info text-info-foreground",
     },
