@@ -15,10 +15,10 @@ const statusBadgeVariants = cva(
         to_invite: "bg-muted text-secondary-foreground",
         invited: "bg-info text-info-foreground",
         // pesca: richiede attenzione (mockup v2)
-        invite_expired: "bg-warm text-foreground",
-        active: "bg-primary-tint text-primary-ink",
+        invite_expired: "bg-warm font-bold text-foreground",
+        active: "bg-wash text-foreground",
         disabled: "border border-line-strong bg-card text-muted-foreground",
-        onboarding: "bg-warning text-warning-foreground",
+        onboarding: "border-[1.5px] border-warm bg-card text-foreground",
         in_progress: "bg-mint text-mint-foreground",
         paused: "bg-muted text-secondary-foreground",
         completed: "border border-line-strong bg-card text-muted-foreground",

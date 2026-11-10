@@ -4,8 +4,6 @@
  * per studio, NF-11) con la stessa normalizzazione del telefono del resto dell'app.
  */
 import {
-  ACCOUNT_STATUSES,
-  JOURNEY_STAGES,
   type AccountStatus,
   type FileCategory,
   type JourneyStage,
@@ -32,11 +30,6 @@ export type ClientListFilters = {
   status?: AccountStatus;
   stage?: JourneyStage;
   query?: string;
-};
-
-export type FacetCounts = {
-  status: Record<AccountStatus, number> & { all: number };
-  stage: Record<JourneyStage, number> & { all: number };
 };
 
 /** Minuscolo e senza accenti: "Niccolò" trova "niccolo". */
@@ -77,34 +70,58 @@ export function filterClients(
 }
 
 /**
- * Conteggi "a faccette": ogni gruppo conta applicando la ricerca e il filtro
- * dell'altro gruppo, ma non il proprio (così ogni opzione mostra quanti
- * clienti si otterrebbero scegliendola).
+ * Filtri rapidi dell'elenco (A-02, mockup-v2-admin): pill con il conteggio.
+ * Ognuno è una combinazione dei filtri esistenti (stato o fase), quindi l'URL
+ * (`?stato`, `?fase`) e `filterClients` restano quelli di prima.
  */
-export function facetCounts(
-  items: readonly ClientListItem[],
+export const QUICK_FILTERS = [
+  "all",
+  "in_progress",
+  "onboarding",
+  "invite_expired",
+] as const;
+export type QuickFilter = (typeof QUICK_FILTERS)[number];
+export type QuickFilterCounts = Record<QuickFilter, number>;
+
+const QUICK_FILTER_VALUES: Record<
+  QuickFilter,
+  Pick<ClientListFilters, "status" | "stage">
+> = {
+  all: {},
+  in_progress: { stage: "in_progress" },
+  onboarding: { stage: "onboarding" },
+  invite_expired: { status: "invite_expired" },
+};
+
+/** Filtri dell'URL di una pill: la ricerca resta, gli altri filtri si azzerano. */
+export function quickFilterFilters(
+  key: QuickFilter,
+  query: string | undefined,
+): ClientListFilters {
+  return { ...QUICK_FILTER_VALUES[key], query };
+}
+
+/** Pill selezionata; null se l'URL ha una combinazione che nessuna pill rappresenta. */
+export function activeQuickFilter(
   filters: ClientListFilters,
-): FacetCounts {
-  const forStatus = filterClients(items, {
-    stage: filters.stage,
-    query: filters.query,
-  });
-  const forStage = filterClients(items, {
-    status: filters.status,
-    query: filters.query,
-  });
+): QuickFilter | null {
+  return (
+    QUICK_FILTERS.find((key) => {
+      const value = QUICK_FILTER_VALUES[key];
+      return value.status === filters.status && value.stage === filters.stage;
+    }) ?? null
+  );
+}
 
-  const status = Object.fromEntries(
-    ACCOUNT_STATUSES.map((s) => [s, 0]),
-  ) as FacetCounts["status"];
-  status.all = forStatus.length;
-  for (const item of forStatus) status[item.accountStatus] += 1;
-
-  const stage = Object.fromEntries(
-    JOURNEY_STAGES.map((s) => [s, 0]),
-  ) as FacetCounts["stage"];
-  stage.all = forStage.length;
-  for (const item of forStage) stage[item.journeyStage] += 1;
-
-  return { status, stage };
+/** Quanti clienti mostra ogni pill, con la ricerca applicata. */
+export function quickFilterCounts(
+  items: readonly ClientListItem[],
+  query: string | undefined,
+): QuickFilterCounts {
+  return Object.fromEntries(
+    QUICK_FILTERS.map((key) => [
+      key,
+      filterClients(items, quickFilterFilters(key, query)).length,
+    ]),
+  ) as QuickFilterCounts;
 }

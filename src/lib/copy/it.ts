@@ -338,11 +338,8 @@ export const copy = {
       noResultsDescription: "Prova a cambiare i filtri o la ricerca.",
       resetFilters: "Azzera filtri",
       toolbar: {
-        statusLabel: "Stato account",
-        stageLabel: "Fase del percorso",
-        allStatuses: "Tutti",
-        allStages: "Tutte",
-        option: (label: string, count: number) => `${label} (${count})`,
+        filterLabel: "Filtra i clienti",
+        all: "Tutti",
         searchLabel: "Cerca",
         searchPlaceholder: "Cerca per nome, email o telefono",
       },
@@ -359,7 +356,7 @@ export const copy = {
         noEntry: "Nessuna misura",
         lastEntryOn: (date: string) => `Registrata il ${date}`,
         footer: (count: number) =>
-          `${count} ${count === 1 ? "cliente" : "clienti"}. Le righe evidenziate sono clienti in Onboarding.`,
+          `${count} ${count === 1 ? "cliente" : "clienti"}.`,
       },
       actions: {
         newClient: "Nuovo cliente",

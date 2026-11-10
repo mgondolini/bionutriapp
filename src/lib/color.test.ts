@@ -6,7 +6,9 @@ import {
   normalizeHexColor,
   pickForeground,
   inkColor,
+  actionColor,
   mintColor,
+  washColor,
   themeVariables,
   tintColor,
 } from "./color";
@@ -154,6 +156,26 @@ describe("mintColor e tintColor", () => {
     expect(themeVariables("#7A3E8E")).toMatchObject({
       "--mint": mintColor("#7A3E8E"),
       "--primary-tint": tintColor("#7A3E8E"),
+    });
+  });
+});
+
+describe("actionColor e washColor (mockup-v2-admin)", () => {
+  it("verde azione con il testo Profondo leggibile (AA) per ogni colore di studio", () => {
+    for (const color of BRAND_SAMPLES) {
+      expect(contrastRatio(actionColor(color), DEEP)).toBeGreaterThanOrEqual(
+        4.5,
+      );
+      expect(contrastRatio(washColor(color), DEEP)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("dal verde predefinito restano vicini ai colori del mockup", () => {
+    expect(contrastRatio(washColor("#1F7A5C"), "#E1EFEB")).toBeLessThan(1.05);
+    expect(contrastRatio(actionColor("#1F7A5C"), "#2FA582")).toBeLessThan(1.3);
+    expect(themeVariables("#1F7A5C")).toMatchObject({
+      "--action": actionColor("#1F7A5C"),
+      "--wash": washColor("#1F7A5C"),
     });
   });
 });

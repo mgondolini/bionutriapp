@@ -312,7 +312,7 @@ export function ImportCsvDialog() {
 
   return (
     <Dialog open={open} onOpenChange={changeOpen}>
-      <DialogTrigger render={<Button variant="outline" />}>
+      <DialogTrigger render={<Button variant="neutral" />}>
         <FileUp aria-hidden="true" />
         {copy.admin.clients.actions.importCsv}
       </DialogTrigger>

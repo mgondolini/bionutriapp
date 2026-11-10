@@ -42,12 +42,18 @@ export function ClientRowActions({
           name={name}
           label={inviteLabel}
           ariaLabel={t.inviteFor(inviteLabel, name)}
+          variant="action"
+          className="rounded-xl"
         />
       ) : null}
       <Link
         href={clientDetailPath(clientId)}
         aria-label={t.detailFor(name)}
-        className={buttonVariants({ variant: "outline", size: "sm" })}
+        className={buttonVariants({
+          variant: "ghost",
+          size: "sm",
+          className: "rounded-xl font-bold text-foreground hover:bg-wash",
+        })}
       >
         {t.detail}
         <ChevronRight aria-hidden="true" className="size-3.5" />

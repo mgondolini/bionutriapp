@@ -13,6 +13,12 @@ const buttonVariants = cva(
           "border-primary bg-card text-primary-ink hover:bg-primary-tint aria-expanded:bg-primary-tint dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:
           "border-transparent bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+        /** Primario dell'area admin: verde azione con testo Profondo, Profondo al passaggio. */
+        action:
+          "border-[1.5px] border-action bg-action text-foreground hover:border-foreground hover:bg-foreground hover:text-white aria-expanded:bg-foreground aria-expanded:text-white",
+        /** Secondario dell'area admin: bianco, bordo campo, tinta al passaggio. */
+        neutral:
+          "border-[1.5px] border-admin-field bg-card text-foreground hover:bg-wash aria-expanded:bg-wash",
         ghost:
           "border-transparent hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
         destructive:

@@ -37,6 +37,16 @@
   --color-primary: var(--primary);
   --color-primary-ink: var(--primary-ink);
   --color-primary-tint: var(--primary-tint);
+  --color-action: var(--action);
+  --color-wash: var(--wash);
+  --color-admin-line: var(--admin-line);
+  --color-admin-hover: var(--admin-hover);
+  --color-admin-field: var(--admin-field);
+  --color-admin-muted: var(--admin-muted);
+  --color-admin-row-hover: var(--admin-row-hover);
+  --color-admin-page: var(--admin-page);
+  --color-chip-workout: var(--chip-workout);
+  --color-chip-report: var(--chip-report);
   --color-mint: var(--mint);
   --color-mint-foreground: var(--mint-foreground);
   --color-warm: var(--warm);
@@ -85,6 +95,20 @@
   --primary-ink: #176248;
   /* Tinta: badge "Attivo", pillole, icone, righe attive (tintColor) */
   --primary-tint: #cfefe2;
+  /* Area admin (docs/mockups/mockup-v2-admin.html). Dal colore dello studio:
+     verde azione (actionColor, pulsanti primari con testo Profondo) e tinta
+     neutra (washColor). Fissi: anello, secondario, bordo campo, testo
+     secondario, hover delle righe, sfondo della pagina e chip delle categorie. */
+  --action: #35b68b;
+  --wash: #e2eeea;
+  --admin-line: #cfd8d5;
+  --admin-hover: #ecf0ef;
+  --admin-field: #84938f;
+  --admin-muted: #435a54;
+  --admin-row-hover: #f2f5f4;
+  --admin-page: #ffffff;
+  --chip-workout: #98d4e2;
+  --chip-report: #f2de92;
   /* Menta: superfici in evidenza del cliente, badge "In percorso" e "Nuovo",
      voce attiva del menu (mintColor); sopra sempre il testo Profondo */
   --mint: #98e2c6;
@@ -129,15 +153,15 @@
   --chart-4: #4b6159;
   --chart-5: #1f3a34;
   --radius: 0.75rem;
-  /* menu laterale dell'area admin su Profondo */
-  --sidebar: #1f3a34;
-  --sidebar-foreground: #ffffff;
+  /* menu laterale dell'area admin: bianco con il bordo anello (mockup-v2-admin) */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1f3a34;
   --sidebar-primary: #1f7a5c;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgb(255 255 255 / 0.12);
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #1f3a34;
-  --sidebar-ring: #98e2c6;
+  --sidebar-accent: #ecf0ef;
+  --sidebar-accent-foreground: #1f3a34;
+  --sidebar-border: #cfd8d5;
+  --sidebar-ring: #1f3a34;
 }
 
 .dark {

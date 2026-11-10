@@ -1,11 +1,11 @@
 import "server-only";
 
 import {
-  facetCounts,
+  quickFilterCounts,
   filterClients,
   type ClientListFilters,
   type ClientListItem,
-  type FacetCounts,
+  type QuickFilterCounts,
 } from "@/lib/clients/list-filters";
 import {
   CLIENTS_PAGE_SIZE,
@@ -59,7 +59,8 @@ export type ClientList = {
   /** Clienti della pagina richiesta, dopo filtri e ricerca. */
   items: ClientListItem[];
   page: Omit<Page<ClientListItem>, "items">;
-  counts: FacetCounts;
+  /** Conteggi delle pill di filtro, con la ricerca applicata. */
+  quickCounts: QuickFilterCounts;
   /** Totale dei clienti dello studio, senza filtri. */
   total: number;
 };
@@ -79,7 +80,7 @@ export async function getClientList(
   return {
     items,
     page: pageInfo,
-    counts: facetCounts(all, filters),
+    quickCounts: quickFilterCounts(all, filters.query),
     total: all.length,
   };
 }

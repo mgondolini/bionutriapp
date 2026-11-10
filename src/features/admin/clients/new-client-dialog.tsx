@@ -121,7 +121,7 @@ export function NewClientDialog() {
 
   return (
     <Dialog open={open} onOpenChange={changeOpen}>
-      <DialogTrigger render={<Button />}>
+      <DialogTrigger render={<Button variant="action" />}>
         <UserPlus aria-hidden="true" />
         {copy.admin.clients.actions.newClient}
       </DialogTrigger>

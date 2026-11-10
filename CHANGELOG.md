@@ -15,6 +15,7 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ### Modificato
 
+- Area admin secondo `mockup-v2-admin`: menu laterale bianco con voce attiva su tinta e card utente con avatar; elenco clienti su fondo bianco con le pill di filtro (Tutti, In percorso, Onboarding, Invito scaduto) al posto dei due menu a tendina, tabella con intestazione su tinta e senza righe evidenziate, chip ridisegnate (categorie con un colore per tipo), "Nuovo cliente" e "Reinvia invito" in verde con il testo scuro, "Importa CSV" bianco con bordo, "Dettaglio" senza contorno.
 - Tracking del cliente riordinato per frequenza: card "Oggi" con check-in e allenamento affiancati, allenamenti subito sotto (quanti questa settimana, ultimo con "oggi", "ieri", "3 giorni fa", pulsante "Registra" sempre visibile), avviso compatto delle misure in ritardo, abitudini con la media della settimana nella riga, peso e circonferenze in fondo con un riepilogo ("5 su 7 registrate") e l'elenco completo a un tocco.
 - Colori allineati al mockup v2: errori dei form color mattone invece del rosso; alone menta su campi attivi e scelte selezionate; pillola dell'obiettivo del check-in neutra; icone scure sulle tile (banner notifiche, archivio Diete, file dello staff) e tile del profilo come le altre; nota dell'allenamento nella scheda Tracking e anteprima WhatsApp con i colori del mockup.
 - Home del cliente, "Da registrare": icone di misure e check-in su fondo pesca (richiede attenzione); gli allenamenti restano azzurri.

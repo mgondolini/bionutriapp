@@ -192,6 +192,32 @@ export function mintColor(primaryColor: string | null | undefined): string {
   return lightShade(primary, 0.95, 0.56);
 }
 
+/**
+ * Verde azione dell'area admin (mockup-v2-admin, `--azione`): pulsanti
+ * primari con il testo Profondo sopra. Stessa tinta del colore dello studio,
+ * schiarita quanto basta per 4,5:1 con il testo (il #2FA582 del mockup arriva
+ * a 3,98:1); al passaggio del mouse il pulsante diventa Profondo con testo bianco.
+ */
+export function actionColor(primaryColor: string | null | undefined): string {
+  const primary = normalizeHexColor(primaryColor);
+  for (let lightness = 0.42; lightness < 0.9; lightness += 0.01) {
+    const candidate = lightShade(primary, lightness, 0.56);
+    if (contrastRatio(candidate, DARK_TEXT_COLOR) >= MIN_TEXT_CONTRAST) {
+      return candidate;
+    }
+  }
+  return lightShade(primary, 0.9, 0.56);
+}
+
+/**
+ * Tinta dell'area admin (mockup-v2-admin, `--tinta` #E1EFEB): più neutra
+ * della tinta del cliente. Voce attiva del menu, intestazione delle tabelle,
+ * chip "Attivo", pill selezionata.
+ */
+export function washColor(primaryColor: string | null | undefined): string {
+  return lightShade(normalizeHexColor(primaryColor), 0.91, 0.25);
+}
+
 /** Tinta (mockup v2): fondo tenue del primario per badge, pillole e voce attiva. */
 export function tintColor(primaryColor: string | null | undefined): string {
   return lightShade(normalizeHexColor(primaryColor), 0.875, 0.5);
@@ -210,6 +236,8 @@ export function themeVariables(
     "--primary-ink": ink,
     "--primary-tint": tintColor(primary),
     "--mint": mintColor(primary),
+    "--action": actionColor(primary),
+    "--wash": washColor(primary),
     // anello del focus sempre visibile (contrasto 3:1 anche con colori chiari)
     "--ring": ink,
     "--sidebar-primary": primary,

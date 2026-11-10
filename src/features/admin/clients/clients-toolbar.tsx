@@ -1,120 +1,48 @@
 "use client";
 
 import { Search } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useState, useTransition } from "react";
 
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import type {
-  ClientListFilters,
-  FacetCounts,
+  QUICK_FILTERS,
+  activeQuickFilter,
+  quickFilterFilters,
+  type ClientListFilters,
+  type QuickFilter,
+  type QuickFilterCounts,
 } from "@/lib/clients/list-filters";
 import { clientListUrl } from "@/lib/clients/list-url";
-import {
-  ACCOUNT_STATUSES,
-  JOURNEY_STAGES,
-  type AccountStatus,
-  type JourneyStage,
-} from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { cn } from "@/lib/utils";
 
 const t = copy.admin.clients.toolbar;
-const ALL = "all";
 const SEARCH_DELAY_MS = 300;
 
-type FacetSelectProps<T extends string> = {
-  label: string;
-  allLabel: string;
-  values: readonly T[];
-  labels: Record<T, string>;
-  counts: Record<T | typeof ALL, number>;
-  value: T | undefined;
-  onChange: (value: T | undefined) => void;
+const QUICK_FILTER_LABELS: Record<QuickFilter, string> = {
+  all: t.all,
+  in_progress: copy.domain.journeyStage.in_progress,
+  onboarding: copy.domain.journeyStage.onboarding,
+  invite_expired: copy.domain.accountStatus.invite_expired,
 };
-
-/** Select di un filtro con il conteggio accanto a ogni opzione (A-02). */
-function FacetSelect<T extends string>({
-  label,
-  allLabel,
-  values,
-  labels,
-  counts,
-  value,
-  onChange,
-}: FacetSelectProps<T>) {
-  const id = useId();
-  const items = [
-    {
-      value: ALL,
-      label: t.option(allLabel, counts[ALL]),
-      name: allLabel,
-      count: counts[ALL],
-    },
-    ...values.map((v) => ({
-      value: v,
-      label: t.option(labels[v], counts[v]),
-      name: labels[v],
-      count: counts[v],
-    })),
-  ];
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-[13px] font-semibold">
-        {label}
-      </label>
-      <Select
-        items={items}
-        value={value ?? ALL}
-        onValueChange={(next) =>
-          onChange(next === ALL || !next ? undefined : (next as T))
-        }
-      >
-        <SelectTrigger
-          id={id}
-          className="h-11 w-full data-[size=default]:h-11 md:w-[230px]"
-        >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {items.map((item) => (
-            <SelectItem
-              key={item.value}
-              value={item.value}
-              label={item.label}
-              className="min-h-11"
-            >
-              <span className="flex w-full items-center justify-between gap-4">
-                {item.name}
-                <span className="text-muted-foreground tabular-nums">
-                  {item.count}
-                </span>
-              </span>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-}
 
 type ClientsToolbarProps = {
   filters: ClientListFilters;
-  counts: FacetCounts;
+  counts: QuickFilterCounts;
 };
 
-/** Filtri per stato e fase e ricerca: tutto nei searchParams dell'URL. */
+/**
+ * Pill di filtro con il conteggio e ricerca (A-02, A-03, mockup-v2-admin):
+ * tutto nei searchParams dell'URL. Le pill sono link (Indietro annulla la
+ * scelta), tengono la ricerca e azzerano gli altri filtri e la pagina.
+ */
 export function ClientsToolbar({ filters, counts }: ClientsToolbarProps) {
   const router = useRouter();
   const searchId = useId();
   const [isPending, startTransition] = useTransition();
+  const active = activeQuickFilter(filters);
 
   // Il testo della ricerca segue l'URL (es. tasto Indietro) ma resta locale mentre si digita.
   const [query, setQuery] = useState(filters.query ?? "");
@@ -123,10 +51,6 @@ export function ClientsToolbar({ filters, counts }: ClientsToolbarProps) {
     setUrlQuery(filters.query ?? "");
     setQuery(filters.query ?? "");
   }
-
-  // Un filtro scelto aggiunge una voce alla cronologia: Indietro lo annulla.
-  const navigate = (next: ClientListFilters) =>
-    startTransition(() => router.push(clientListUrl(next), { scroll: false }));
 
   // La ricerca sostituisce la voce corrente, con un breve ritardo mentre si digita.
   useEffect(() => {
@@ -142,47 +66,54 @@ export function ClientsToolbar({ filters, counts }: ClientsToolbarProps) {
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 md:flex-row md:flex-wrap md:items-end",
+        "flex flex-wrap items-center justify-between gap-x-6 gap-y-3",
         isPending && "opacity-80",
       )}
       aria-busy={isPending}
     >
-      <FacetSelect<AccountStatus>
-        label={t.statusLabel}
-        allLabel={t.allStatuses}
-        values={ACCOUNT_STATUSES}
-        labels={copy.domain.accountStatus}
-        counts={counts.status}
-        value={filters.status}
-        onChange={(status) => navigate({ ...filters, status })}
-      />
-      <FacetSelect<JourneyStage>
-        label={t.stageLabel}
-        allLabel={t.allStages}
-        values={JOURNEY_STAGES}
-        labels={copy.domain.journeyStage}
-        counts={counts.stage}
-        value={filters.stage}
-        onChange={(stage) => navigate({ ...filters, stage })}
-      />
-      <div className="flex flex-1 flex-col gap-1.5 md:min-w-64">
-        <label htmlFor={searchId} className="text-[13px] font-semibold">
+      <nav aria-label={t.filterLabel}>
+        <ul className="flex flex-wrap gap-2">
+          {QUICK_FILTERS.map((key) => {
+            const selected = key === active;
+            return (
+              <li key={key}>
+                <Link
+                  href={clientListUrl(quickFilterFilters(key, filters.query))}
+                  scroll={false}
+                  aria-current={selected ? "true" : undefined}
+                  className={cn(
+                    "inline-flex min-h-11 items-center gap-2 rounded-full border-[1.5px] px-4 text-sm text-foreground transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                    selected
+                      ? "border-action bg-wash font-bold"
+                      : "border-admin-field bg-card font-semibold hover:bg-admin-hover",
+                  )}
+                >
+                  {QUICK_FILTER_LABELS[key]}
+                  <span className="font-semibold text-admin-muted tabular-nums">
+                    {counts[key]}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+      <div className="relative w-full sm:max-w-[380px] sm:flex-[1_1_280px]">
+        <label htmlFor={searchId} className="sr-only">
           {t.searchLabel}
         </label>
-        <div className="relative">
-          <Search
-            aria-hidden="true"
-            className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            id={searchId}
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={t.searchPlaceholder}
-            className="pl-10.5"
-          />
-        </div>
+        <Search
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1/2 left-3.5 size-[18px] -translate-y-1/2 text-foreground"
+        />
+        <Input
+          id={searchId}
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={t.searchPlaceholder}
+          className="rounded-[14px] border-[1.5px] border-admin-field pl-10.5"
+        />
       </div>
     </div>
   );

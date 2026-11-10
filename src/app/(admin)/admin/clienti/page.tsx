@@ -29,7 +29,7 @@ async function ClientsList({
   const { filters, page: requested } = clientListParamsSchema.parse(
     await searchParams,
   );
-  const { items, page, counts, total } = await getClientList(
+  const { items, page, quickCounts, total } = await getClientList(
     session.studio.id!,
     filters,
     requested,
@@ -47,7 +47,7 @@ async function ClientsList({
 
   return (
     <div className="flex flex-col gap-4">
-      <ClientsToolbar filters={filters} counts={counts} />
+      <ClientsToolbar filters={filters} counts={quickCounts} />
       {items.length === 0 ? (
         <EmptyState
           icon={SearchX}
@@ -90,7 +90,8 @@ export default function ClientsPage({
   searchParams,
 }: PageProps<"/admin/clienti">) {
   return (
-    <div className="flex flex-col gap-6">
+    // data-admin-page: sfondo della pagina dal token --admin-page (AdminFrame)
+    <div data-admin-page className="flex flex-col gap-6">
       <PageHeader
         title={t.title}
         description={t.description}

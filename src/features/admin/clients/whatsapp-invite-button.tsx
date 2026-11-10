@@ -16,7 +16,7 @@ type WhatsAppInviteButtonProps = {
   name: string;
   label: string;
   ariaLabel?: string;
-  variant?: "default" | "outline";
+  variant?: "default" | "outline" | "action";
   className?: string;
 };
 

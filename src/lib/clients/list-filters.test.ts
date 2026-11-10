@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  facetCounts,
+  activeQuickFilter,
   filterClients,
+  quickFilterCounts,
+  quickFilterFilters,
   type ClientListItem,
 } from "./list-filters";
 
@@ -82,42 +84,41 @@ describe("filterClients", () => {
   });
 });
 
-describe("facetCounts", () => {
-  it("senza filtri conta tutti i clienti per stato e per fase", () => {
-    const counts = facetCounts(ITEMS, {});
-    expect(counts.status).toEqual({
+describe("filtri rapidi", () => {
+  it("conta ogni pill sull'elenco completo, con la ricerca applicata", () => {
+    expect(quickFilterCounts(ITEMS, undefined)).toEqual({
       all: 5,
-      to_invite: 1,
-      invited: 1,
-      invite_expired: 1,
-      active: 2,
-      disabled: 0,
-    });
-    expect(counts.stage).toEqual({
-      all: 5,
-      onboarding: 2,
       in_progress: 2,
-      paused: 1,
-      completed: 0,
+      onboarding: 2,
+      invite_expired: 1,
+    });
+    expect(quickFilterCounts(ITEMS, "luca")).toEqual({
+      all: 1,
+      in_progress: 0,
+      onboarding: 1,
+      invite_expired: 1,
     });
   });
 
-  it("ogni gruppo applica l'altro filtro e la ricerca, ma non il proprio", () => {
-    const counts = facetCounts(ITEMS, {
-      status: "active",
+  it("una pill tiene la ricerca e azzera gli altri filtri", () => {
+    expect(quickFilterFilters("onboarding", "anna")).toEqual({
       stage: "onboarding",
+      query: "anna",
     });
-    // stati contati fra i clienti in Onboarding
-    expect(counts.status).toMatchObject({
-      all: 2,
-      active: 1,
-      invite_expired: 1,
-    });
-    // fasi contate fra i clienti attivi
-    expect(counts.stage).toMatchObject({
-      all: 2,
-      onboarding: 1,
-      in_progress: 1,
-    });
+    expect(quickFilterFilters("all", undefined)).toEqual({ query: undefined });
+  });
+
+  it("riconosce la pill selezionata dall'URL", () => {
+    expect(activeQuickFilter({})).toBe("all");
+    expect(activeQuickFilter({ query: "x" })).toBe("all");
+    expect(activeQuickFilter({ stage: "in_progress" })).toBe("in_progress");
+    expect(activeQuickFilter({ status: "invite_expired" })).toBe(
+      "invite_expired",
+    );
+    // link vecchi con un'altra combinazione: nessuna pill selezionata
+    expect(activeQuickFilter({ status: "active" })).toBeNull();
+    expect(
+      activeQuickFilter({ status: "invite_expired", stage: "onboarding" }),
+    ).toBeNull();
   });
 });

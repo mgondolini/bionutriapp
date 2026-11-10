@@ -9,9 +9,9 @@ const categoryTagVariants = cva(
   {
     variants: {
       category: {
-        diet: "bg-primary-tint text-primary-ink",
-        workout: "bg-file-workout text-foreground",
-        report: "bg-file-report text-foreground",
+        diet: "bg-mint text-foreground",
+        workout: "bg-chip-workout text-foreground",
+        report: "bg-chip-report text-foreground",
       } satisfies Record<FileCategory, string>,
     },
   },
