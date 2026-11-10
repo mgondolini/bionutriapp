@@ -4,6 +4,7 @@ import {
   entryAuthorBadge,
   habitDeltaText,
   measureText,
+  relativeDayText,
   scoreText,
   weekRangeText,
 } from "./labels";
@@ -48,5 +49,15 @@ describe("entryAuthorBadge", () => {
     expect(
       entryAuthorBadge({ createdByRole: "client", updatedByRole: "client" }),
     ).toBeNull();
+  });
+});
+
+describe("relativeDayText", () => {
+  it("oggi, ieri e i giorni passati", () => {
+    expect(relativeDayText("2026-11-10", "2026-11-10")).toBe("oggi");
+    expect(relativeDayText("2026-11-09", "2026-11-10")).toBe("ieri");
+    expect(relativeDayText("2026-11-07", "2026-11-10")).toBe("3 giorni fa");
+    // attraverso il cambio dell'ora legale i giorni restano interi
+    expect(relativeDayText("2026-10-24", "2026-10-26")).toBe("2 giorni fa");
   });
 });

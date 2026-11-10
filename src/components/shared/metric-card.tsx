@@ -42,20 +42,20 @@ export function MetricStatusBadge({
 }
 
 /** Spunta di T-01: misura già registrata nel periodo corrente. */
-export function RecordedTick() {
+export function RecordedTick({ label = t.recordedAria }: { label?: string }) {
   return (
     <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
       <Check aria-hidden="true" className="size-4" strokeWidth={2.5} />
-      <span className="sr-only">{t.recordedAria}</span>
+      <span className="sr-only">{label}</span>
     </span>
   );
 }
 
 /** Abitudine ancora da compilare oggi: cerchio tratteggiato al posto della spunta. */
-export function PendingTick() {
+export function PendingTick({ label = t.pendingAria }: { label?: string }) {
   return (
     <span className="flex size-7 shrink-0 rounded-full border-2 border-dashed border-line-strong">
-      <span className="sr-only">{t.pendingAria}</span>
+      <span className="sr-only">{label}</span>
     </span>
   );
 }
@@ -135,6 +135,13 @@ type MetricCardProps = {
   href?: string;
   /** Riga da registrare (home, "Da registrare"): icona su pesca come "In ritardo". */
   attention?: boolean;
+  /**
+   * Cerchio tratteggiato quando `recorded` è falso. Predefinito: solo per le
+   * abitudini (home e staff invariati); il Tracking lo usa anche per gli allenamenti.
+   */
+  showPending?: boolean;
+  /** Testi per i lettori di schermo di spunta e cerchio (predefiniti in copy.tracking). */
+  tickLabels?: { recorded: string; pending: string };
   /** Contenuto della card (valori, medie, pulsanti). */
   children?: ReactNode;
   className?: string;
@@ -157,6 +164,8 @@ export function MetricCard({
   recorded,
   href,
   attention = false,
+  showPending,
+  tickLabels,
   children,
   className,
 }: MetricCardProps) {
@@ -184,9 +193,9 @@ export function MetricCard({
         {status && status !== "ok" ? (
           <MetricStatusBadge status={status} />
         ) : recorded ? (
-          <RecordedTick />
-        ) : kind === "habit" && recorded === false ? (
-          <PendingTick />
+          <RecordedTick label={tickLabels?.recorded} />
+        ) : (showPending ?? kind === "habit") && recorded === false ? (
+          <PendingTick label={tickLabels?.pending} />
         ) : null}
         {children}
       </>

@@ -253,3 +253,29 @@ export function toRecord(overview: readonly MetricOverview[]): ToRecordItem[] {
 export function pendingCount(items: readonly ToRecordItem[]): number {
   return items.filter((item) => item.kind !== "workout").length;
 }
+
+export type CircumferenceProgress = {
+  total: number;
+  /** Misure con un valore nel periodo (spunta di T-01). */
+  recorded: number;
+  /** Da registrare: mai registrate o oltre i 30 giorni, nell'ordine dello studio. */
+  missing: CircumferenceOverview[];
+  /** Solo quelle in ritardo (T-05). */
+  overdue: CircumferenceOverview[];
+};
+
+/** Riepilogo di peso e circonferenze per la pagina Tracking del cliente (C8). */
+export function circumferenceProgress(
+  overview: readonly MetricOverview[],
+): CircumferenceProgress {
+  const items = overview.filter(
+    (item): item is CircumferenceOverview => item.kind === "circumference",
+  );
+  const missing = items.filter((item) => !item.recordedInPeriod);
+  return {
+    total: items.length,
+    recorded: items.length - missing.length,
+    missing,
+    overdue: items.filter((item) => item.summary.schedule.status === "overdue"),
+  };
+}

@@ -897,6 +897,46 @@ export const copy = {
         ctaEdit: "Modifica il check-in",
         date: (weekday: string, date: string) => `${weekday} ${date}`,
       },
+      /** Card "Oggi" in cima al Tracking: check-in e allenamento. */
+      today: {
+        title: "Oggi",
+        checkinTitle: "Check-in",
+        checkinDoneAria: "Check-in completato",
+        workoutTitle: "Allenamento",
+        workoutNone: "Non ancora registrato oggi.",
+        workoutDone: (score: string) => `Registrato oggi, voto ${score}.`,
+        workoutCta: "Registra allenamento",
+        workoutAnother: "Aggiungi un altro",
+      },
+      workouts: {
+        week: (count: number) =>
+          count === 0
+            ? "Nessuno questa settimana"
+            : `${count} questa settimana`,
+        last: (when: string, score: string) => `ultimo ${when} · ${score}`,
+        none: "Nessun allenamento registrato",
+        register: "Registra",
+        registerAria: "Registra un allenamento",
+        doneAria: "Allenamento registrato oggi",
+        pendingAria: "Nessun allenamento oggi",
+      },
+      habits: {
+        average: (value: string) => `Media settimana ${value}`,
+      },
+      circumferences: {
+        hint: "Una volta al mese",
+        progress: (recorded: number, total: number) =>
+          `${recorded} su ${total} registrate questo mese`,
+        missing: (names: string) => `mancano ${names}`,
+        missingMany: (count: number) => `ne mancano ${count}`,
+        showAll: "Mostra tutte",
+        hideAll: "Nascondi",
+      },
+      overdue: {
+        text: (count: number) =>
+          count === 1 ? "1 misura in ritardo" : `${count} misure in ritardo`,
+        cta: "Registra",
+      },
       checkin: {
         title: "Check-in",
         dayLabel: "Giorno del check-in",
@@ -1028,6 +1068,11 @@ export const copy = {
     filledDaysOfWeek: (count: number) =>
       count === 1 ? "1 giorno su 7" : `${count} giorni su 7`,
     lastOn: (date: string) => `ultima ${date}`,
+    relativeDay: {
+      today: "oggi",
+      yesterday: "ieri",
+      daysAgo: (days: number) => `${days} giorni fa`,
+    },
     lastWorkout: (date: string, score: string) => `ultimo ${date}, ${score}`,
     todayScore: (score: string) => `oggi ${score}`,
     todayMissing: "oggi da compilare",
