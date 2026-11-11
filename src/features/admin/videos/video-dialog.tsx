@@ -248,6 +248,11 @@ export function VideoDialog({
                       inputMode="url"
                       autoComplete="off"
                       placeholder={t.linkPlaceholder}
+                      className={
+                        link.status === "ok" && link.url === url.trim()
+                          ? "border-action"
+                          : undefined
+                      }
                       aria-invalid={
                         fieldState.invalid || link.status === "error"
                       }
@@ -277,7 +282,7 @@ export function VideoDialog({
                         {t.checking}
                       </span>
                     ) : link.status === "ok" ? (
-                      <span className="flex items-center gap-2 font-semibold text-primary-ink">
+                      <span className="flex items-center gap-2 font-semibold text-foreground">
                         <CircleCheck aria-hidden="true" className="size-4" />
                         {t.found}
                       </span>
@@ -286,9 +291,12 @@ export function VideoDialog({
                   {link.status === "error" ? (
                     <LinkErrorBox code={link.code} id={fieldId("url-error")} />
                   ) : (
-                    <FieldDescription id={fieldId("url-hint")}>
+                    <p
+                      id={fieldId("url-hint")}
+                      className="rounded-xl bg-info px-4 py-3.5 text-sm text-info-foreground"
+                    >
                       {t.accepted}
-                    </FieldDescription>
+                    </p>
                   )}
                 </Field>
               )}
@@ -296,16 +304,16 @@ export function VideoDialog({
           )}
 
           {preview ? (
-            <div className="flex items-center gap-3.5 rounded-xl border border-admin-line p-3">
+            <div className="flex items-center gap-4 rounded-2xl border border-video bg-video-tint p-3.5">
               <VideoThumbnail
                 youtubeId={preview.youtubeId}
                 className="w-[120px]"
               />
               <div className="flex min-w-0 flex-col gap-0.5">
-                <span className="text-xs font-semibold text-admin-muted">
+                <span className="self-start rounded-full bg-video px-2.5 py-0.5 text-xs leading-[18px] font-semibold text-foreground">
                   {t.previewAlt}
                 </span>
-                <span className="line-clamp-2 text-sm font-semibold">
+                <span className="mt-1.5 line-clamp-2 text-[15px] leading-[22px] font-bold">
                   {preview.title}
                 </span>
                 {preview.authorName ? (
@@ -393,7 +401,7 @@ export function VideoDialog({
                   name="notify"
                   control={form.control}
                   render={({ field }) => (
-                    <label className="flex cursor-pointer items-start gap-3 rounded-xl has-focus-visible:ring-3 has-focus-visible:ring-ring/50">
+                    <label className="flex cursor-pointer items-start gap-3 rounded-[14px] bg-admin-hover p-3.5 has-focus-visible:ring-3 has-focus-visible:ring-ring/50">
                       <input
                         type="checkbox"
                         name={field.name}
@@ -402,13 +410,13 @@ export function VideoDialog({
                           field.onChange(event.target.checked)
                         }
                         aria-describedby={fieldId("notify-hint")}
-                        className="mt-0.5 size-[22px] shrink-0 accent-(--primary)"
+                        className="mt-0.5 size-[22px] shrink-0 accent-(--action)"
                       />
                       <span className="flex flex-col gap-0.5 text-sm">
                         <span className="font-semibold">{t.notify}</span>
                         <span
                           id={fieldId("notify-hint")}
-                          className="text-[12.5px] text-admin-muted"
+                          className="text-[12.5px] text-foreground"
                         >
                           {t.notifyHint(audience)}
                         </span>

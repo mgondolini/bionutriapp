@@ -80,7 +80,10 @@ vi.mock("@/server/repositories/videos.repository", () => ({
   listVideos: vi.fn(async () => videos),
   listOwnViewedVideoIds: vi.fn(async () => new Set(["v3"])),
   countViewsByVideo: vi.fn(async () => new Map([["v1", 4]])),
-  countActiveClientsByStage: vi.fn(async () => ({ total: 10, onboarding: 3 })),
+  countActiveClientsByStage: vi.fn(async () => ({
+    inProgress: 7,
+    onboarding: 3,
+  })),
   insertVideo: vi.fn(async () => ({ ok: true, id: "new-video" })),
   insertFolder: vi.fn(async () => "new-folder"),
 }));

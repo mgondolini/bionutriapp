@@ -54,7 +54,7 @@ export type VideoLibrary = {
     folder: AdminFolder;
     parent: AdminFolder | null;
     videos: AdminVideo[];
-    /** Clienti con account attivo che vedono la cartella. */
+    /** Clienti che vedono i nuovi video della cartella (In percorso, Onboarding se indicato). */
     audience: number;
   } | null;
 };
@@ -92,7 +92,7 @@ export async function getVideoLibrary(
   const counted = withCounts(folders, videos);
   const tree = buildFolderTree(counted);
   const audienceOf = (folder: AdminFolder) =>
-    folder.onboarding ? clients.total : clients.total - clients.onboarding;
+    clients.inProgress + (folder.onboarding ? clients.onboarding : 0);
   const folderOptions = tree.flatMap((folder) => [
     { id: folder.id, label: folder.name, audience: audienceOf(folder) },
     ...folder.children.map((child) => ({

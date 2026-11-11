@@ -44,17 +44,3 @@ export function isNewForClient(
 ): boolean {
   return !video.viewed && isRecentVideo(video.createdAt, today);
 }
-
-/** Sposta un elemento di una posizione (frecce Su/Giù); invariato ai bordi. */
-export function moveId(
-  ids: readonly string[],
-  id: string,
-  direction: "up" | "down",
-): string[] {
-  const from = ids.indexOf(id);
-  const to = direction === "up" ? from - 1 : from + 1;
-  if (from === -1 || to < 0 || to >= ids.length) return [...ids];
-  const next = [...ids];
-  [next[from], next[to]] = [next[to]!, next[from]!];
-  return next;
-}

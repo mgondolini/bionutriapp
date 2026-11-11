@@ -5,8 +5,10 @@ import { Suspense } from "react";
 import { LaunchSplash } from "@/components/shared/launch-splash";
 import { StudioThemeStyle } from "@/components/shared/studio-theme-style";
 import { Toaster } from "@/components/ui/sonner";
+import { INSTALL_PROMPT_CAPTURE } from "@/features/cliente/pwa/install-prompt";
 import { APP_BACKGROUND_COLOR } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import { STRIP_EXTENSION_ATTRIBUTES } from "@/lib/dev/extension-attributes";
 import { SPLASH_SCREENS, splashMedia, splashPath } from "@/lib/pwa/splash";
 import {
   getPublicStudio,
@@ -61,6 +63,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="it" className={`${jakarta.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
+        {process.env.NODE_ENV === "development" ? (
+          // attributi scritti da estensioni del browser: niente falsi errori di idratazione
+          <script
+            dangerouslySetInnerHTML={{ __html: STRIP_EXTENSION_ATTRIBUTES }}
+          />
+        ) : null}
+        {/* trattiene l'evento di installazione anche prima dell'idratazione.
+            Sta qui e non nel layout cliente: il layout radice arriva sempre
+            dal server, mentre uno <script> reso in una navigazione nel
+            browser (es. dopo il login) non viene eseguito e React lo segnala */}
+        <script dangerouslySetInnerHTML={{ __html: INSTALL_PROMPT_CAPTURE }} />
         <Suspense fallback={null}>
           <LaunchSplash />
         </Suspense>

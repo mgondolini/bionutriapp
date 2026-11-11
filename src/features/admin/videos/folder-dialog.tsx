@@ -226,7 +226,7 @@ export function FolderDialog({
                       className={cn(
                         "flex cursor-pointer flex-col gap-0.5 rounded-xl border-[1.5px] border-admin-field bg-card p-4 text-sm transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
                         field.value === option
-                          ? "border-action bg-wash"
+                          ? "border-foreground ring-3 ring-admin-line"
                           : "hover:bg-admin-row-hover",
                       )}
                     >
@@ -237,7 +237,7 @@ export function FolderDialog({
                           value={option}
                           checked={field.value === option}
                           onChange={() => field.onChange(option)}
-                          className="size-[22px] shrink-0 accent-(--primary)"
+                          className="size-[22px] shrink-0 accent-(--foreground)"
                         />
                         {VISIBILITY_COPY[option].label}
                       </span>
@@ -253,7 +253,9 @@ export function FolderDialog({
         </FieldGroup>
 
         {mode.kind === "create" ? (
-          <p className="text-[13px] text-admin-muted">{t.emptyNote}</p>
+          <p className="rounded-xl bg-info px-4 py-3.5 text-sm text-info-foreground">
+            {t.emptyNote}
+          </p>
         ) : null}
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

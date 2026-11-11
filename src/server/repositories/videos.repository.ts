@@ -121,17 +121,23 @@ export async function listOwnViewedVideoIds(): Promise<Set<string>> {
   return new Set(data.map((row) => row.video_id));
 }
 
-/** Clienti con account attivo dello studio per fase: chi vede una cartella. */
+/**
+ * Clienti con account attivo dello studio che vedono i nuovi video: In
+ * percorso e, per le cartelle "anche in Onboarding", in Onboarding (In pausa
+ * e Concluso vedono solo i video caricati prima dell'uscita dal percorso).
+ */
 export async function countActiveClientsByStage(studioId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("clients")
     .select("journey_stage")
     .eq("studio_id", studioId)
-    .eq("account_status", "active");
+    .eq("account_status", "active")
+    .in("journey_stage", ["in_progress", "onboarding"]);
   if (error) throw error;
   return {
-    total: data.length,
+    inProgress: data.filter((row) => row.journey_stage === "in_progress")
+      .length,
     onboarding: data.filter((row) => row.journey_stage === "onboarding").length,
   };
 }

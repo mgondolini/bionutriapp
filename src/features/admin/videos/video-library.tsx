@@ -182,6 +182,7 @@ export function VideoLibrary({ library }: { library: VideoLibraryData }) {
           title={t.noFolders.title}
           description={t.noFolders.description}
           className="rounded-[20px] border-admin-line"
+          iconClassName="size-[72px] rounded-[22px] bg-video-tint text-video-ink"
           action={
             <Button
               variant="action"
@@ -249,13 +250,8 @@ function FolderPanel({
         label={t.foldersListLabel}
         className="flex flex-col gap-1"
         save={(ids) => reorderFoldersAction({ parentId: null, ids })}
-        renderItem={(folder, controls, handle) => (
-          <FolderItem
-            folder={folder}
-            selectedId={selectedId}
-            controls={controls}
-            handle={handle}
-          />
+        renderItem={(folder, handle) => (
+          <FolderItem folder={folder} selectedId={selectedId} handle={handle} />
         )}
       />
       <p className="px-1.5 pt-2.5 text-xs font-medium text-admin-muted">
@@ -268,20 +264,18 @@ function FolderPanel({
 function FolderRow({
   folder,
   selected,
-  controls,
   handle,
   sub,
 }: {
   folder: AdminFolder;
   selected: boolean;
-  controls: ReactNode;
   handle: ReactNode;
   sub?: boolean;
 }) {
   return (
     <div
       className={cn(
-        "group flex items-center gap-1 rounded-[14px] border-[1.5px] py-1 pr-1 pl-1.5",
+        "group flex items-center gap-1 rounded-[14px] border-[1.5px] py-1 pr-3 pl-1.5",
         selected
           ? "border-video bg-video-tint"
           : "border-transparent hover:bg-admin-row-hover",
@@ -313,7 +307,6 @@ function FolderRow({
           ) : null}
         </span>
       </Link>
-      {controls}
     </div>
   );
 }
@@ -321,12 +314,10 @@ function FolderRow({
 function FolderItem({
   folder,
   selectedId,
-  controls,
   handle,
 }: {
   folder: AdminFolderNode;
   selectedId: string | null;
-  controls: ReactNode;
   handle: ReactNode;
 }) {
   return (
@@ -334,7 +325,6 @@ function FolderItem({
       <FolderRow
         folder={folder}
         selected={folder.id === selectedId}
-        controls={controls}
         handle={handle}
       />
       {folder.children.length > 0 ? (
@@ -343,11 +333,10 @@ function FolderItem({
           label={t.subfoldersListLabel(folder.name)}
           className="mt-1 ml-5 flex flex-col gap-1 border-l-2 border-admin-line pl-2"
           save={(ids) => reorderFoldersAction({ parentId: folder.id, ids })}
-          renderItem={(child, childControls, childHandle) => (
+          renderItem={(child, childHandle) => (
             <FolderRow
               folder={child}
               selected={child.id === selectedId}
-              controls={childControls}
               handle={childHandle}
               sub
             />
@@ -462,6 +451,7 @@ function FolderContent({
             title={t.emptyFolder.title}
             description={t.emptyFolder.description}
             className="border-admin-line"
+            iconClassName="size-[72px] rounded-[22px] bg-video-tint text-video-ink"
             action={
               <Button variant="action" onClick={onAddVideo}>
                 <Plus aria-hidden="true" />
@@ -474,7 +464,7 @@ function FolderContent({
         <>
           <div
             aria-hidden="true"
-            className="hidden items-center gap-3.5 border-t border-admin-line bg-admin-hover px-5 py-2.5 text-xs font-semibold text-admin-muted @3xl:grid @3xl:grid-cols-[28px_minmax(0,1fr)_92px_104px_188px]"
+            className="hidden items-center gap-3.5 border-t border-admin-line bg-admin-hover px-5 py-2.5 text-xs font-semibold text-admin-muted @3xl:grid @3xl:grid-cols-[28px_minmax(0,1fr)_92px_104px_96px]"
           >
             <span />
             <span>{t.table.video}</span>
@@ -486,10 +476,9 @@ function FolderContent({
             items={videos.map((video) => ({ ...video, name: video.title }))}
             label={t.videosListLabel(folder.name)}
             save={(ids) => reorderVideosAction({ folderId: folder.id, ids })}
-            renderItem={(video, controls, handle) => (
+            renderItem={(video, handle) => (
               <VideoRow
                 video={video}
-                controls={controls}
                 handle={handle}
                 onEdit={() => onEditVideo(video)}
               />
@@ -506,17 +495,15 @@ function FolderContent({
 
 function VideoRow({
   video,
-  controls,
   handle,
   onEdit,
 }: {
   video: AdminVideo;
-  controls: ReactNode;
   handle: ReactNode;
   onEdit: () => void;
 }) {
   return (
-    <div className="grid grid-cols-[28px_minmax(0,1fr)] items-center gap-x-3.5 gap-y-2 border-t border-admin-line bg-card px-5 py-3 hover:bg-admin-row-hover @3xl:grid-cols-[28px_minmax(0,1fr)_92px_104px_188px]">
+    <div className="grid grid-cols-[28px_minmax(0,1fr)] items-center gap-x-3.5 gap-y-2 border-t border-admin-line bg-card px-5 py-3 hover:bg-admin-row-hover @3xl:grid-cols-[28px_minmax(0,1fr)_92px_104px_96px]">
       {handle}
       <div className="flex min-w-0 items-center gap-3.5">
         <VideoThumbnail youtubeId={video.youtubeId} className="w-[104px]" />
@@ -583,7 +570,6 @@ function VideoRow({
             done={copy.admin.videos.deleteVideoDialog.deleted}
             onConfirm={() => deleteVideoAction({ videoId: video.id })}
           />
-          {controls}
         </div>
       </div>
     </div>

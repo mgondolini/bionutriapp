@@ -2,7 +2,7 @@
 -- fase (Onboarding solo nelle cartelle indicate), isolamento fra studi,
 -- aperture registrate solo dalla RPC, destinatari della notifica.
 begin;
-select plan(31);
+select plan(35);
 select tests.create_fixtures();
 
 -- Cartelle di studio1: Ricette (A) con la sottocartella Colazioni (A1),
@@ -154,6 +154,42 @@ select throws_ok(
   null, null, 'in Onboarding non si apre un video delle altre cartelle'
 );
 
+-- In pausa e Concluso: solo i video caricati fino all'uscita dal percorso.
+-- Nella transazione now() è fisso: la pausa di c7 va un'ora indietro e v1
+-- due ore indietro, gli altri video risultano caricati dopo la pausa.
+select tests.clear_authentication();
+update public.client_stage_events set changed_at = now() - interval '1 hour'
+ where client_id = tests.id('c7') and from_stage = 'in_progress';
+update public.videos set created_at = now() - interval '2 hours' where id = pg_temp.vid('v1');
+
+select tests.authenticate_as(tests.id('u7'));
+select results_eq(
+  $$ select id from public.videos $$,
+  $$ values (pg_temp.vid('v1')) $$,
+  'in pausa solo i video caricati prima della pausa'
+);
+select throws_ok(
+  $$ select public.record_video_view(pg_temp.vid('v2')) $$,
+  null, null, 'in pausa non si apre un video caricato dopo la pausa'
+);
+
+select tests.clear_authentication();
+update public.clients set journey_stage = 'completed' where id = tests.id('c7');
+select tests.authenticate_as(tests.id('u7'));
+select results_eq(
+  $$ select id from public.videos $$,
+  $$ values (pg_temp.vid('v1')) $$,
+  'da In pausa a Concluso il limite resta l''uscita dal percorso'
+);
+
+select tests.clear_authentication();
+update public.clients set journey_stage = 'in_progress' where id = tests.id('c7');
+select tests.authenticate_as(tests.id('u7'));
+select is((select count(*)::int from public.videos), 4, 'di nuovo In percorso vede tutti i video');
+
+select tests.clear_authentication();
+update public.clients set journey_stage = 'paused' where id = tests.id('c7');
+
 select tests.authenticate_as(tests.id('u5'));
 select is((select count(*)::int from public.videos), 0, 'un cliente disattivato non vede i video');
 
@@ -164,13 +200,14 @@ select is((select count(*)::int from public.video_views), 1, 'lo staff legge le 
 select tests.clear_authentication();
 insert into public.push_subscriptions (user_id, endpoint, p256dh, auth) values
   (tests.id('u1'), 'https://fcm.googleapis.com/fcm/send/v-c1', 'k', 'a'),
-  (tests.id('u6'), 'https://fcm.googleapis.com/fcm/send/v-c6', 'k', 'a');
+  (tests.id('u6'), 'https://fcm.googleapis.com/fcm/send/v-c6', 'k', 'a'),
+  (tests.id('u7'), 'https://fcm.googleapis.com/fcm/send/v-c7', 'k', 'a');
 insert into public.notification_preferences (user_id, videos_enabled)
 values (tests.id('u6'), false);
 select results_eq(
   $$ select client_id from public.video_notification_recipients(pg_temp.vid('v4')) $$,
   $$ values (tests.id('c1')) $$,
-  'si avvisa chi vede la cartella, ha un dispositivo e non ha spento i video'
+  'si avvisa chi vede la cartella, è In percorso, ha un dispositivo e non ha spento i video'
 );
 
 select tests.authenticate_as(tests.id('owner1'));

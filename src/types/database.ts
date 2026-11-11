@@ -421,7 +421,6 @@ export type Database = {
           },
         ];
       };
-
       notification_log: {
         Row: {
           client_id: string;

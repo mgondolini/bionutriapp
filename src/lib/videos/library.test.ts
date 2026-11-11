@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  buildFolderTree,
-  isNewForClient,
-  isRecentVideo,
-  moveId,
-} from "./library";
+import { buildFolderTree, isNewForClient, isRecentVideo } from "./library";
 
 describe("buildFolderTree", () => {
   it("cartelle e sottocartelle nell'ordine dello studio", () => {
@@ -38,14 +33,5 @@ describe("video nuovi", () => {
         "2026-11-11",
       ),
     ).toBe(false);
-  });
-});
-
-describe("moveId", () => {
-  it("sposta di una posizione e resta uguale ai bordi", () => {
-    expect(moveId(["a", "b", "c"], "b", "up")).toEqual(["b", "a", "c"]);
-    expect(moveId(["a", "b", "c"], "b", "down")).toEqual(["a", "c", "b"]);
-    expect(moveId(["a", "b", "c"], "a", "up")).toEqual(["a", "b", "c"]);
-    expect(moveId(["a", "b", "c"], "c", "down")).toEqual(["a", "b", "c"]);
   });
 });

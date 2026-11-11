@@ -10,6 +10,8 @@ type EmptyStateProps = {
   /** Azione facoltativa (es. un pulsante). */
   action?: ReactNode;
   className?: string;
+  /** Colori del riquadro dell'icona (es. lavanda nella sezione Video). */
+  iconClassName?: string;
 };
 
 export function EmptyState({
@@ -18,6 +20,7 @@ export function EmptyState({
   description,
   action,
   className,
+  iconClassName,
 }: EmptyStateProps) {
   return (
     <div
@@ -26,7 +29,12 @@ export function EmptyState({
         className,
       )}
     >
-      <span className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+      <span
+        className={cn(
+          "flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground",
+          iconClassName,
+        )}
+      >
         <Icon aria-hidden="true" className="size-6" />
       </span>
       <div className="flex max-w-sm flex-col gap-1">

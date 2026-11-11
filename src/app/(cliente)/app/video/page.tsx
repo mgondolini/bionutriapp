@@ -36,6 +36,8 @@ export default async function VideosPage() {
           icon={Clapperboard}
           title={t.empty.title}
           description={t.empty.description}
+          className="rounded-[18px] border-solid"
+          iconClassName="size-[72px] rounded-[22px] bg-video-tint text-video-ink"
           action={
             <Link href={ROUTES.client.home} className={buttonVariants()}>
               {t.empty.back}

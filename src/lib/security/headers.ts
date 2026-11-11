@@ -5,7 +5,7 @@
  * CSP senza nonce: con Cache Components (PPR) i nonce non sono compatibili
  * con le pagine prerenderizzate (guida "Content Security Policy" di Next.js),
  * quindi script e stili inline sono ammessi con 'unsafe-inline'. Servono per
- * gli script di Next.js, INSTALL_PROMPT_CAPTURE (layout cliente), il colore
+ * gli script di Next.js, INSTALL_PROMPT_CAPTURE (layout radice), il colore
  * dello studio (StudioThemeStyle) e i grafici. Tutto il resto è limitato al
  * sito e al progetto Supabase; uniche eccezioni i video (mockup v4):
  * miniature di YouTube e player di youtube-nocookie, caricato solo al tocco.

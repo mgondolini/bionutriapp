@@ -126,16 +126,12 @@ test("lo staff organizza la libreria e il cliente guarda il video", async ({
     "Secondo video e2e",
   );
 
-  // Frecce: il secondo video scende, l'ordine resta dopo il ricaricamento
-  await page
-    .getByRole("button", { name: "Sposta giù: Secondo video e2e" })
-    .click();
+  // Trascinamento da tastiera: il secondo video scende, l'ordine resta dopo
+  // il ricaricamento
+  await dragWithKeyboard(page, "Secondo video e2e", "ArrowDown");
   await expect(videos.getByRole("listitem").first()).toContainText(
     "Video di prova e2e",
   );
-  await expect(
-    page.getByRole("status").filter({ hasText: "posizione 2 di 2" }),
-  ).toBeAttached();
   await page.reload();
   await expect(videos.getByRole("listitem").first()).toContainText(
     "Video di prova e2e",
@@ -145,7 +141,7 @@ test("lo staff organizza la libreria e il cliente guarda il video", async ({
   const folders = folderList(page);
   const before = await folders.locator(":scope > li").count();
   await expect(folders.locator(":scope > li").last()).toContainText(FOLDER);
-  await page.getByRole("button", { name: `Sposta su: ${FOLDER}` }).click();
+  await dragWithKeyboard(page, FOLDER, "ArrowUp");
   await expect(folders.locator(":scope > li").nth(before - 2)).toContainText(
     FOLDER,
   );
@@ -206,3 +202,18 @@ test("la cartella in Onboarding: la vede solo se è anche in Onboarding", async 
   ).toBeVisible();
   await expect(page.getByText("Ricette veloci")).toHaveCount(0);
 });
+
+/** Maniglia di un elenco ordinabile: spazio, una freccia, spazio (dnd-kit). */
+async function dragWithKeyboard(
+  page: Page,
+  name: string,
+  key: "ArrowUp" | "ArrowDown",
+) {
+  const handle = page.getByRole("button", {
+    name: `Trascina per spostare ${name}`,
+  });
+  await handle.focus();
+  await page.keyboard.press("Space");
+  await page.keyboard.press(key);
+  await page.keyboard.press("Space");
+}

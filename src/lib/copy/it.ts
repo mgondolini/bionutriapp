@@ -302,7 +302,6 @@ export const copy = {
         saved: "Preferenza salvata.",
         failed: "Non è stato possibile salvare la preferenza. Riprova.",
       },
-
     },
     install: {
       title: "App sul telefono",
@@ -345,7 +344,7 @@ export const copy = {
     videos: {
       title: "Video",
       description:
-        "Video YouTube scelti dallo studio, ordinati in cartelle. Li vedono tutti i clienti con account attivo.",
+        "Video YouTube scelti dallo studio, ordinati in cartelle. Li vedono i clienti In percorso; chi è In pausa o Concluso vede solo quelli caricati fino alla pausa o alla conclusione.",
       newFolder: "Nuova cartella",
       addVideo: "Aggiungi video",
       foldersTitle: "Cartelle",
@@ -394,8 +393,6 @@ export const copy = {
       },
       reorder: {
         handle: (name: string) => `Trascina per spostare ${name}`,
-        up: (name: string) => `Sposta su: ${name}`,
-        down: (name: string) => `Sposta giù: ${name}`,
         saved: "Ordine salvato.",
         failed:
           "Non è stato possibile salvare l'ordine. Ricarica la pagina e riprova.",
@@ -425,9 +422,9 @@ export const copy = {
         descriptionLabel: "Descrizione (facoltativa)",
         visibility: "Chi la vede",
         visibilityActive: {
-          label: "Clienti con account attivo",
+          label: "Clienti In percorso",
           description:
-            "In percorso, In pausa e Concluso. È la scelta per quasi tutte le cartelle.",
+            "Chi è In pausa o Concluso vede solo i video caricati fino alla pausa o alla conclusione. È la scelta per quasi tutte le cartelle.",
         },
         visibilityOnboarding: {
           label: "Anche i clienti in Onboarding",
