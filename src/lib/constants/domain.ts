@@ -96,13 +96,12 @@ export type AdminNavKey = (typeof ADMIN_NAV)[number]["key"];
 export const DEFAULT_PRIMARY_COLOR = "#1F7A5C";
 export const DARK_TEXT_COLOR = "#1F3A34";
 export const LIGHT_TEXT_COLOR = "#FFFFFF";
-export const APP_BACKGROUND_COLOR = "#EDF3EF";
+/** Sfondo "Perla" di tutte le pagine (--background): manifest, barra del telefono, splash, contrasto di --primary-ink. */
+export const APP_BACKGROUND_COLOR = "#F8F7F4";
 /** Contrasto minimo per il testo normale (WCAG AA). */
 export const MIN_TEXT_CONTRAST = 4.5;
 /** Voce attiva del menu laterale: bianco al 12% sul Profondo (DARK_TEXT_COLOR). */
 export const SIDEBAR_ACTIVE_COLOR = "#3A524C";
-/** Sfondo chiaro più scuro su cui compare il testo nel colore dello studio (--background). */
-export const LIGHT_SURFACE_COLOR = "#EDF3EF";
 
 /** Logo dello studio (bucket studio-assets). */
 export const STUDIO_ASSETS_BUCKET = "studio-assets";
@@ -468,7 +467,6 @@ export const SERVICE_WORKER_URL = "/sw.js";
 export const SERVICE_WORKER_SCOPE = "/app";
 /** Pagina mostrata dal service worker senza rete: statica, senza dati. */
 export const OFFLINE_PAGE_URL = "/offline.html";
-
 
 /** Icona delle notifiche: quella della PWA, con il branding dello studio del dominio. */
 

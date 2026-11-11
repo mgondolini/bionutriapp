@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { APP_BACKGROUND_COLOR } from "@/lib/constants/domain";
+
 import {
   contrastRatio,
   formatRatio,
@@ -107,14 +109,16 @@ describe("inkColor", () => {
   it("scurisce un colore chiaro fino al contrasto AA con sfondo e pillole", () => {
     const ink = inkColor("#F2C94C");
     expect(ink).not.toBe("#F2C94C");
-    expect(contrastRatio(ink, "#EDF3EF")).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(ink, APP_BACKGROUND_COLOR)).toBeGreaterThanOrEqual(
+      4.5,
+    );
     expect(themeVariables("#F2C94C")["--primary-ink"]).toBe(ink);
     expect(themeVariables("#F2C94C")["--ring"]).toBe(ink);
   });
 
   it("anche il bianco diventa un colore leggibile", () => {
     expect(
-      contrastRatio(inkColor("#FFFFFF"), "#EDF3EF"),
+      contrastRatio(inkColor("#FFFFFF"), APP_BACKGROUND_COLOR),
     ).toBeGreaterThanOrEqual(4.5);
   });
 });
@@ -123,7 +127,9 @@ describe("inkColor sulla tinta", () => {
   it("resta leggibile sullo sfondo e sulla tinta di qualsiasi studio", () => {
     for (const color of BRAND_SAMPLES) {
       const ink = inkColor(color);
-      expect(contrastRatio(ink, "#EDF3EF")).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(ink, APP_BACKGROUND_COLOR)).toBeGreaterThanOrEqual(
+        4.5,
+      );
       expect(contrastRatio(ink, tintColor(color))).toBeGreaterThanOrEqual(4.5);
     }
   });

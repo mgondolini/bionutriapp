@@ -2,9 +2,9 @@
  * Calcoli di colore e contrasto (WCAG 2.x), funzioni pure condivise da server e client.
  */
 import {
+  APP_BACKGROUND_COLOR,
   DARK_TEXT_COLOR,
   DEFAULT_PRIMARY_COLOR,
-  LIGHT_SURFACE_COLOR,
   LIGHT_TEXT_COLOR,
   MIN_TEXT_CONTRAST,
   SIDEBAR_ACTIVE_COLOR,
@@ -106,7 +106,7 @@ function darken(hex: string, amount: number): string {
  */
 export function inkColor(primaryColor: string | null | undefined): string {
   const primary = normalizeHexColor(primaryColor);
-  const surfaces = [LIGHT_SURFACE_COLOR, tintColor(primary)];
+  const surfaces = [APP_BACKGROUND_COLOR, tintColor(primary)];
   for (let step = 0; step <= 20; step++) {
     const candidate = darken(primary, step * 0.05);
     if (
