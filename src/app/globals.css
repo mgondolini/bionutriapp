@@ -37,9 +37,7 @@
   --color-primary: var(--primary);
   --color-primary-ink: var(--primary-ink);
   --color-primary-tint: var(--primary-tint);
-<<<<<<< Updated upstream
   --color-primary-deep: var(--primary-deep);
-=======
   --color-action: var(--action);
   --color-wash: var(--wash);
   --color-admin-line: var(--admin-line);
@@ -62,7 +60,6 @@
   --color-file-report: var(--file-report);
   --color-file-workout-line: var(--file-workout-line);
   --color-file-report-line: var(--file-report-line);
->>>>>>> Stashed changes
   --color-subtle: var(--subtle);
   --color-line-strong: var(--line-strong);
   --color-popover-foreground: var(--popover-foreground);

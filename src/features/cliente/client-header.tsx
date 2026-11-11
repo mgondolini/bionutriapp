@@ -97,6 +97,7 @@ const tileVariants = cva(
         report: "bg-file-report text-secondary-foreground",
         neutral: "bg-primary-tint text-secondary-foreground",
         warning: "bg-warning text-secondary-foreground",
+        video: "bg-video text-secondary-foreground",
       } satisfies Record<TileTone, string>,
     },
   },
@@ -111,6 +112,7 @@ const ICONS: Record<
   reports: { icon: ChartColumn, tone: "report" },
   tracking: { icon: Activity, tone: "warning" },
   profile: { icon: UserRound, tone: "neutral" },
+  videos: { icon: Clapperboard, tone: "video" },
 };
 
 const itemClassName =
