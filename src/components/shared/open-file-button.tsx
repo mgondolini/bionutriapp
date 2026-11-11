@@ -33,20 +33,10 @@ type OpenFileButtonProps = {
  *   PWA installata su iPhone si apre il visualizzatore di Safari.
  * - "download": nessuna finestra; l'URL forza lo scaricamento, quindi la
  *   pagina resta dov'è e non rimane una scheda vuota.
+ * `open` va chiamata direttamente dal gestore del clic.
  */
-export function OpenFileButton({
-  fileId,
-  title,
-  mode,
-  label,
-  icon,
-  variant = mode === "view" ? "default" : "outline",
-  size,
-  className,
-}: OpenFileButtonProps) {
+export function useOpenFile(fileId: string, mode: FileOpenMode) {
   const [isPending, startTransition] = useTransition();
-  const Icon =
-    mode === "download" ? Download : icon === "eye" ? Eye : ExternalLink;
 
   const open = () => {
     const popup = mode === "view" ? window.open("", "_blank") : null;
@@ -81,6 +71,24 @@ export function OpenFileButton({
       }
     });
   };
+
+  return { open, isPending };
+}
+
+/** Pulsante che apre o scarica un PDF (vedi `useOpenFile`). */
+export function OpenFileButton({
+  fileId,
+  title,
+  mode,
+  label,
+  icon,
+  variant = mode === "view" ? "default" : "outline",
+  size,
+  className,
+}: OpenFileButtonProps) {
+  const { open, isPending } = useOpenFile(fileId, mode);
+  const Icon =
+    mode === "download" ? Download : icon === "eye" ? Eye : ExternalLink;
 
   return (
     <Button

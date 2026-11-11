@@ -4,6 +4,7 @@
  */
 import { MEASURE_DECIMALS, type EntryAuthorRole } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import { daysBetween } from "./dates";
 import {
   formatDayMonthShort,
   formatDecimal,
@@ -39,6 +40,14 @@ export function habitDeltaText(
   if (delta === 0) return t.deltaZero;
   const value = formatSignedDelta(delta);
   return short ? t.deltaShort(value) : t.delta(value);
+}
+
+/** "oggi", "ieri", "3 giorni fa": distanza di un giorno passato da oggi. */
+export function relativeDayText(day: string, today: string): string {
+  const days = daysBetween(day, today);
+  if (days <= 0) return t.relativeDay.today;
+  if (days === 1) return t.relativeDay.yesterday;
+  return t.relativeDay.daysAgo(days);
 }
 
 /** "12–18 ott", "28 set – 4 ott": intervallo di una settimana. */

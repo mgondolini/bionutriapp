@@ -93,20 +93,40 @@ export const ADMIN_NAV = [
 export type AdminNavKey = (typeof ADMIN_NAV)[number]["key"];
 
 /** Branding predefinito (NF-07), usato quando lo studio non è disponibile. */
-export const DEFAULT_PRIMARY_COLOR = "#2E6A4E";
-export const DARK_TEXT_COLOR = "#18211D";
+export const DEFAULT_PRIMARY_COLOR = "#1F7A5C";
+export const DARK_TEXT_COLOR = "#1F3A34";
 export const LIGHT_TEXT_COLOR = "#FFFFFF";
-export const APP_BACKGROUND_COLOR = "#F5F6F2";
+export const APP_BACKGROUND_COLOR = "#EDF3EF";
 /** Contrasto minimo per il testo normale (WCAG AA). */
 export const MIN_TEXT_CONTRAST = 4.5;
+/** Voce attiva del menu laterale: bianco al 12% sul Profondo (DARK_TEXT_COLOR). */
+export const SIDEBAR_ACTIVE_COLOR = "#3A524C";
 /** Sfondo chiaro più scuro su cui compare il testo nel colore dello studio (--background). */
-export const LIGHT_SURFACE_COLOR = "#F5F6F2";
+export const LIGHT_SURFACE_COLOR = "#EDF3EF";
 
 /** Logo dello studio (bucket studio-assets). */
 export const STUDIO_ASSETS_BUCKET = "studio-assets";
 export const LOGO_MAX_BYTES = 2 * 1024 * 1024;
 export const LOGO_MIME_TYPES = ["image/png", "image/jpeg"] as const;
 export type LogoMimeType = (typeof LOGO_MIME_TYPES)[number];
+/**
+ * Ritaglio del logo nel browser: l'immagine scelta (anche grande, anche WebP)
+ * diventa un PNG quadrato da OUTPUT px; se supera LOGO_MAX_BYTES si riprova
+ * con i lati più piccoli, mai sotto MIN (icona da 512 px dell'app installata).
+ */
+export const LOGO_SIZE = {
+  output: 1024,
+  fallbacks: [768, 512],
+  min: 512,
+} as const;
+export const LOGO_SOURCE_MIME_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+] as const;
+export const LOGO_SOURCE_MAX_BYTES = 15 * 1024 * 1024;
+/** Margine per lato in "Adatta con margine" (quota del lato). */
+export const LOGO_FIT_MARGIN = 0.08;
 
 export const PASSWORD_MIN_LENGTH = 8;
 /** bcrypt (Supabase Auth) considera al massimo 72 byte. */
@@ -156,21 +176,27 @@ export const INITIAL_STAGE_BY_ORIGIN: Record<ClientOrigin, JourneyStage> = {
   new: "onboarding",
 };
 
-/** Modalità del dialog "Nuovo cliente" (A-04) e origine corrispondente. */
-export const CLIENT_CREATION_MODES = ["new", "full"] as const;
-export type ClientCreationMode = (typeof CLIENT_CREATION_MODES)[number];
-export const ORIGIN_BY_CREATION_MODE: Record<ClientCreationMode, ClientOrigin> =
-  {
-    new: "new",
-    full: "imported",
-  };
+/**
+ * Fase scelta alla creazione e all'import (A-04, A-05). Il database la ricava
+ * dall'origine (trigger guard_client) e attivate_client la conferma, quindi
+ * la scelta si salva come origine: In percorso = 'imported', Onboarding = 'new'.
+ */
+export const CREATION_STAGES = ["in_progress", "onboarding"] as const;
+export type CreationStage = (typeof CREATION_STAGES)[number];
+export const ORIGIN_BY_CREATION_STAGE: Record<CreationStage, ClientOrigin> = {
+  in_progress: "imported",
+  onboarding: "new",
+};
 
 /** Nomi dei parametri dell'URL dell'elenco clienti (filtri e ricerca condivisibili). */
 export const CLIENT_LIST_PARAMS = {
   status: "stato",
   stage: "fase",
   query: "q",
+  page: "pagina",
 } as const;
+/** Clienti per pagina nell'elenco dello staff. */
+export const CLIENTS_PAGE_SIZE = 20;
 export const CLIENT_SEARCH_MAX_LENGTH = 100;
 /** Cifre minime perché la ricerca consideri anche il cellulare. */
 export const PHONE_SEARCH_MIN_DIGITS = 3;
@@ -181,6 +207,8 @@ export const DEFAULT_PHONE_COUNTRY = "IT";
 /** Import da CSV (A-05): limiti validati nel browser e sul server. */
 export const CSV_MAX_ROWS = 1000;
 export const CSV_MAX_BYTES = 1024 * 1024;
+/** Righe per pagina nell'anteprima dell'import. */
+export const CSV_PREVIEW_PAGE_SIZE = 20;
 
 /** Motivi per cui una riga del CSV viene scartata. */
 export const CSV_DISCARD_REASONS = [
@@ -271,7 +299,12 @@ export const CLIENT_FILE_ROUTES: Record<FileCategory, string> = {
 };
 
 /** Parametro dell'URL del filtro per categoria nella scheda File. */
-export const FILE_LIST_PARAMS = { category: "categoria" } as const;
+export const FILE_LIST_PARAMS = {
+  category: "categoria",
+  page: "pagina",
+} as const;
+/** File per pagina: scheda File dello staff e archivio del cliente. */
+export const FILES_PAGE_SIZE = 10;
 
 /** Percorso in Storage: {studio_id}/{client_id}/{file_id}.pdf, costruito solo sul server. */
 export function clientFilePath(
@@ -286,9 +319,14 @@ export function clientFilePath(
 export function clientFilesUrl(
   clientId: string,
   category: FileCategory | null = null,
+  page = 1,
 ): string {
+  const params = new URLSearchParams();
+  if (category) params.set(FILE_LIST_PARAMS.category, category);
+  if (page > 1) params.set(FILE_LIST_PARAMS.page, String(page));
+  const search = params.toString();
   const path = clientDetailPath(clientId, "file");
-  return category ? `${path}?${FILE_LIST_PARAMS.category}=${category}` : path;
+  return search ? `${path}?${search}` : path;
 }
 
 /*
@@ -333,8 +371,10 @@ export const DUE_SOON_DAYS = 3;
 /** Cifre decimali dei valori delle circonferenze (precisione del metro). */
 export const MEASURE_DECIMALS = 1;
 export const TRACKING_NOTE_MAX = 500;
-/** Righe mostrate nello storico di una misura (il grafico le usa tutte). */
-export const HISTORY_LIMIT = 60;
+/** Righe per pagina nello storico di una misura (il grafico le usa tutte). */
+export const HISTORY_PAGE_SIZE = 10;
+/** Cambi di fase per pagina nella scheda Profilo (ST-04). */
+export const STAGE_HISTORY_PAGE_SIZE = 10;
 /** Finestra delle statistiche recenti degli allenamenti (schermata A11). */
 export const WORKOUT_RECENT_DAYS = 30;
 
@@ -429,9 +469,9 @@ export const SERVICE_WORKER_SCOPE = "/app";
 /** Pagina mostrata dal service worker senza rete: statica, senza dati. */
 export const OFFLINE_PAGE_URL = "/offline.html";
 
-<<<<<<< Updated upstream
+
 /** Icona delle notifiche: quella della PWA, con il branding dello studio del dominio. */
-=======
+
 /** Endpoint del promemoria serale, chiamato ogni ora da pg_cron (stesso segreto del cron). */
 export const INTERNAL_API_PATH = "/api/internal";
 export const DAILY_CHECKIN_CRON_PATH = `${INTERNAL_API_PATH}/notifications/daily-checkin`;
@@ -450,12 +490,24 @@ export const NOTIFICATION_TYPES = [
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
 /** Icona grande delle notifiche: quella della PWA, generata dal logo dello studio. */
->>>>>>> Stashed changes
+
 export const NOTIFICATION_ICON_URL = "/icon/192";
-/** Pagina aperta dal tocco sulla notifica. */
-export const NOTIFICATION_TARGET_URL = ROUTES.client.home;
+/** Badge monocromatici per Android (`pnpm notifications:badges`); iOS li ignora. */
+export const NOTIFICATION_BADGES_PATH = "/notification-badges";
 /** Per quanto il servizio push conserva una notifica se il telefono è spento. */
-export const PUSH_TTL_SECONDS = 72 * 60 * 60;
+export const PUSH_TTL_FILE_SECONDS = 24 * 60 * 60;
+/** Il promemoria delle 20 dopo le 22 non serve più. */
+export const PUSH_TTL_CHECKIN_SECONDS = 2 * 60 * 60;
+/** Fallimenti consecutivi dopo cui una sottoscrizione si elimina. */
+export const PUSH_MAX_CONSECUTIVE_FAILURES = 5;
+/** Ora locale (fuso dello studio) del promemoria serale. */
+export const DAILY_REMINDER_HOUR = 20;
+/** Fuso di uno studio senza indicazione diversa. */
+export const DEFAULT_STUDIO_TIMEZONE = "Europe/Rome";
+/** Clienti elaborati in parallelo dal promemoria serale. */
+export const DAILY_REMINDER_CONCURRENCY = 5;
+/** Righe del registro delle notifiche conservate per 90 giorni. */
+export const NOTIFICATION_LOG_RETENTION_DAYS = 90;
 
 /**
  * Servizi push a cui il server accetta di inviare (gli endpoint arrivano dal

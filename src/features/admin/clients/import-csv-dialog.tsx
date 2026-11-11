@@ -5,6 +5,7 @@ import { useId, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { FormMessage } from "@/components/shared/form-message";
+import { PagedList, usePagedItems } from "@/components/shared/paged-list";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,7 +17,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { redirectIfSignedOut } from "@/lib/auth/session-expired";
-import { CSV_MAX_BYTES } from "@/lib/constants/domain";
+import {
+  CREATION_STAGES,
+  CSV_MAX_BYTES,
+  CSV_PREVIEW_PAGE_SIZE,
+  type CreationStage,
+} from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import type { CleanResult } from "@/lib/csv/clean-clients";
 import { formatShortDate } from "@/lib/format";
@@ -28,6 +34,8 @@ import {
 } from "@/server/actions/clients.actions";
 
 const t = copy.admin.clients.import;
+
+const stageLabel = copy.domain.journeyStage;
 
 const STEPS = ["upload", "preview", "confirm"] as const;
 type Step = (typeof STEPS)[number];
@@ -56,8 +64,15 @@ function StepIndicator({ current }: { current: Step }) {
 }
 
 /** Anteprima: righe valide, righe con dati corretti e righe scartate con il motivo. */
-function ImportPreview({ result }: { result: CleanResult }) {
+function ImportPreview({
+  result,
+  stage,
+}: {
+  result: CleanResult;
+  stage: CreationStage;
+}) {
   const withWarnings = result.valid.filter((row) => row.warnings.length > 0);
+  const valid = usePagedItems(result.valid, CSV_PREVIEW_PAGE_SIZE);
   return (
     <div className="flex max-h-[50vh] flex-col gap-4 overflow-y-auto pr-1">
       <dl className="grid grid-cols-2 gap-3">
@@ -82,8 +97,10 @@ function ImportPreview({ result }: { result: CleanResult }) {
       {result.discarded.length > 0 ? (
         <section className="flex flex-col gap-2">
           <h3 className="text-sm font-semibold">{t.discardedTitle}</h3>
-          <ul className="flex flex-col divide-y divide-muted rounded-xl border text-sm">
-            {result.discarded.map((row) => (
+          <PagedList
+            pageSize={CSV_PREVIEW_PAGE_SIZE}
+            className="flex flex-col divide-y divide-muted rounded-xl border text-sm"
+            items={result.discarded.map((row) => (
               <li
                 key={row.line}
                 className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3.5 py-3"
@@ -100,15 +117,17 @@ function ImportPreview({ result }: { result: CleanResult }) {
                 </span>
               </li>
             ))}
-          </ul>
+          />
         </section>
       ) : null}
 
       {withWarnings.length > 0 ? (
         <section className="flex flex-col gap-2">
           <h3 className="text-sm font-semibold">{t.warningsTitle}</h3>
-          <ul className="flex flex-col divide-y divide-muted rounded-xl border text-sm">
-            {withWarnings.map((row) => (
+          <PagedList
+            pageSize={CSV_PREVIEW_PAGE_SIZE}
+            className="flex flex-col divide-y divide-muted rounded-xl border text-sm"
+            items={withWarnings.map((row) => (
               <li key={row.line} className="flex flex-wrap gap-x-3 px-3.5 py-3">
                 <span className="w-16 shrink-0 text-muted-foreground">
                   {t.columns.line} {row.line}
@@ -118,14 +137,16 @@ function ImportPreview({ result }: { result: CleanResult }) {
                 </span>
               </li>
             ))}
-          </ul>
+          />
         </section>
       ) : null}
 
       {result.valid.length > 0 ? (
         <section className="flex flex-col gap-2">
           <h3 className="text-sm font-semibold">{t.validTitle}</h3>
-          <p className="text-xs text-muted-foreground">{t.validHint}</p>
+          <p className="text-xs text-muted-foreground">
+            {t.validHint(stageLabel[stage])}
+          </p>
           <div className="overflow-x-auto rounded-xl border">
             <table className="w-full text-sm">
               <thead className="border-b bg-subtle text-left text-[12.5px] text-muted-foreground">
@@ -145,7 +166,7 @@ function ImportPreview({ result }: { result: CleanResult }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-muted">
-                {result.valid.map((row) => (
+                {valid.visible.map((row) => (
                   <tr key={row.line}>
                     <td className="px-3.5 py-3 text-muted-foreground">
                       {row.line}
@@ -167,6 +188,7 @@ function ImportPreview({ result }: { result: CleanResult }) {
               </tbody>
             </table>
           </div>
+          {valid.controls}
         </section>
       ) : (
         <FormMessage>{t.noValidRows}</FormMessage>
@@ -175,12 +197,55 @@ function ImportPreview({ result }: { result: CleanResult }) {
   );
 }
 
-/** Import da CSV (A-05, schermata A3): file, anteprima, conferma. */
+/** Fase per tutte le righe del file: In percorso o Onboarding. */
+function StagePicker({
+  value,
+  onChange,
+}: {
+  value: CreationStage;
+  onChange: (stage: CreationStage) => void;
+}) {
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="mb-1 text-[13px] font-semibold">{t.stageLabel}</legend>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {CREATION_STAGES.map((option) => (
+          <label
+            key={option}
+            className={cn(
+              "flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-line-strong bg-card px-3.5 py-2.5 text-sm font-semibold transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
+              value === option
+                ? "border-primary ring-3 ring-mint"
+                : "hover:bg-muted",
+            )}
+          >
+            <input
+              type="radio"
+              name="csv-import-stage"
+              value={option}
+              checked={value === option}
+              onChange={() => onChange(option)}
+              className="size-5 shrink-0 accent-(--primary)"
+            />
+            {stageLabel[option]}
+          </label>
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground">{t.stageHint}</p>
+    </fieldset>
+  );
+}
+
+/**
+ * Import da CSV (A-05, schermata A3): file e fase, anteprima, conferma. Gli
+ * inviti WhatsApp si mandano poi dalla riga di ogni cliente (N-01).
+ */
 export function ImportCsvDialog() {
   const fileId = useId();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("upload");
   const [file, setFile] = useState<{ name: string; text: string } | null>(null);
+  const [stage, setStage] = useState<CreationStage>("in_progress");
   const [result, setResult] = useState<CleanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -188,6 +253,7 @@ export function ImportCsvDialog() {
   const reset = () => {
     setStep("upload");
     setFile(null);
+    setStage("in_progress");
     setResult(null);
     setError(null);
   };
@@ -216,7 +282,7 @@ export function ImportCsvDialog() {
     if (!file) return;
     setError(null);
     startTransition(async () => {
-      const response = await previewImportAction({ csv: file.text });
+      const response = await previewImportAction({ csv: file.text, stage });
       if (redirectIfSignedOut(response)) return;
       if (!response.ok) {
         setError(response.error);
@@ -231,7 +297,7 @@ export function ImportCsvDialog() {
     if (!file) return;
     setError(null);
     startTransition(async () => {
-      const response = await confirmImportAction({ csv: file.text });
+      const response = await confirmImportAction({ csv: file.text, stage });
       if (redirectIfSignedOut(response)) return;
       if (!response.ok) {
         setError(response.error);
@@ -246,7 +312,7 @@ export function ImportCsvDialog() {
 
   return (
     <Dialog open={open} onOpenChange={changeOpen}>
-      <DialogTrigger render={<Button variant="outline" />}>
+      <DialogTrigger render={<Button variant="neutral" />}>
         <FileUp aria-hidden="true" />
         {copy.admin.clients.actions.importCsv}
       </DialogTrigger>
@@ -286,18 +352,21 @@ export function ImportCsvDialog() {
               </span>
             </div>
             <p className="text-xs text-muted-foreground">{t.limits}</p>
+            <div className="mt-3">
+              <StagePicker value={stage} onChange={setStage} />
+            </div>
           </div>
         ) : null}
 
         {step === "preview" && result ? (
-          <ImportPreview result={result} />
+          <ImportPreview result={result} stage={stage} />
         ) : null}
 
         {step === "confirm" && result ? (
           <p className="rounded-xl bg-primary-tint p-4 text-sm text-primary-ink">
             {t.summaryValid(validCount)}
             {" · "}
-            {t.validHint}
+            {t.validHint(stageLabel[stage])}
           </p>
         ) : null}
 

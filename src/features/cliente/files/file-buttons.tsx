@@ -1,7 +1,7 @@
 import { OpenFileButton } from "@/components/shared/open-file-button";
 import { copy } from "@/lib/copy/it";
 
-/** "Apri PDF" e "Scarica" di un file in evidenza (C-02, C-04), sulla card nel colore dello studio. */
+/** "Apri PDF" e "Scarica" di un file in evidenza (C-02, C-04), sulla card menta. */
 export function FileButtons({ id, title }: { id: string; title: string }) {
   return (
     <>
@@ -10,7 +10,7 @@ export function FileButtons({ id, title }: { id: string; title: string }) {
         title={title}
         mode="view"
         label={copy.files.open}
-        variant="inverse"
+        variant="default"
         icon="eye"
       />
       <OpenFileButton
@@ -18,7 +18,7 @@ export function FileButtons({ id, title }: { id: string; title: string }) {
         title={title}
         mode="download"
         label={copy.files.download}
-        variant="inverse-outline"
+        variant="mint-outline"
       />
     </>
   );

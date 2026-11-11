@@ -86,18 +86,6 @@ async function currentSubscription(): Promise<PushSubscription | null> {
   return (await registration?.pushManager?.getSubscription()) ?? null;
 }
 
-/**
- * Endpoint della sottoscrizione di questo browser, se esiste. L'uscita lo
- * invia al server, che elimina la sottoscrizione (fase 7).
- */
-export async function currentPushEndpoint(): Promise<string | null> {
-  try {
-    return (await currentSubscription())?.endpoint ?? null;
-  } catch {
-    return null;
-  }
-}
-
 function vapidPublicKey(): Uint8Array<ArrayBuffer> {
   const base64 = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
   const padded = (base64 + "=".repeat((4 - (base64.length % 4)) % 4))

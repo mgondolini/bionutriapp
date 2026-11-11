@@ -421,8 +421,7 @@ export type Database = {
           },
         ];
       };
-<<<<<<< Updated upstream
-=======
+
       notification_log: {
         Row: {
           client_id: string;
@@ -523,7 +522,6 @@ export type Database = {
         };
         Relationships: [];
       };
->>>>>>> Stashed changes
       privacy_consents: {
         Row: {
           accepted_at: string;
@@ -586,7 +584,10 @@ export type Database = {
           auth: string;
           created_at: string;
           endpoint: string;
+          failure_count: number;
           id: string;
+          last_failure_at: string | null;
+          last_success_at: string | null;
           p256dh: string;
           user_agent: string | null;
           user_id: string;
@@ -596,7 +597,10 @@ export type Database = {
           auth: string;
           created_at?: string;
           endpoint: string;
+          failure_count?: number;
           id?: string;
+          last_failure_at?: string | null;
+          last_success_at?: string | null;
           p256dh: string;
           user_agent?: string | null;
           user_id?: string;
@@ -605,7 +609,10 @@ export type Database = {
           auth?: string;
           created_at?: string;
           endpoint?: string;
+          failure_count?: number;
           id?: string;
+          last_failure_at?: string | null;
+          last_success_at?: string | null;
           p256dh?: string;
           user_agent?: string | null;
           user_id?: string;
@@ -663,6 +670,7 @@ export type Database = {
           name: string;
           primary_color: string;
           slug: string;
+          timezone: string;
           updated_at: string;
         };
         ComputedFields: never;
@@ -674,6 +682,7 @@ export type Database = {
           name: string;
           primary_color?: string;
           slug: string;
+          timezone?: string;
           updated_at?: string;
         };
         Update: {
@@ -684,6 +693,7 @@ export type Database = {
           name?: string;
           primary_color?: string;
           slug?: string;
+          timezone?: string;
           updated_at?: string;
         };
         Relationships: [];
@@ -1064,6 +1074,15 @@ export type Database = {
         Returns: string;
       };
       client_account_status: { Args: { p_client_id: string }; Returns: string };
+      daily_reminder_candidates: {
+        Args: { p_day: string; p_studio: string };
+        Returns: {
+          client_id: string;
+          habits_done: boolean;
+          user_id: string;
+          workout_done: boolean;
+        }[];
+      };
       get_studio_branding: {
         Args: { p_slug: string };
         Returns: {
@@ -1093,8 +1112,6 @@ export type Database = {
         Args: { p_older_than_days?: number };
         Returns: number;
       };
-<<<<<<< Updated upstream
-=======
       purge_notification_log: {
         Args: { p_older_than_days?: number };
         Returns: number;
@@ -1108,7 +1125,6 @@ export type Database = {
         Returns: number;
       };
       record_video_view: { Args: { p_video: string }; Returns: undefined };
->>>>>>> Stashed changes
       register_push_subscription: {
         Args: {
           p_auth: string;

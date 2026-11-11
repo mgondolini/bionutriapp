@@ -2,53 +2,154 @@ import "server-only";
 
 import { after } from "next/server";
 
+import { DAILY_REMINDER_CONCURRENCY } from "@/lib/constants/domain";
 import {
   buildNotification,
+  dedupeKey,
+  logPayload,
+  notificationTtl,
+  notificationType,
   type NotificationEvent,
-} from "@/lib/notifications/payload";
+} from "@/lib/notifications/catalog";
+import {
+  decideDailyReminder,
+  isReminderHour,
+  isValidTimeZone,
+  localDateTime,
+} from "@/lib/notifications/schedule";
+import * as notificationsRepository from "@/server/repositories/notifications.repository";
+import type {
+  FileRecipient,
+  NewLogEntry,
+  NotificationPreferences,
+} from "@/server/repositories/notifications.repository";
 import * as pushService from "@/server/services/push.service";
 
-export type { NotificationEvent } from "@/lib/notifications/payload";
-
 /*
- * Unico punto di invio delle notifiche ai clienti (N-06): chi pubblica un
- * file chiama solo notifyClient, così il canale (oggi Web Push, in futuro
- * anche l'email) cambia senza toccare il resto. Nessuna email nella 1.0 (N-08).
+ * Unico punto di invio delle notifiche ai clienti (N-06): i chiamanti
+ * conoscono solo notifyNewFile e sendDailyReminders, non il canale (oggi
+ * Web Push, in futuro anche l'email). Nessuna email nella 1.0 (N-08).
+ *
+ * Ogni notifica passa dal registro (notification_log) con una dedupe_key
+ * unica: la riga si crea PRIMA dell'invio e chi non riesce a crearla non
+ * invia, quindi conferme ripetute o due esecuzioni del cron non producono
+ * due notifiche. Nei log solo id, tipi e conteggi: mai dati del file o misure.
  */
 
-/**
- * Invia la notifica dopo la risposta all'utente (`after`): la pubblicazione
- * del file non aspetta il servizio push e non fallisce se l'invio fallisce.
- * Nei log solo id e tipo di evento: mai titoli, categorie o dati sulla salute.
- */
-export function notifyClient(clientId: string, event: NotificationEvent) {
-  after(() => deliver(clientId, event));
+export type SkipReason =
+  | "inactive"
+  | "journey_stage"
+  | "disabled_by_user"
+  | "no_devices"
+  | "already_completed";
+
+/** Destinatario di un file: account attivo, In percorso, avvisi non spenti. */
+export function fileSkipReason(recipient: FileRecipient): SkipReason | null {
+  if (recipient.accountStatus !== "active" || !recipient.userId) {
+    return "inactive";
+  }
+  if (recipient.journeyStage !== "in_progress") return "journey_stage";
+  if (!recipient.filesEnabled) return "disabled_by_user";
+  return null;
 }
 
-/** L'invio vero e proprio; non lancia mai. */
-export async function deliver(
-  clientId: string,
-  event: NotificationEvent,
-): Promise<void> {
+type QueuedNotification = {
+  logId: string;
+  clientId: string;
+  userId: string;
+  studioName: string;
+  event: NotificationEvent;
+};
+
+/** Invio di una notifica già nel registro e salvataggio dell'esito; non lancia mai. */
+async function deliverQueued(job: QueuedNotification): Promise<void> {
+  const type = notificationType(job.event);
   try {
-    const outcome = await pushService.sendToClient(clientId, (studio) =>
-      buildNotification(event, studio),
+    const outcome = await pushService.sendToUser(
+      job.userId,
+      buildNotification(job.event, { name: job.studioName }),
+      notificationTtl(job.event),
     );
-    if (outcome.status === "skipped" && outcome.reason === "not_configured") {
-      console.error("[notifiche] chiavi VAPID mancanti: push non inviata");
+    if (outcome.status === "skipped") {
+      if (outcome.reason === "not_configured") {
+        console.error("[notifiche] chiavi VAPID mancanti: push non inviata");
+        await notificationsRepository.completeLogEntry(job.logId, {
+          status: "failed",
+          error: "not_configured",
+        });
+        return;
+      }
+      await notificationsRepository.completeLogEntry(job.logId, {
+        status: "skipped",
+        skippedReason: outcome.reason,
+      });
       return;
     }
-    console.info("[notifiche]", { type: event.type, clientId, ...outcome });
+    await notificationsRepository.completeLogEntry(
+      job.logId,
+      outcome.status === "failed"
+        ? { status: "failed", error: `devices:${outcome.failed}` }
+        : { status: outcome.status },
+    );
+    console.info("[notifiche]", { type, clientId: job.clientId, ...outcome });
   } catch (error) {
     console.error("[notifiche] invio non riuscito", {
-      type: event.type,
-      clientId,
+      type,
+      clientId: job.clientId,
       error: error instanceof Error ? error.name : "unknown",
     });
   }
 }
-<<<<<<< Updated upstream
-=======
+
+/**
+ * Nuovo file pubblicato: l'invio parte dopo la risposta (`after`), così il
+ * caricamento non aspetta il servizio push e non fallisce mai per la notifica.
+ */
+export function notifyNewFile(fileId: string) {
+  after(() => deliverNewFile(fileId));
+}
+
+/** L'invio dell'avviso di un file; non lancia mai. */
+export async function deliverNewFile(fileId: string): Promise<void> {
+  try {
+    const recipient = await notificationsRepository.getFileRecipient(fileId);
+    if (!recipient) return;
+    const event: NotificationEvent = {
+      type: "file",
+      category: recipient.category,
+      fileId,
+    };
+    const skip = fileSkipReason(recipient);
+    const [entry] = await notificationsRepository.insertLogEntries([
+      {
+        studioId: recipient.studioId,
+        clientId: recipient.clientId,
+        userId: recipient.userId,
+        type: notificationType(event),
+        dedupeKey: dedupeKey(event, recipient.clientId),
+        payload: logPayload(event),
+        ...(skip
+          ? { status: "skipped", skippedReason: skip }
+          : { status: "queued" }),
+      },
+    ]);
+    // già nel registro (conferma ripetuta) o da saltare: niente invio
+    if (!entry || skip || !recipient.userId) return;
+    await deliverQueued({
+      logId: entry.id,
+      clientId: recipient.clientId,
+      userId: recipient.userId,
+      studioName: recipient.studioName,
+      event,
+    });
+  } catch (error) {
+    console.error("[notifiche] avviso del file non riuscito", {
+      fileId,
+      error: error instanceof Error ? error.name : "unknown",
+    });
+  }
+}
+
 
 /**
  * Nuovo file pubblicato: l'invio parte dopo la risposta (`after`), così il
@@ -289,4 +390,4 @@ export async function setOwnPreference(
     [key]: enabled,
   });
 }
->>>>>>> Stashed changes
+

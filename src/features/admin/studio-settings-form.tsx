@@ -1,26 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FileText, Upload } from "lucide-react";
-import {
-  useEffect,
-  useMemo,
-  useState,
-  useTransition,
-  type CSSProperties,
-} from "react";
+import { Upload } from "lucide-react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 import { StudioLogo } from "@/components/shared/studio-logo";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
@@ -31,10 +19,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { FormMessage } from "@/components/shared/form-message";
 import { redirectIfSignedOut } from "@/lib/auth/session-expired";
-import { formatRatio, isHexColor, pickForeground } from "@/lib/color";
-import { DEFAULT_PRIMARY_COLOR, LOGO_MIME_TYPES } from "@/lib/constants/domain";
+import {
+  LOGO_SOURCE_MAX_BYTES,
+  LOGO_SOURCE_MIME_TYPES,
+} from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import { isLogoSourceLargeEnough } from "@/lib/logo/crop";
 import { useHydrated } from "@/lib/use-hydrated";
+import {
+  LogoCropDialog,
+  type LogoSource,
+} from "@/features/admin/logo/logo-crop-dialog";
+import { imageSize, loadImage } from "@/features/admin/logo/render-logo";
 import { updateStudioSettingsAction } from "@/server/actions/studio.actions";
 import {
   studioSettingsSchema,
@@ -44,7 +40,7 @@ import {
 const t = copy.admin.settings;
 
 type StudioSettingsFormProps = {
-  initial: { name: string; primaryColor: string; logoUrl: string | null };
+  initial: { name: string; logoUrl: string | null };
 };
 
 /** Anteprima del logo scelto (URL temporaneo del file) o di quello attuale. */
@@ -60,54 +56,6 @@ function useLogoPreview(file: File | undefined, currentUrl: string | null) {
   return previewUrl ?? currentUrl;
 }
 
-/** Anteprima dell'app del cliente con nome, logo e colore scelti (A12). */
-function ClientPreview({
-  name,
-  logoUrl,
-  color,
-}: {
-  name: string;
-  logoUrl: string | null;
-  color: string;
-}) {
-  const foreground = pickForeground(color).color;
-  const style = {
-    "--primary": color,
-    "--primary-foreground": foreground,
-  } as CSSProperties;
-  return (
-    <div
-      style={style}
-      className="overflow-hidden rounded-2xl border bg-background"
-    >
-      <div className="flex items-center gap-3 bg-card px-4 py-3">
-        <StudioLogo name={name} logoUrl={logoUrl} size="sm" />
-        <div className="min-w-0">
-          <p className="truncate text-xs text-muted-foreground">{name}</p>
-          <p className="font-semibold">{t.previewGreeting}</p>
-        </div>
-      </div>
-      <div className="p-4">
-        <div className="flex flex-col gap-3 rounded-xl bg-card p-4">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="rounded-full bg-primary px-2 py-0.5 font-medium text-primary-foreground">
-              {t.previewBadge}
-            </span>
-            <span className="text-muted-foreground">
-              {copy.domain.fileCategory.diet}
-            </span>
-          </div>
-          <p className="font-semibold">{t.previewFileTitle}</p>
-          <span className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground">
-            <FileText aria-hidden="true" className="size-4" />
-            {t.previewButton}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function StudioSettingsForm({ initial }: StudioSettingsFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -116,26 +64,53 @@ export function StudioSettingsForm({ initial }: StudioSettingsFormProps) {
     resolver: zodResolver(studioSettingsSchema),
     defaultValues: {
       name: initial.name,
-      primaryColor: initial.primaryColor,
       logo: undefined,
     },
   });
 
-  const [name, primaryColor, logo] = useWatch({
+  const [name, logo] = useWatch({
     control: form.control,
-    name: ["name", "primaryColor", "logo"],
+    name: ["name", "logo"],
   });
-  const previewColor = isHexColor(primaryColor ?? "")
-    ? primaryColor
-    : DEFAULT_PRIMARY_COLOR;
-  const contrast = useMemo(() => pickForeground(previewColor), [previewColor]);
   const logoUrl = useLogoPreview(logo, initial.logoUrl);
+  const [cropSource, setCropSource] = useState<LogoSource | null>(null);
+
+  function closeCrop() {
+    if (cropSource) URL.revokeObjectURL(cropSource.url);
+    setCropSource(null);
+  }
+
+  /** Controlla l'immagine scelta e apre il ritaglio (il file non parte così com'è). */
+  async function chooseLogo(file: File) {
+    const v = t.validation;
+    const setLogoError = (message: string) =>
+      form.setError("logo", { message });
+    if (!(LOGO_SOURCE_MIME_TYPES as readonly string[]).includes(file.type)) {
+      return setLogoError(v.logoSourceType);
+    }
+    if (file.size > LOGO_SOURCE_MAX_BYTES) {
+      return setLogoError(v.logoSourceSize);
+    }
+    const url = URL.createObjectURL(file);
+    try {
+      const image = await loadImage(url);
+      const size = imageSize(image);
+      if (!isLogoSourceLargeEnough(size)) {
+        URL.revokeObjectURL(url);
+        return setLogoError(v.logoSourceSmall(size.width, size.height));
+      }
+      form.clearErrors("logo");
+      setCropSource({ url, image });
+    } catch {
+      URL.revokeObjectURL(url);
+      setLogoError(v.logoSourceType);
+    }
+  }
 
   const onSubmit = form.handleSubmit((values) => {
     setError(null);
     const formData = new FormData();
     formData.set("name", values.name);
-    formData.set("primaryColor", values.primaryColor);
     if (values.logo) formData.set("logo", values.logo);
 
     startTransition(async () => {
@@ -160,7 +135,7 @@ export function StudioSettingsForm({ initial }: StudioSettingsFormProps) {
   });
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <div className="max-w-2xl">
       <Card>
         <CardHeader>
           <CardTitle>
@@ -205,18 +180,25 @@ export function StudioSettingsForm({ initial }: StudioSettingsFormProps) {
                       <input
                         id="studio-logo"
                         type="file"
-                        accept={LOGO_MIME_TYPES.join(",")}
+                        accept={LOGO_SOURCE_MIME_TYPES.join(",")}
                         aria-invalid={fieldState.invalid}
                         aria-describedby="studio-logo-file"
                         onBlur={field.onBlur}
-                        onChange={(event) =>
-                          field.onChange(event.target.files?.[0])
-                        }
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          // stesso file scelto di nuovo: deve riaprire il ritaglio
+                          event.target.value = "";
+                          if (file) void chooseLogo(file);
+                        }}
                         className="peer sr-only"
                       />
                       <label
                         htmlFor="studio-logo"
-                        className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-lg border bg-card px-4 text-sm font-medium peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50 hover:bg-muted"
+                        className={buttonVariants({
+                          variant: "outline",
+                          className:
+                            "cursor-pointer peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50",
+                        })}
                       >
                         <Upload aria-hidden="true" className="size-4" />
                         {t.logoChange}
@@ -225,52 +207,21 @@ export function StudioSettingsForm({ initial }: StudioSettingsFormProps) {
                         id="studio-logo-file"
                         className="min-w-0 truncate text-sm text-muted-foreground"
                       >
-                        {logo?.name ?? t.logoNone}
+                        {logo ? t.logoReady : t.logoNone}
                       </span>
                     </div>
                     <FieldDescription>{t.logoHint}</FieldDescription>
                     <FieldError errors={[fieldState.error]} />
-                  </Field>
-                )}
-              />
-
-              <Controller
-                name="primaryColor"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="studio-color">
-                      {t.colorLabel}
-                    </FieldLabel>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="color"
-                        value={previewColor}
-                        onChange={(event) =>
-                          field.onChange(event.target.value.toUpperCase())
-                        }
-                        aria-label={t.colorLabel}
-                        className="size-11 shrink-0 cursor-pointer rounded-lg border bg-card p-1"
-                      />
-                      <Input
-                        {...field}
-                        id="studio-color"
-                        maxLength={7}
-                        spellCheck={false}
-                        aria-invalid={fieldState.invalid}
-                        className="max-w-36 font-mono uppercase"
-                      />
-                    </div>
-                    <FieldDescription>
-                      {t.contrast(
-                        formatRatio(contrast.ratio),
-                        contrast.tone === "light" ? t.textWhite : t.textDark,
-                      )}
-                    </FieldDescription>
-                    {contrast.meetsAA ? null : (
-                      <FormMessage>{t.contrastLow}</FormMessage>
-                    )}
-                    <FieldError errors={[fieldState.error]} />
+                    <LogoCropDialog
+                      key={cropSource?.url}
+                      source={cropSource}
+                      onCancel={closeCrop}
+                      onConfirm={(file) => {
+                        field.onChange(file);
+                        form.clearErrors("logo");
+                        closeCrop();
+                      }}
+                    />
                   </Field>
                 )}
               />
@@ -284,22 +235,6 @@ export function StudioSettingsForm({ initial }: StudioSettingsFormProps) {
               </Button>
             </FieldGroup>
           </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            <h2 className="text-lg font-semibold">{t.previewTitle}</h2>
-          </CardTitle>
-          <CardDescription>{t.previewDescription}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ClientPreview
-            name={name || initial.name}
-            logoUrl={logoUrl}
-            color={previewColor}
-          />
         </CardContent>
       </Card>
     </div>

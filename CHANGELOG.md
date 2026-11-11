@@ -6,6 +6,26 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Non rilasciato]
 
+### Aggiunto
+
+- Notifiche push per tipo: nuovo piano alimentare, scheda di allenamento o report, con il link diretto alla sezione e un badge per tipo su Android; promemoria serale alle 20 (fuso dello studio) se mancano le abitudini del giorno, con un richiamo all'allenamento se non ce n'è uno. Solo clienti attivi e In percorso. Nel profilo del cliente gli interruttori "Nuovi file" e "Promemoria serale". Registro delle notifiche con deduplicazione (nessun doppio invio) e conservazione di 90 giorni; sottoscrizioni eliminate dopo 5 fallimenti consecutivi.
+- Ritaglio del logo nelle Impostazioni studio: dopo la scelta dell'immagine (PNG, JPEG o WebP, almeno 512 px sul lato lungo) si apre un pannello con zoom, "Riempi" o "Adatta con margine" e anteprime di menu, icona Android e iPhone; viene salvato un PNG quadrato da 1024 px su fondo bianco, ricontrollato dal server.
+- Nella home del cliente "Da registrare" mostra sempre gli allenamenti in fondo (con la spunta se c'è una sessione oggi), senza contarli tra le misure da registrare.
+- Paginazione: elenco clienti del nutrizionista 20 per pagina e scheda File 10 per pagina (pagina nell'URL); storico delle misure, archivio dei file del cliente e storico delle fasi 10 per pagina, anteprima dell'import CSV 20 righe per pagina, con le frecce e senza ricaricare. Lo storico delle misure ora mostra tutte le registrazioni, non più solo le ultime 60.
+
+### Modificato
+
+- Area admin secondo `mockup-v2-admin`: menu laterale bianco con voce attiva su tinta e card utente con avatar; elenco clienti su fondo bianco con le pill di filtro (Tutti, In percorso, Onboarding, Invito scaduto) al posto dei due menu a tendina, tabella con intestazione su tinta e senza righe evidenziate, chip ridisegnate (categorie con un colore per tipo), "Nuovo cliente" e "Reinvia invito" in verde con il testo scuro, "Importa CSV" bianco con bordo, "Dettaglio" senza contorno.
+- Tracking del cliente riordinato per frequenza: card "Oggi" con check-in e allenamento affiancati, allenamenti subito sotto (quanti questa settimana, ultimo con "oggi", "ieri", "3 giorni fa", pulsante "Registra" sempre visibile), avviso compatto delle misure in ritardo, abitudini con la media della settimana nella riga, peso e circonferenze in fondo con un riepilogo ("5 su 7 registrate") e l'elenco completo a un tocco.
+- Colori allineati al mockup v2: errori dei form color mattone invece del rosso; alone menta su campi attivi e scelte selezionate; pillola dell'obiettivo del check-in neutra; icone scure sulle tile (banner notifiche, archivio Diete, file dello staff) e tile del profilo come le altre; nota dell'allenamento nella scheda Tracking e anteprima WhatsApp con i colori del mockup.
+- Home del cliente, "Da registrare": icone di misure e check-in su fondo pesca (richiede attenzione); gli allenamenti restano azzurri.
+- Obiettivi predefiniti delle abitudini: 10.000 passi, 8 ore di sonno e 2 L di acqua (prima 8.000 passi e 7 ore). Gli studi esistenti con i vecchi valori vengono aggiornati; gli obiettivi personali dei clienti non cambiano.
+- Abitudini giornaliere: icone su fondo lilla (righe del tracking, home, check-in e obiettivi nella scheda dello staff), così si distinguono dalle circonferenze; le spunte "fatto oggi" restano nel colore dello studio.
+- "Nuovo cliente": un solo form con i dati completi e la scelta della fase (In percorso o Onboarding); dopo la creazione il pannello propone subito "Invia invito su WhatsApp" per il link della password. Import CSV: la fase si sceglie per tutto il file (prima entravano sempre In percorso).
+- "Esci" non disattiva più le notifiche push del dispositivo: al nuovo accesso restano attive (prima andavano riattivate ogni volta). "Esci da tutti i dispositivi" continua a eliminarle tutte.
+- Impostazioni studio: solo nome e logo; il colore principale e l'anteprima non si modificano più dall'app.
+- Nuovo sistema colore (`docs/mockups/mockup-v2.html`): neutri salvia, menu laterale scuro nell'area del nutrizionista, menta derivata dal colore dello studio per file in evidenza, check-in e badge "In percorso"/"Nuovo", pesca solo per ciò che richiede attenzione, colori propri per le categorie Allenamento e Report, pulsanti secondari con il bordo nel colore dello studio. Colore predefinito `#1F7A5C`.
+
 ## [1.2.0] - 2026-11-03
 
 Nuova interfaccia per tutte le schermate, peso, spalle e altezza del cliente, attivazione più robusta e app installata con il marchio dello studio.

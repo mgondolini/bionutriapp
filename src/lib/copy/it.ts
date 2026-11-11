@@ -269,7 +269,7 @@ export const copy = {
     notifications: {
       title: "Notifiche",
       label: "Avvisi sul telefono",
-      description: "Ricevi una notifica quando arriva un nuovo file.",
+      description: "Nuovi file e promemoria serale del check-in.",
       status: {
         loading: "Controllo in corso…",
         active: "Attive su questo dispositivo.",
@@ -283,8 +283,6 @@ export const copy = {
       installLink: "Come installare l'app",
       saved: (enabled: boolean) =>
         enabled ? "Notifiche attivate." : "Notifiche disattivate.",
-<<<<<<< Updated upstream
-=======
       preferences: {
         title: "Cosa ricevere",
         hint: "Valgono per tutti i tuoi dispositivi.",
@@ -304,7 +302,7 @@ export const copy = {
         saved: "Preferenza salvata.",
         failed: "Non è stato possibile salvare la preferenza. Riprova.",
       },
->>>>>>> Stashed changes
+
     },
     install: {
       title: "App sul telefono",
@@ -545,11 +543,8 @@ export const copy = {
       noResultsDescription: "Prova a cambiare i filtri o la ricerca.",
       resetFilters: "Azzera filtri",
       toolbar: {
-        statusLabel: "Stato account",
-        stageLabel: "Fase del percorso",
-        allStatuses: "Tutti",
-        allStages: "Tutte",
-        option: (label: string, count: number) => `${label} (${count})`,
+        filterLabel: "Filtra i clienti",
+        all: "Tutti",
         searchLabel: "Cerca",
         searchPlaceholder: "Cerca per nome, email o telefono",
       },
@@ -566,7 +561,7 @@ export const copy = {
         noEntry: "Nessuna misura",
         lastEntryOn: (date: string) => `Registrata il ${date}`,
         footer: (count: number) =>
-          `${count} ${count === 1 ? "cliente" : "clienti"}. Le righe evidenziate sono clienti in Onboarding.`,
+          `${count} ${count === 1 ? "cliente" : "clienti"}.`,
       },
       actions: {
         newClient: "Nuovo cliente",
@@ -583,24 +578,26 @@ export const copy = {
           `Link creato per ${name}: invia il messaggio da WhatsApp.`,
         popupBlocked:
           "Il browser ha bloccato la finestra di WhatsApp: consenti i popup per questo sito e riprova.",
+        upscaled: (px: number) =>
+          `Il ritaglio è di soli ${px} px: l'icona dell'app potrebbe risultare sfocata. Riduci lo zoom o usa "Adatta con margine".`,
         failed: "Non è stato possibile creare l'invito. Riprova.",
         disabled:
           "Il cliente è disattivato: riattivalo prima di inviare un invito.",
       },
       create: {
         title: "Nuovo cliente",
-        description: "Scegli come inserire il cliente.",
-        modeLabel: "Modalità",
-        modes: {
-          new: {
-            label: "Nuovo cliente",
+        description:
+          "Inserisci i dati e scegli la fase. Poi gli mandi il link su WhatsApp per scegliere la password.",
+        stageLabel: "Fase",
+        stages: {
+          in_progress: {
+            label: "In percorso",
             description:
-              "Solo nome e cellulare: completerà i dati all'attivazione.",
+              "Cliente già seguito: all'attivazione verificherà i dati.",
           },
-          full: {
-            label: "Con dati completi",
-            description:
-              "Cliente già seguito: verificherà i dati all'attivazione.",
+          onboarding: {
+            label: "Onboarding",
+            description: "Cliente nuovo: all'attivazione completerà i dati.",
           },
         },
         firstName: "Nome",
@@ -616,6 +613,10 @@ export const copy = {
         submitting: "Creazione…",
         cancel: "Annulla",
         created: (name: string) => `Cliente ${name} creato.`,
+        createdTitle: (name: string) => `${name} è nell'elenco`,
+        createdHint:
+          "Mandagli il link su WhatsApp: con il link sceglie la password e attiva l'account. Puoi farlo anche più tardi dalla riga del cliente.",
+        addAnother: "Aggiungi un altro cliente",
         duplicatePhone:
           "Esiste già un cliente con questo cellulare nello studio.",
         duplicateEmail: "Esiste già un cliente con questa email nello studio.",
@@ -641,7 +642,10 @@ export const copy = {
         summaryValidLabel: "clienti pronti da importare",
         summaryDiscardedLabel: "righe scartate",
         validTitle: "Clienti da importare",
-        validHint: "Entreranno con fase In percorso e stato Da invitare.",
+        validHint: (stage: string) =>
+          `Entreranno con fase ${stage} e stato Da invitare. Gli inviti WhatsApp si mandano dalla riga di ogni cliente.`,
+        stageLabel: "Fase dei clienti importati",
+        stageHint: "Vale per tutte le righe del file.",
         discardedTitle: "Righe scartate",
         warningsTitle: "Dati corretti",
         columns: {
@@ -680,6 +684,7 @@ export const copy = {
       },
       validation: {
         firstNameRequired: "Inserisci il nome.",
+        stageRequired: "Scegli la fase del cliente.",
         lastNameRequired: "Inserisci il cognome.",
         nameTooLong: "Massimo 80 caratteri.",
         phoneRequired: "Inserisci il cellulare.",
@@ -969,8 +974,7 @@ export const copy = {
     },
     settings: {
       title: "Impostazioni studio",
-      description:
-        "Nome, logo e colore principale: li vedono i tuoi clienti nell'app.",
+      description: "Nome e logo: li vedono i tuoi clienti nell'app.",
       identityTitle: "Identità dello studio",
       nameLabel: "Nome dello studio",
       nameHint:
@@ -978,16 +982,34 @@ export const copy = {
       logoLabel: "Logo",
       logoChange: "Cambia logo",
       logoNone: "Nessun file selezionato",
+      logoReady: "Nuovo logo ritagliato: salva per applicarlo.",
       logoHint:
-        "Immagine quadrata PNG o JPEG, massimo 2 MB. È anche l'icona dell'app installata sul telefono.",
+        "Immagine PNG, JPEG o WebP di almeno 512 px di lato (meglio 1024): dopo averla scelta la ritagli in un quadrato. È anche l'icona dell'app installata sul telefono.",
+      crop: {
+        title: "Ritaglia il logo",
+        description:
+          "Sposta l'immagine e regola lo zoom: conta solo quello che resta nel quadrato.",
+        areaLabel:
+          "Area del ritaglio: trascina o usa le frecce per spostare l'immagine",
+        modeLabel: "Modalità",
+        fill: "Riempi",
+        fillHint: "Il quadrato è tutto immagine: per simboli e foto.",
+        fit: "Adatta con margine",
+        fitHint: "Il logo intero su fondo bianco: per le scritte lunghe.",
+        zoom: "Zoom",
+        previewTitle: "Come apparirà",
+        previewMenu: "Menu",
+        previewAndroid: "Android",
+        previewIphone: "iPhone",
+        confirm: "Usa questo ritaglio",
+        rendering: "Preparazione…",
+        cancel: "Annulla",
+        upscaled: (px: number) =>
+          `Il ritaglio è di soli ${px} px: l'icona dell'app potrebbe risultare sfocata. Riduci lo zoom o usa "Adatta con margine".`,
+        failed:
+          "Non è stato possibile preparare l'immagine: prova con un altro file.",
+      },
       colorLabel: "Colore principale",
-      colorHint: "Formato esadecimale, per esempio #2E6A4E.",
-      contrast: (ratio: string, textLabel: string) =>
-        `Contrasto con il testo ${textLabel}: ${ratio}:1. Il minimo per la leggibilità è 4,5:1 (WCAG AA).`,
-      contrastLow:
-        "Il contrasto è sotto il minimo consigliato: scegli un colore più scuro o più chiaro.",
-      textWhite: "bianco",
-      textDark: "scuro",
       submit: "Salva impostazioni",
       submitting: "Salvataggio…",
       saved: "Impostazioni salvate.",
@@ -1004,9 +1026,17 @@ export const copy = {
       validation: {
         nameRequired: "Inserisci il nome dello studio.",
         nameTooLong: "Il nome può avere al massimo 120 caratteri.",
-        colorInvalid: "Inserisci un colore nel formato #RRGGBB.",
-        logoType: "Il logo deve essere un'immagine PNG o JPEG.",
+        logoType: "Il logo deve essere un'immagine PNG.",
         logoSize: "Il logo può pesare al massimo 2 MB.",
+        logoSourceType: "Scegli un'immagine PNG, JPEG o WebP.",
+        logoSourceSize: "L'immagine può pesare al massimo 15 MB.",
+        logoSourceSmall: (width: number, height: number) =>
+          `L'immagine è di ${width} × ${height} px: serve almeno 512 px sul lato lungo, altrimenti l'icona dell'app risulterebbe sgranata.`,
+        logoPng: {
+          not_png: "Il logo deve essere un'immagine PNG.",
+          not_square: "Il logo deve essere quadrato: ritaglialo di nuovo.",
+          wrong_size: "Il logo deve misurare fra 512 e 1024 px di lato.",
+        },
       },
     },
   },
@@ -1118,6 +1148,46 @@ export const copy = {
         ctaEdit: "Modifica il check-in",
         date: (weekday: string, date: string) => `${weekday} ${date}`,
       },
+      /** Card "Oggi" in cima al Tracking: check-in e allenamento. */
+      today: {
+        title: "Oggi",
+        checkinTitle: "Check-in",
+        checkinDoneAria: "Check-in completato",
+        workoutTitle: "Allenamento",
+        workoutNone: "Non ancora registrato oggi.",
+        workoutDone: (score: string) => `Registrato oggi, voto ${score}.`,
+        workoutCta: "Registra allenamento",
+        workoutAnother: "Aggiungi un altro",
+      },
+      workouts: {
+        week: (count: number) =>
+          count === 0
+            ? "Nessuno questa settimana"
+            : `${count} questa settimana`,
+        last: (when: string, score: string) => `ultimo ${when} · ${score}`,
+        none: "Nessun allenamento registrato",
+        register: "Registra",
+        registerAria: "Registra un allenamento",
+        doneAria: "Allenamento registrato oggi",
+        pendingAria: "Nessun allenamento oggi",
+      },
+      habits: {
+        average: (value: string) => `Media settimana ${value}`,
+      },
+      circumferences: {
+        hint: "Una volta al mese",
+        progress: (recorded: number, total: number) =>
+          `${recorded} su ${total} registrate questo mese`,
+        missing: (names: string) => `mancano ${names}`,
+        missingMany: (count: number) => `ne mancano ${count}`,
+        showAll: "Mostra tutte",
+        hideAll: "Nascondi",
+      },
+      overdue: {
+        text: (count: number) =>
+          count === 1 ? "1 misura in ritardo" : `${count} misure in ritardo`,
+        cta: "Registra",
+      },
       checkin: {
         title: "Check-in",
         dayLabel: "Giorno del check-in",
@@ -1172,6 +1242,10 @@ export const copy = {
         today: "Oggi",
         lastValue: (value: string, date: string) => `Ultima ${value} · ${date}`,
         never: "Mai registrata",
+        workoutToday: (score: string) => `Registrato oggi · ${score}`,
+        workoutLast: (date: string, score: string) =>
+          `Ultimo ${date} · ${score}`,
+        workoutNone: "Registra la tua prima sessione",
         allDone: "Tutto registrato: ottimo lavoro!",
         cta: "Vai al tracking",
       },
@@ -1235,6 +1309,7 @@ export const copy = {
       never: "Da registrare",
     } satisfies Record<CircumferenceStatus, string>,
     recordedAria: "Registrata nel periodo corrente",
+    pendingAria: "Da compilare oggi",
     entries: (count: number) =>
       count === 1 ? "1 registrazione" : `${count} registrazioni`,
     sessions: (count: number) =>
@@ -1244,6 +1319,11 @@ export const copy = {
     filledDaysOfWeek: (count: number) =>
       count === 1 ? "1 giorno su 7" : `${count} giorni su 7`,
     lastOn: (date: string) => `ultima ${date}`,
+    relativeDay: {
+      today: "oggi",
+      yesterday: "ieri",
+      daysAgo: (days: number) => `${days} giorni fa`,
+    },
     lastWorkout: (date: string, score: string) => `ultimo ${date}, ${score}`,
     todayScore: (score: string) => `oggi ${score}`,
     todayMissing: "oggi da compilare",
@@ -1252,6 +1332,7 @@ export const copy = {
     weekAverage: (name: string) => `${name}, media della settimana`,
     delta: (delta: string) => `${delta} rispetto alla scorsa settimana`,
     deltaShort: (delta: string) => `${delta} rispetto alla scorsa`,
+    deltaShortSuffix: "rispetto alla scorsa",
     deltaZero: "uguale alla scorsa settimana",
     noWeekValues: "Nessun voto questa settimana",
     chartTitle: "Andamento",
@@ -1282,8 +1363,6 @@ export const copy = {
       diaryTitle: "Ultime sessioni",
       editHintShort: "correggi o elimina",
       daysTitle: "Ultimi giorni",
-      limited: (count: number) =>
-        `Sono mostrate le ultime ${count} registrazioni.`,
     },
     edit: {
       title: "Correggi la registrazione",
@@ -1380,6 +1459,13 @@ export const copy = {
         "Per questo giorno c'è già un voto: correggi quello esistente.",
     },
   },
+  pagination: {
+    label: "Paginazione",
+    summary: (from: number, to: number, total: number) =>
+      `${from}–${to} di ${total}`,
+    previous: "Pagina precedente",
+    next: "Pagina successiva",
+  },
   files: {
     open: "Apri PDF",
     openShort: "Apri",
@@ -1400,6 +1486,7 @@ export const copy = {
     notRead: "Non ancora letto",
     meta: (date: string, size: string) => `${date} · ${size}`,
     noteLabel: "Nota dello studio",
+    quotedNote: (note: string) => `“${note}”`,
     downloadFallback: "documento",
     uploadErrors: {
       not_pdf: "Puoi caricare solo file PDF.",
@@ -1565,10 +1652,9 @@ export const copy = {
     description: (studioName: string) => `L'area riservata di ${studioName}`,
   },
   // Testo delle notifiche push (N-05): generico, mai dati del file
+  /** Catalogo dei testi delle notifiche (N-05): mai dati del file o misure. */
   notifications: {
-<<<<<<< Updated upstream
     filePublished: "Hai un nuovo documento nella tua area riservata",
-=======
     body: {
       file_diet: "È disponibile il tuo nuovo piano alimentare.",
       file_workout: "È disponibile la tua nuova scheda di allenamento.",
@@ -1578,7 +1664,6 @@ export const copy = {
         "Com'è andata oggi? Un minuto per passi, sonno e acqua, e se ti sei allenato il voto dell'allenamento.",
       video: "Nuovo video disponibile.",
     },
->>>>>>> Stashed changes
   },
   push: {
     errors: {
@@ -1590,7 +1675,8 @@ export const copy = {
     banner: {
       ask: {
         title: "Attiva le notifiche",
-        description: "Ti avvisiamo quando arriva un nuovo file.",
+        description:
+          "Ti avvisiamo dei nuovi file e la sera ti ricordiamo il check-in.",
         action: "Attiva",
         pending: "Attivazione…",
       },

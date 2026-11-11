@@ -11,7 +11,7 @@ const SEEN_KEY = "launch-splash";
  * se il foglio di stile non è ancora arrivato. Cerchio al centro esatto come
  * quello di sistema, nome subito sotto.
  */
-const LAUNCH_SPLASH_STYLE = `.launch-splash{display:none}.launch-splash-on .launch-splash{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--background,#f5f6f2);transition:opacity ${FADE_MS}ms ease}.launch-splash-out .launch-splash{opacity:0}.launch-splash img{width:min(240px,60vw);height:auto;aspect-ratio:1;border-radius:9999px}.launch-splash p{position:absolute;left:16px;right:16px;top:calc(50% + min(120px,30vw) + 20px);margin:0;text-align:center;font-size:22px;font-weight:700;letter-spacing:-0.01em;color:var(--foreground,#18211d);font-family:var(--font-jakarta),system-ui,sans-serif}@media (prefers-reduced-motion:reduce){.launch-splash-on .launch-splash{transition:none}}`;
+const LAUNCH_SPLASH_STYLE = `.launch-splash{display:none}.launch-splash-on .launch-splash{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--background,#edf3ef);transition:opacity ${FADE_MS}ms ease}.launch-splash-out .launch-splash{opacity:0}.launch-splash img{width:min(240px,60vw);height:auto;aspect-ratio:1;border-radius:9999px}.launch-splash p{position:absolute;left:16px;right:16px;top:calc(50% + min(120px,30vw) + 20px);margin:0;text-align:center;font-size:22px;font-weight:700;letter-spacing:-0.01em;color:var(--foreground,#1f3a34);font-family:var(--font-jakarta),system-ui,sans-serif}@media (prefers-reduced-motion:reduce){.launch-splash-on .launch-splash{transition:none}}`;
 
 /*
  * Solo all'apertura dall'icona installata (display-mode standalone, nessun

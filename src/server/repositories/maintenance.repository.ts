@@ -48,8 +48,7 @@ export async function purgeExpiredInvites(days: number): Promise<number> {
   if (error) throw error;
   return data;
 }
-<<<<<<< Updated upstream
-=======
+
 
 /** Elimina le righe del registro delle notifiche più vecchie di `days` giorni. */
 export async function purgeNotificationLog(days: number): Promise<number> {
@@ -109,4 +108,4 @@ export async function saveVideoAvailability(
     .eq("id", video.id);
   if (error) throw error;
 }
->>>>>>> Stashed changes
+

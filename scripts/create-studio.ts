@@ -6,7 +6,7 @@
  * Uso:
  *   pnpm studio:create --name "Studio Verde" --slug studio-verde \
  *     --email titolare@example.com --first-name Elena --last-name Verdi [--title "Dott.ssa"] \
- *     [--color "#2E6A4E"] [--env .env.local]
+ *     [--color "#1F7A5C"] [--timezone Europe/Rome] [--env .env.local]
  *
  * Stampa il link con cui il titolare sceglie la propria password (valido un'ora).
  * Lo script è uno strumento separato dall'app: non passa dai repository, che
@@ -18,6 +18,7 @@ import { parseArgs } from "node:util";
 import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "../src/types/database";
+import { isValidTimeZone } from "../src/lib/notifications/schedule";
 
 const SLUG = /^[a-z0-9-]{3,50}$/;
 const HEX_COLOR = /^#[0-9A-Fa-f]{6}$/;
@@ -36,6 +37,7 @@ const { values } = parseArgs({
     "last-name": { type: "string" },
     title: { type: "string" },
     color: { type: "string" },
+    timezone: { type: "string" },
     env: { type: "string", default: ".env.local" },
   },
 });
@@ -49,6 +51,8 @@ const firstName = values["first-name"]?.trim();
 const lastName = values["last-name"]?.trim() || null;
 const title = values.title?.trim() || null;
 const color = values.color?.trim().toUpperCase();
+// fuso del promemoria serale delle 20 (default del database: Europe/Rome)
+const timezone = values.timezone?.trim();
 
 if (!name || !slug || !email || !firstName) {
   fail(
@@ -59,6 +63,8 @@ if (!SLUG.test(slug))
   fail("lo slug deve avere 3-50 caratteri tra minuscole, cifre e trattini");
 if (color && !HEX_COLOR.test(color))
   fail("il colore deve essere nel formato #RRGGBB");
+if (timezone && !isValidTimeZone(timezone))
+  fail("il fuso deve essere un nome IANA, per esempio Europe/Rome");
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const secretKey = process.env.SUPABASE_SECRET_KEY;
@@ -99,6 +105,7 @@ async function main() {
       name: name!,
       slug: slug!,
       ...(color ? { primary_color: color } : {}),
+      ...(timezone ? { timezone } : {}),
     })
     .select("id")
     .single();
@@ -138,7 +145,9 @@ async function main() {
     type: "recovery",
   });
   console.log(`Studio "${name}" creato (slug: ${slug}, id: ${studio.id}).`);
-  console.log(`Titolare: ${[title, firstName, lastName].filter(Boolean).join(" ")} <${email}>`);
+  console.log(
+    `Titolare: ${[title, firstName, lastName].filter(Boolean).join(" ")} <${email}>`,
+  );
   console.log("Link per scegliere la password (valido un'ora):");
   console.log(`${appUrl}/nuova-password?${params.toString()}`);
 }

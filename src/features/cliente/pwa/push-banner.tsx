@@ -50,7 +50,7 @@ export function PushBanner({
         state === "denied" ? "items-start" : "items-center",
       )}
     >
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-tint text-primary-ink">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-tint text-secondary-foreground">
         <Icon aria-hidden="true" className="size-5" />
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -65,7 +65,12 @@ export function PushBanner({
         ) : null}
       </div>
       {state === "ask" ? (
-        <Button onClick={enable} disabled={isPending} className="shrink-0">
+        <Button
+          variant="outline"
+          onClick={enable}
+          disabled={isPending}
+          className="shrink-0"
+        >
           {isPending ? t.ask.pending : t.ask.action}
         </Button>
       ) : null}
@@ -73,6 +78,7 @@ export function PushBanner({
         <Button
           nativeButton={false}
           render={<Link href={ROUTES.client.install} />}
+          variant="outline"
           className="shrink-0"
         >
           {t.install.action}

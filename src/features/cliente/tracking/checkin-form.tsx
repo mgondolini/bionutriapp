@@ -111,7 +111,7 @@ export function CheckinForm({ checkin }: { checkin: Checkin }) {
             render={({ field }) => (
               <fieldset className="flex flex-col gap-3.5 rounded-2xl border bg-card p-[18px]">
                 <div className="flex items-center gap-3">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-info text-info-foreground">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-habit text-secondary-foreground">
                     <MetricIcon name={habit.icon} />
                   </span>
                   <legend className="text-[17px] font-bold">
@@ -124,7 +124,7 @@ export function CheckinForm({ checkin }: { checkin: Checkin }) {
                 >
                   {habit.instructions ?? habit.name}
                 </p>
-                <p className="flex items-center gap-1.5 self-start rounded-full bg-primary-tint px-2.5 py-1 text-[12.5px] font-semibold text-primary-ink">
+                <p className="flex items-center gap-1.5 self-start rounded-full bg-muted px-2.5 py-1 text-[12.5px] font-semibold text-secondary-foreground">
                   <Flag aria-hidden="true" className="size-3.5" />
                   {habit.goal
                     ? t.goal(

@@ -79,7 +79,7 @@ export function InviteCard({
           <figcaption className="text-xs font-medium text-muted-foreground">
             {t.previewTitle(formatPhone(client.phone))}
           </figcaption>
-          <blockquote className="max-w-[420px] rounded-[14px] border border-primary/20 bg-primary-tint px-3.5 py-3 text-[13.5px]">
+          <blockquote className="max-w-[420px] rounded-[14px] border border-mint bg-primary-tint px-3.5 py-3 text-[13.5px]">
             {copy.invites.whatsappMessage(studioName, t.previewLinkPlaceholder)}
           </blockquote>
           <span className="text-xs text-muted-foreground">{t.previewNote}</span>

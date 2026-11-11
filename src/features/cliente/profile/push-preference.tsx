@@ -2,6 +2,10 @@
 
 import { usePush } from "@/features/cliente/pwa/use-push";
 
+import {
+  NotificationPreferences,
+  type NotificationPreferencesValue,
+} from "./notification-preferences";
 import { NotificationsCard } from "./notifications-card";
 
 /**
@@ -12,8 +16,10 @@ import { NotificationsCard } from "./notifications-card";
  */
 export function PushPreference({
   registeredEndpoints,
+  preferences,
 }: {
   registeredEndpoints: readonly string[];
+  preferences: NotificationPreferencesValue;
 }) {
   const { state, device, enable, disable, isPending } =
     usePush(registeredEndpoints);
@@ -23,6 +29,8 @@ export function PushPreference({
       platform={device?.platform ?? null}
       pending={isPending}
       onChange={(enabled) => (enabled ? enable() : disable())}
-    />
+    >
+      <NotificationPreferences initial={preferences} />
+    </NotificationsCard>
   );
 }

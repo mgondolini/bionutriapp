@@ -21,7 +21,7 @@ import {
  */
 
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
-const SEED_COLOR = "#2E6A4E";
+const SEED_COLOR = "#1F7A5C";
 const COLORS = [
   { name: "colore del seed", hex: SEED_COLOR },
   { name: "colore scuro", hex: "#1F2A44" },
@@ -50,6 +50,8 @@ const ADMIN_PAGES = [
 const CLIENT_PAGES = [
   "/app",
   "/app/diete",
+  "/app/allenamenti",
+  "/app/report",
   "/app/tracking",
   "/app/tracking/check-in",
   "/app/tracking/water",
@@ -73,13 +75,20 @@ async function expectNoViolations(page: Page, path: string) {
 }
 
 /** Colore dello studio dalle impostazioni (come il titolare: invalida anche la cache del branding). */
+/**
+ * Il colore non si modifica dall'app: si scrive nel database e si salvano le
+ * impostazioni come il titolare, così la cache del branding si invalida.
+ */
 async function setStudioColor(page: Page, hex: string) {
+  const { error } = await adminClient()
+    .from("studios")
+    .update({ primary_color: hex })
+    .eq("id", "aaaaaaaa-1111-4000-8000-000000000000");
+  if (error) throw error;
   await page.goto("/admin/impostazioni");
-  const input = page.locator("#studio-color");
   await expect(
     page.getByRole("button", { name: "Salva impostazioni" }),
   ).toBeEnabled();
-  await input.fill(hex);
   await page.getByRole("button", { name: "Salva impostazioni" }).click();
   await expect(page.getByText("Impostazioni salvate.")).toBeVisible();
 }

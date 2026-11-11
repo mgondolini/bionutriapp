@@ -10,20 +10,24 @@ const buttonVariants = cva(
         default:
           "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
         outline:
-          "border-line-strong bg-card hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+          "border-primary bg-card text-primary-ink hover:bg-primary-tint aria-expanded:bg-primary-tint dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:
           "border-transparent bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+        /** Primario dell'area admin: verde azione con testo Profondo, Profondo al passaggio. */
+        action:
+          "border-[1.5px] border-action bg-action text-foreground hover:border-foreground hover:bg-foreground hover:text-white aria-expanded:bg-foreground aria-expanded:text-white",
+        /** Secondario dell'area admin: bianco, bordo campo, tinta al passaggio. */
+        neutral:
+          "border-[1.5px] border-admin-field bg-card text-foreground hover:bg-wash aria-expanded:bg-wash",
         ghost:
           "border-transparent hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
         destructive:
           "border-transparent bg-warning-foreground text-white hover:bg-warning-foreground/90 focus-visible:ring-warning-foreground/30",
         "destructive-outline":
           "border-warning-foreground bg-card text-warning-foreground hover:bg-warning focus-visible:ring-warning-foreground/30",
-        /** Su una superficie del colore dello studio (file in corso, C5/C7). */
-        inverse:
-          "border-transparent bg-primary-foreground text-primary hover:bg-primary-foreground/90",
-        "inverse-outline":
-          "border-primary-foreground/60 bg-transparent text-primary-foreground hover:bg-primary-foreground/10",
+        /** Secondario sulle superfici menta (file in corso, check-in: C5/C7/C8). */
+        "mint-outline":
+          "border-mint-foreground bg-transparent text-mint-foreground hover:bg-white/40",
         link: "border-transparent text-primary-ink underline-offset-4 hover:underline",
       },
       size: {

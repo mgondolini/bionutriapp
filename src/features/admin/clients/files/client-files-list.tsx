@@ -5,6 +5,7 @@ import { CategoryTag } from "@/components/shared/category-tag";
 import { EmptyState } from "@/components/shared/empty-state";
 import { FileBadgeLabel, FileCard } from "@/components/shared/file-card";
 import { OpenFileButton } from "@/components/shared/open-file-button";
+import { Pagination } from "@/components/shared/pagination";
 import {
   Table,
   TableBody,
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/table";
 import {
   FILE_CATEGORIES,
+  FILES_PAGE_SIZE,
   clientFilesUrl,
   type FileCategory,
 } from "@/lib/constants/domain";
@@ -27,6 +29,7 @@ import {
   formatNumericDate,
   formatShortDate,
 } from "@/lib/format";
+import { paginate } from "@/lib/pagination";
 import { cn } from "@/lib/utils";
 import type { StaffFileItem } from "@/server/services/files.service";
 
@@ -95,6 +98,8 @@ type ClientFilesListProps = {
   clientName: string;
   files: StaffFileItem[];
   category: FileCategory | null;
+  /** Pagina richiesta dall'URL (`?pagina=`), riportata nell'intervallo. */
+  page: number;
 };
 
 /** File pubblicati (A-10, schermata A7): filtro per categoria, stato di lettura, apertura ed eliminazione. */
@@ -103,9 +108,14 @@ export function ClientFilesList({
   clientName,
   files,
   category,
+  page: requested,
 }: ClientFilesListProps) {
   const counts = countByCategory(files);
-  const visible = filterByCategory(files, category);
+  const { items: visible, ...page } = paginate(
+    filterByCategory(files, category),
+    requested,
+    FILES_PAGE_SIZE,
+  );
   const filters: { key: FileCategory | null; label: string; count: number }[] =
     [
       { key: null, label: t.all, count: counts.all },
@@ -191,7 +201,7 @@ export function ClientFilesList({
                 <TableRow key={file.id}>
                   <TableCell className="max-w-80 whitespace-normal">
                     <div className="flex items-center gap-3">
-                      <span className="flex size-[34px] shrink-0 items-center justify-center rounded-[10px] bg-primary-tint text-primary-ink">
+                      <span className="flex size-[34px] shrink-0 items-center justify-center rounded-[10px] bg-primary-tint text-secondary-foreground">
                         <FileText aria-hidden="true" className="size-4" />
                       </span>
                       <span className="flex-1 font-semibold">{file.title}</span>
@@ -240,6 +250,21 @@ export function ClientFilesList({
               </li>
             ))}
           </ul>
+
+          <Pagination
+            className="border-t px-4 py-3 sm:px-6"
+            page={page}
+            previous={
+              page.page > 1
+                ? { href: clientFilesUrl(clientId, category, page.page - 1) }
+                : null
+            }
+            next={
+              page.page < page.pageCount
+                ? { href: clientFilesUrl(clientId, category, page.page + 1) }
+                : null
+            }
+          />
         </>
       )}
     </section>

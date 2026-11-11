@@ -19,9 +19,9 @@ const badgeVariants = cva(
   {
     variants: {
       badge: {
-        new: "bg-primary text-primary-foreground",
+        new: "bg-mint text-mint-foreground",
         current: "bg-primary-tint text-primary-ink",
-        toRead: "bg-warning text-warning-foreground",
+        toRead: "bg-mint text-mint-foreground",
       } satisfies Record<FileBadge, string>,
     },
   },
@@ -44,9 +44,9 @@ export function FileBadgeLabel({
 const cardVariants = cva("flex text-card-foreground", {
   variants: {
     variant: {
-      /** File in evidenza nel colore dello studio: home (C5) e file in corso (C7). */
+      /** File in evidenza sulla menta: home (C5) e file in corso (C7). */
       featured:
-        "flex-col gap-3 rounded-[18px] bg-primary p-5 text-primary-foreground",
+        "flex-col gap-3 rounded-[18px] bg-mint p-5 text-mint-foreground",
       /** Riga compatta: archivio (C7, in un elenco raggruppato) e scheda File su schermi stretti. */
       row: "min-h-16 flex-wrap items-center gap-3 bg-card px-4 py-3",
     },
@@ -82,7 +82,7 @@ export function FileCard({
   if (variant === "row") {
     return (
       <article className={cn(cardVariants({ variant }), className)}>
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-tint text-primary-ink">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-tint text-secondary-foreground">
           <FileText aria-hidden="true" className="size-5" />
         </span>
         <div className="flex min-w-40 flex-1 flex-col gap-0.5">
@@ -110,7 +110,7 @@ export function FileCard({
       <div className="flex flex-wrap items-center justify-between gap-2 text-[12.5px]">
         <span className="flex flex-wrap items-center gap-2 font-bold">
           {badge ? (
-            <span className="rounded-full bg-primary-deep px-2.5 py-1 leading-none">
+            <span className="rounded-full bg-mint-foreground px-2.5 py-1 leading-none text-mint">
               {BADGE_LABELS[badge]}
             </span>
           ) : null}
@@ -124,7 +124,7 @@ export function FileCard({
       {note ? (
         <blockquote
           aria-label={copy.files.noteLabel}
-          className="rounded-xl bg-primary-deep px-3.5 py-3 text-sm leading-normal whitespace-pre-line"
+          className="rounded-xl bg-white/60 px-3.5 py-3 text-sm leading-normal whitespace-pre-line"
         >
           {note}
         </blockquote>

@@ -6,16 +6,21 @@ import { initialsOf } from "@/lib/studio/branding";
 import { cn } from "@/lib/utils";
 
 const logoVariants = cva(
-  "flex shrink-0 items-center justify-center overflow-hidden bg-primary font-bold text-primary-foreground",
+  "flex shrink-0 items-center justify-center overflow-hidden font-bold",
   {
     variants: {
+      /** Fondo delle iniziali: il primario, oppure la menta sul menu laterale scuro. */
+      tone: {
+        primary: "bg-primary text-primary-foreground",
+        mint: "bg-mint text-mint-foreground",
+      },
       size: {
         sm: "size-9 rounded-[10px] text-sm",
         md: "size-11 rounded-xl text-base",
         lg: "size-16 rounded-2xl text-xl",
       },
     },
-    defaultVariants: { size: "md" },
+    defaultVariants: { size: "md", tone: "primary" },
   },
 );
 
@@ -27,17 +32,22 @@ type StudioLogoProps = {
   className?: string;
 } & VariantProps<typeof logoVariants>;
 
-/** Logo dello studio, oppure le sue iniziali sul colore principale. */
+/** Logo dello studio, oppure le sue iniziali sul colore principale (o sulla menta). */
 export function StudioLogo({
   name,
   logoUrl,
   size,
+  tone,
   className,
 }: StudioLogoProps) {
   const pixels = PIXELS[size ?? "md"];
   return (
     <span
-      className={cn(logoVariants({ size }), logoUrl && "bg-card", className)}
+      className={cn(
+        logoVariants({ size, tone }),
+        logoUrl && "bg-card",
+        className,
+      )}
     >
       {logoUrl ? (
         <Image

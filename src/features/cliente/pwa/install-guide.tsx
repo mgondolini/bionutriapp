@@ -27,9 +27,9 @@ const IOS_ICONS = [Share, SquarePlus, BellRing];
 const ANDROID_ICONS = [EllipsisVertical, Download, BellRing];
 /** Colori delle icone dei passaggi, come nel mockup C3. */
 const STEP_TONES = [
-  "bg-info text-info-foreground",
-  "bg-primary-tint text-primary-ink",
-  "bg-warning text-warning-foreground",
+  "bg-file-workout text-secondary-foreground",
+  "bg-primary-tint text-secondary-foreground",
+  "bg-warning text-secondary-foreground",
 ];
 
 function Steps({

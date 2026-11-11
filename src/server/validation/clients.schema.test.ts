@@ -7,43 +7,18 @@ import {
 } from "./clients.schema";
 
 describe("createClientSchema", () => {
-  it("'Nuovo cliente': solo nome e cellulare, cellulare in E.164", () => {
-    const parsed = createClientSchema.parse({
-      mode: "new",
-      firstName: "  Marco ",
-      phone: "333 123 4567",
-    });
-    expect(parsed).toEqual({
-      mode: "new",
-      firstName: "Marco",
-      phone: "+393331234567",
-    });
-  });
-
-  it("'Nuovo cliente' ignora i campi della modalità completa", () => {
-    const parsed = createClientSchema.parse({
-      mode: "new",
-      firstName: "Marco",
-      phone: "3331234567",
-      lastName: "Bianchi",
-      email: "m@x.it",
-    });
-    expect(parsed).not.toHaveProperty("lastName");
-    expect(parsed).not.toHaveProperty("email");
-  });
-
-  it("'Con dati completi': cognome obbligatorio, email in minuscolo, campi facoltativi vuoti = null", () => {
+  it("dati completi e fase: cellulare in E.164, email in minuscolo, facoltativi vuoti = null", () => {
     expect(
       createClientSchema.parse({
-        mode: "full",
-        firstName: "Anna",
+        stage: "in_progress",
+        firstName: " Anna ",
         lastName: "Rossi",
         phone: "+39 333 1234567",
         email: " Anna.Rossi@Example.IT ",
         birthDate: "1991-03-12",
       }),
     ).toEqual({
-      mode: "full",
+      stage: "in_progress",
       firstName: "Anna",
       lastName: "Rossi",
       phone: "+393331234567",
@@ -52,19 +27,19 @@ describe("createClientSchema", () => {
     });
     expect(
       createClientSchema.parse({
-        mode: "full",
-        firstName: "Anna",
-        lastName: "Rossi",
+        stage: "onboarding",
+        firstName: "Marco",
+        lastName: "Bianchi",
         phone: "3331234567",
         email: "",
         birthDate: "",
       }),
-    ).toMatchObject({ email: null, birthDate: null });
+    ).toMatchObject({ stage: "onboarding", email: null, birthDate: null });
   });
 
   it("segnala i campi non validi con messaggi in italiano", () => {
     const result = createClientSchema.safeParse({
-      mode: "full",
+      stage: "paused",
       firstName: "",
       lastName: "",
       phone: "123",
@@ -76,6 +51,7 @@ describe("createClientSchema", () => {
       result.error!.issues.map((i) => [i.path[0], i.message]),
     );
     expect(messages).toEqual({
+      stage: "Scegli la fase del cliente.",
       firstName: "Inserisci il nome.",
       lastName: "Inserisci il cognome.",
       phone: "Il numero di cellulare non è valido.",
@@ -83,30 +59,20 @@ describe("createClientSchema", () => {
       birthDate: "Data di nascita non valida.",
     });
   });
-
-  it("rifiuta una modalità sconosciuta", () => {
-    expect(
-      createClientSchema.safeParse({
-        mode: "altro",
-        firstName: "A",
-        phone: "3331234567",
-      }).success,
-    ).toBe(false);
-  });
 });
 
 describe("clientListParamsSchema", () => {
-  it("legge filtri e ricerca dall'URL e ignora i valori non validi", () => {
+  it("legge filtri, ricerca e pagina dall'URL e ignora i valori non validi", () => {
     expect(
       clientListParamsSchema.parse({
         stato: "active",
         fase: "onboarding",
         q: " 333 ",
+        pagina: "2",
       }),
     ).toEqual({
-      status: "active",
-      stage: "onboarding",
-      query: "333",
+      filters: { status: "active", stage: "onboarding", query: "333" },
+      page: 2,
     });
     expect(
       clientListParamsSchema.parse({
@@ -115,20 +81,36 @@ describe("clientListParamsSchema", () => {
         q: "",
       }),
     ).toEqual({
-      status: undefined,
-      stage: "paused",
-      query: undefined,
+      filters: { status: undefined, stage: "paused", query: undefined },
+      page: 1,
     });
+    for (const pagina of ["0", "-1", "abc", "1.5"]) {
+      expect(clientListParamsSchema.parse({ pagina }).page).toBe(1);
+    }
   });
 });
 
 describe("csvImportSchema", () => {
+  const stage = "in_progress";
+
   it("rifiuta testi oltre 1 MB", () => {
     expect(
-      csvImportSchema.safeParse({ csv: "a".repeat(1024 * 1024) }).success,
+      csvImportSchema.safeParse({ csv: "a".repeat(1024 * 1024), stage })
+        .success,
     ).toBe(true);
     expect(
-      csvImportSchema.safeParse({ csv: "a".repeat(1024 * 1024 + 1) }).success,
+      csvImportSchema.safeParse({ csv: "a".repeat(1024 * 1024 + 1), stage })
+        .success,
+    ).toBe(false);
+  });
+
+  it("richiede la fase In percorso o Onboarding per tutto il file", () => {
+    expect(
+      csvImportSchema.safeParse({ csv: "x", stage: "onboarding" }).success,
+    ).toBe(true);
+    expect(csvImportSchema.safeParse({ csv: "x" }).success).toBe(false);
+    expect(
+      csvImportSchema.safeParse({ csv: "x", stage: "paused" }).success,
     ).toBe(false);
   });
 });

@@ -85,11 +85,11 @@ vi.mock("@/server/repositories/files.repository", () => ({
 }));
 
 vi.mock("@/server/services/notifications.service", () => ({
-  notifyClient: vi.fn(),
+  notifyNewFile: vi.fn(),
 }));
 
 const filesRepository = await import("@/server/repositories/files.repository");
-const { notifyClient } =
+const { notifyNewFile } =
   await import("@/server/services/notifications.service");
 const service = await import("./files.service");
 
@@ -238,15 +238,13 @@ describe("caricamento", () => {
         studioId: STUDIO,
       }),
     );
-    expect(notifyClient).toHaveBeenCalledWith(CLIENT, {
-      type: "file_published",
-    });
+    expect(notifyNewFile).toHaveBeenCalledWith(NEW_ID);
   });
 
   it("senza 'Avvisa il cliente' nessuna notifica", async () => {
     db.objects.set(NEW_PATH, { size: 1000, head: "%PDF-1.4" });
     await service.confirmUpload(STUDIO, { ...input, notify: false });
-    expect(notifyClient).not.toHaveBeenCalled();
+    expect(notifyNewFile).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -271,7 +269,7 @@ describe("caricamento", () => {
       });
       expect(db.objects.has(NEW_PATH)).toBe(false);
       expect(filesRepository.insertFile).not.toHaveBeenCalled();
-      expect(notifyClient).not.toHaveBeenCalled();
+      expect(notifyNewFile).not.toHaveBeenCalled();
     },
   );
 
@@ -309,7 +307,7 @@ describe("caricamento", () => {
     });
     expect(result).toEqual({ ok: true });
     expect(db.objects.has(PATH)).toBe(true);
-    expect(notifyClient).not.toHaveBeenCalled();
+    expect(notifyNewFile).not.toHaveBeenCalled();
   });
 });
 

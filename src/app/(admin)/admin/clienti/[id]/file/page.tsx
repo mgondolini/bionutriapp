@@ -9,6 +9,7 @@ import { getStaffFiles } from "@/server/services/files.service";
 import { requireStaff } from "@/server/services/session.service";
 import { clientIdSchema } from "@/server/validation/clients.schema";
 import { fileCategoryParamSchema } from "@/server/validation/files.schema";
+import { pageParamSchema } from "@/server/validation/page.schema";
 
 /** Scheda File (A-08…A-11): caricamento ed elenco; lettura tramite service, modifiche con Server Actions. */
 async function FilesContent({
@@ -21,10 +22,12 @@ async function FilesContent({
   const data = await getStaffFiles(session.studio.id, parsed.data);
   if (!data) notFound();
 
-  const raw = (await searchParams)[FILE_LIST_PARAMS.category];
+  const query = await searchParams;
+  const raw = query[FILE_LIST_PARAMS.category];
   const category = fileCategoryParamSchema.parse(
     typeof raw === "string" ? raw : null,
   );
+  const page = pageParamSchema.parse(query[FILE_LIST_PARAMS.page]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -34,6 +37,7 @@ async function FilesContent({
         clientName={data.clientName}
         files={data.files}
         category={category}
+        page={page}
       />
     </div>
   );

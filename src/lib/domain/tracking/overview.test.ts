@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import {
   buildTrackingOverview,
   checkinStatus,
+  circumferenceProgress,
   effectiveGoal,
+  pendingCount,
   toRecord,
   type MetricConfig,
   type TrackingEntry,
@@ -155,9 +157,17 @@ describe("buildTrackingOverview", () => {
       items.map((item) =>
         item.kind === "checkin"
           ? `checkin:${item.missing.length}`
-          : `${item.item.metric.key}:${item.status}`,
+          : item.kind === "workout"
+            ? `${item.item.metric.key}:sempre`
+            : `${item.item.metric.key}:${item.status}`,
       ),
-    ).toEqual(["checkin:2", "circ_glutes:due_soon", "circ_navel:never"]);
+    ).toEqual([
+      "checkin:2",
+      "circ_glutes:due_soon",
+      "circ_navel:never",
+      "workouts:sempre",
+    ]);
+    expect(pendingCount(items)).toBe(3);
   });
 
   it("le circonferenze in ritardo vengono prima", () => {
@@ -178,7 +188,8 @@ describe("buildTrackingOverview", () => {
     );
     expect(
       items.map((item) => item.kind === "circumference" && item.status),
-    ).toEqual(["overdue", "due_soon"]);
+    ).toEqual(["overdue", "due_soon", false]);
+    expect(items.at(-1)?.kind).toBe("workout");
   });
 
   it("a parità di giorno conta l'ultima inserita", () => {
@@ -233,5 +244,49 @@ describe("registrazioni miste di cliente e staff (A-15)", () => {
 
   it("un allenamento dello staff dà la spunta di oggi", () => {
     expect(byKey.get("workouts")!.recordedInPeriod).toBe(true);
+  });
+});
+
+describe("circumferenceProgress", () => {
+  const build = (entries: TrackingEntry[]) =>
+    buildTrackingOverview({
+      metrics: METRICS,
+      goals: [],
+      entries,
+      today: TODAY,
+    });
+
+  it("conta le registrate nel periodo e separa le mancanti e quelle in ritardo", () => {
+    const progress = circumferenceProgress(
+      build([
+        entry("circ_waist", 80, "2026-10-10"),
+        entry("circ_navel", 90, "2026-08-01"),
+      ]),
+    );
+    expect(progress.total).toBe(3);
+    expect(progress.recorded).toBe(1);
+    expect(progress.missing.map((item) => item.metric.key)).toEqual([
+      "circ_navel",
+      "circ_glutes",
+    ]);
+    expect(progress.overdue.map((item) => item.metric.key)).toEqual([
+      "circ_navel",
+    ]);
+  });
+
+  it("tutte registrate: nessuna mancante", () => {
+    const progress = circumferenceProgress(
+      build([
+        entry("circ_waist", 80, "2026-10-10"),
+        entry("circ_navel", 90, "2026-10-01"),
+        entry("circ_glutes", 95, "2026-09-20"),
+      ]),
+    );
+    expect(progress).toMatchObject({
+      total: 3,
+      recorded: 3,
+      missing: [],
+      overdue: [],
+    });
   });
 });

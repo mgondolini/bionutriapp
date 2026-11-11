@@ -167,7 +167,7 @@ describe("getSession", () => {
     ]);
 
     await expect(loadSession()).resolves.toMatchObject({
-      studio: { id: null, primaryColor: "#2E6A4E" },
+      studio: { id: null, primaryColor: "#1F7A5C" },
     });
   });
 });

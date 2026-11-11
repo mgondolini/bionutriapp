@@ -4,6 +4,7 @@ import { Suspense } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
+import { Pagination } from "@/components/shared/pagination";
 import { PageLoading } from "@/components/shared/page-states";
 import { buttonVariants } from "@/components/ui/button";
 import { ClientsCards } from "@/features/admin/clients/clients-cards";
@@ -11,6 +12,7 @@ import { ClientsTable } from "@/features/admin/clients/clients-table";
 import { ClientsToolbar } from "@/features/admin/clients/clients-toolbar";
 import { ImportCsvDialog } from "@/features/admin/clients/import-csv-dialog";
 import { NewClientDialog } from "@/features/admin/clients/new-client-dialog";
+import { clientListUrl } from "@/lib/clients/list-url";
 import { ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { getClientList } from "@/server/services/clients.service";
@@ -24,10 +26,13 @@ async function ClientsList({
   searchParams,
 }: Pick<PageProps<"/admin/clienti">, "searchParams">) {
   const session = await requireStaff();
-  const filters = clientListParamsSchema.parse(await searchParams);
-  const { items, counts, total } = await getClientList(
+  const { filters, page: requested } = clientListParamsSchema.parse(
+    await searchParams,
+  );
+  const { items, page, quickCounts, total } = await getClientList(
     session.studio.id!,
     filters,
+    requested,
   );
 
   if (total === 0) {
@@ -42,7 +47,7 @@ async function ClientsList({
 
   return (
     <div className="flex flex-col gap-4">
-      <ClientsToolbar filters={filters} counts={counts} />
+      <ClientsToolbar filters={filters} counts={quickCounts} />
       {items.length === 0 ? (
         <EmptyState
           icon={SearchX}
@@ -61,6 +66,19 @@ async function ClientsList({
         <>
           <ClientsTable items={items} />
           <ClientsCards items={items} />
+          <Pagination
+            page={page}
+            previous={
+              page.page > 1
+                ? { href: clientListUrl(filters, page.page - 1) }
+                : null
+            }
+            next={
+              page.page < page.pageCount
+                ? { href: clientListUrl(filters, page.page + 1) }
+                : null
+            }
+          />
         </>
       )}
     </div>
@@ -72,7 +90,8 @@ export default function ClientsPage({
   searchParams,
 }: PageProps<"/admin/clienti">) {
   return (
-    <div className="flex flex-col gap-6">
+    // data-admin-page: sfondo della pagina dal token --admin-page (AdminFrame)
+    <div data-admin-page className="flex flex-col gap-6">
       <PageHeader
         title={t.title}
         description={t.description}

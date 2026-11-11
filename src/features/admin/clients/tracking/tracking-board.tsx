@@ -288,7 +288,7 @@ function WorkoutCard({ item, href, action }: CardProps<WorkoutOverview>) {
         chart={<MiniBars values={sessions} max={metric.maxValue} />}
         note={
           stats.last?.note ? (
-            <blockquote className="border-l-2 border-line-strong pl-3 text-[13px] whitespace-pre-line text-muted-foreground">
+            <blockquote className="border-l-3 border-primary-tint pl-3 text-[13px] whitespace-pre-line text-secondary-foreground">
               {stats.last.note}
             </blockquote>
           ) : null
@@ -429,7 +429,7 @@ function GoalsSection({
             key={key}
             className="flex items-center gap-3 rounded-xl bg-background px-3.5 py-3"
           >
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-card text-primary-ink">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-habit text-foreground">
               <MetricIcon name={icon} />
             </span>
             <div className="flex flex-col">

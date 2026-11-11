@@ -1,7 +1,9 @@
+import { STAGE_HISTORY_PAGE_SIZE } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { formatShortDateTime } from "@/lib/format";
 import type { StageHistoryItem } from "@/server/services/clients.service";
 
+import { PagedList } from "@/components/shared/paged-list";
 import { ProfileSection } from "@/components/shared/profile-section";
 
 const t = copy.admin.clients.profile.history;
@@ -14,8 +16,11 @@ export function StageHistory({ items }: { items: StageHistoryItem[] }) {
       {items.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t.empty}</p>
       ) : (
-        <ol className="flex flex-col">
-          {items.map((item) => {
+        <PagedList
+          as="ol"
+          pageSize={STAGE_HISTORY_PAGE_SIZE}
+          className="flex flex-col"
+          items={items.map((item) => {
             const author =
               item.source === "automatic"
                 ? t.automatic
@@ -39,7 +44,7 @@ export function StageHistory({ items }: { items: StageHistoryItem[] }) {
               </li>
             );
           })}
-        </ol>
+        />
       )}
     </ProfileSection>
   );

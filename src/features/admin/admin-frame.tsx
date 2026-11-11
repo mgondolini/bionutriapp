@@ -33,6 +33,7 @@ import {
 import { useSignOut } from "@/lib/auth/use-sign-out";
 import { ROUTES, type AdminNavKey } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import { initialsOf } from "@/lib/studio/branding";
 import { cn } from "@/lib/utils";
 
 export type AdminNavItem = { key: AdminNavKey; href: string; label: string };
@@ -57,6 +58,13 @@ function isActive(pathname: string, href: string) {
 const menuItemClassName =
   "flex min-h-11 cursor-default items-center gap-3 rounded-md px-2 py-1.5 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-highlighted:bg-accent";
 
+/** Iniziali del professionista senza il titolo: "Dott.ssa Elena Verdi" → "EV". */
+function userInitials(displayName: string): string {
+  return initialsOf(
+    ...displayName.split(/\s+/).filter((word) => !word.includes(".")),
+  );
+}
+
 /** Menu utente in fondo alla sidebar (A1): Profilo ed Esci. */
 function UserMenu({
   user,
@@ -68,19 +76,22 @@ function UserMenu({
   const { signOut, isPending } = useSignOut();
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex min-h-11 w-full items-center gap-3 rounded-xl bg-background p-3.5 text-left transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50">
+      <DropdownMenuTrigger className="flex min-h-11 w-full items-center gap-3 rounded-[14px] border border-admin-line bg-card p-3 text-left text-foreground transition-colors outline-none hover:bg-admin-hover focus-visible:ring-3 focus-visible:ring-ring/50 aria-expanded:bg-admin-hover">
+        <span
+          aria-hidden="true"
+          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-wash text-[13px] font-bold"
+        >
+          {userInitials(user.displayName)}
+        </span>
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="text-sm leading-snug font-bold">
+          <span className="text-sm leading-[18px] font-semibold">
             {user.displayName}
           </span>
-          <span className="text-[13px] text-muted-foreground">
+          <span className="text-xs font-medium text-admin-muted">
             {user.roleLabel}
           </span>
         </span>
-        <ChevronsUpDown
-          aria-hidden="true"
-          className="size-4 text-muted-foreground"
-        />
+        <ChevronsUpDown aria-hidden="true" className="size-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent side="top" align="start" className="w-56">
         <MenuPrimitive.LinkItem
@@ -112,10 +123,16 @@ function SidebarContent({
 }: Omit<AdminFrameProps, "children"> & { onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
-    <div className="flex h-full flex-col gap-7 px-5 py-7">
-      <div className="flex items-center gap-2.5">
-        <StudioLogo name={studio.name} logoUrl={studio.logoUrl} size="sm" />
-        <span className="text-[17px] leading-tight font-bold tracking-tight">
+    <div className="flex h-full flex-col gap-7 bg-sidebar px-4 py-6 text-sidebar-foreground">
+      <div className="flex items-center gap-3 px-2">
+        <StudioLogo
+          name={studio.name}
+          logoUrl={studio.logoUrl}
+          size="sm"
+          tone="mint"
+          className="size-10 rounded-xl text-[15px]"
+        />
+        <span className="text-[15px] leading-[19px] font-bold">
           {studio.name}
         </span>
       </div>
@@ -132,13 +149,13 @@ function SidebarContent({
                   onClick={onNavigate}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex min-h-11 items-center gap-2.5 rounded-[10px] px-3.5 py-2 text-[15px] leading-tight transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                    "flex min-h-11 items-center gap-3 rounded-[14px] px-3 py-2 text-sm leading-tight transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                     active
-                      ? "bg-primary-tint font-semibold text-primary-ink"
-                      : "text-secondary-foreground/85 hover:bg-sidebar-accent",
+                      ? "bg-wash font-bold"
+                      : "font-semibold hover:bg-sidebar-accent",
                   )}
                 >
-                  <Icon aria-hidden="true" className="size-[18px] shrink-0" />
+                  <Icon aria-hidden="true" className="size-5 shrink-0" />
                   {item.label}
                 </Link>
               </li>
@@ -163,14 +180,14 @@ export function AdminFrame({ studio, user, items, children }: AdminFrameProps) {
   return (
     <div className="flex min-h-full flex-1">
       <SkipLink />
-      <aside className="hidden w-[220px] shrink-0 border-r bg-sidebar lg:block">
+      <aside className="hidden w-[248px] shrink-0 border-r border-sidebar-border bg-sidebar lg:block">
         <div className="sticky top-0 h-dvh">
           <SidebarContent studio={studio} user={user} items={items} />
         </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center gap-3 border-b bg-sidebar px-4 py-2 lg:hidden">
+        <header className="flex items-center gap-3 border-b border-sidebar-border bg-sidebar px-4 py-2 text-sidebar-foreground lg:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger
               render={
@@ -178,12 +195,16 @@ export function AdminFrame({ studio, user, items, children }: AdminFrameProps) {
                   variant="ghost"
                   size="icon"
                   aria-label={copy.admin.openMenu}
+                  className="hover:bg-sidebar-accent hover:text-sidebar-foreground aria-expanded:bg-sidebar-accent aria-expanded:text-sidebar-foreground"
                 />
               }
             >
               <Menu aria-hidden="true" />
             </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-0">
+            <SheetContent
+              side="left"
+              className="w-72 border-0 bg-sidebar p-0 text-sidebar-foreground"
+            >
               <SheetTitle className="sr-only">{copy.admin.navLabel}</SheetTitle>
               <SidebarContent
                 studio={studio}
@@ -193,13 +214,18 @@ export function AdminFrame({ studio, user, items, children }: AdminFrameProps) {
               />
             </SheetContent>
           </Sheet>
-          <StudioLogo name={studio.name} logoUrl={studio.logoUrl} size="sm" />
+          <StudioLogo
+            name={studio.name}
+            logoUrl={studio.logoUrl}
+            size="sm"
+            tone="mint"
+          />
           <span className="truncate font-semibold">{studio.name}</span>
         </header>
 
         <main
           id={MAIN_CONTENT_ID}
-          className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:pt-8 lg:pb-12"
+          className="flex-1 px-4 py-6 has-[[data-admin-page]]:bg-admin-page sm:px-6 lg:px-10 lg:pt-8 lg:pb-12"
         >
           {children}
         </main>

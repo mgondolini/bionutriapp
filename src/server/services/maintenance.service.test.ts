@@ -12,8 +12,6 @@ vi.mock("@/server/repositories/maintenance.repository", () => ({
   listOrphanUploads: vi.fn(async () => [ORPHAN]),
   removeClientFileObjects: vi.fn(async (paths: string[]) => paths.length),
   purgeExpiredInvites: vi.fn(async () => 3),
-<<<<<<< Updated upstream
-=======
   purgeNotificationLog: vi.fn(async () => 7),
   listVideosToRecheck: vi.fn(async () => [
     { id: "v1", youtubeId: "aaaaaaaaaaa", unavailable: false },
@@ -38,7 +36,7 @@ vi.mock("@/server/repositories/youtube.repository", () => ({
       ? { status }
       : { status, title: null, authorName: null };
   }),
->>>>>>> Stashed changes
+  purgeNotificationLog: vi.fn(async () => 7),
 }));
 
 const repository = await import("@/server/repositories/maintenance.repository");
@@ -69,6 +67,7 @@ describe("runMaintenance", () => {
     expect(repository.listOrphanUploads).toHaveBeenCalledWith(24);
     expect(repository.removeClientFileObjects).toHaveBeenCalledWith([ORPHAN]);
     expect(repository.purgeExpiredInvites).toHaveBeenCalledWith(90);
+    expect(repository.purgeNotificationLog).toHaveBeenCalledWith(90);
   });
 
   it("ricontrolla i video: segna i non disponibili, ripristina gli altri, ignora gli errori di YouTube", async () => {

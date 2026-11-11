@@ -2,6 +2,7 @@ import "server-only";
 
 import {
   EXPIRED_INVITE_RETENTION_DAYS,
+  NOTIFICATION_LOG_RETENTION_DAYS,
   ORPHAN_UPLOAD_MAX_AGE_HOURS,
   VIDEO_RECHECK_CONCURRENCY,
   VIDEO_RECHECK_LIMIT,
@@ -10,28 +11,23 @@ import { oembedOutcome } from "@/lib/videos/youtube";
 import * as maintenanceRepository from "@/server/repositories/maintenance.repository";
 import * as youtubeRepository from "@/server/repositories/youtube.repository";
 
-<<<<<<< Updated upstream
-export type MaintenanceStep = "keepAlive" | "orphanUploads" | "expiredInvites";
-=======
+
 export type MaintenanceStep =
   | "keepAlive"
   | "orphanUploads"
   | "expiredInvites"
   | "notificationLog"
   | "videoAvailability";
->>>>>>> Stashed changes
+
 
 export type MaintenanceReport = {
   ok: boolean;
   durationMs: number;
   orphanUploadsRemoved: number;
   expiredInvitesDeleted: number;
-<<<<<<< Updated upstream
-=======
   notificationLogDeleted: number;
   videosChecked: number;
   videosUnavailable: number;
->>>>>>> Stashed changes
   failed: MaintenanceStep[];
 };
 
@@ -123,8 +119,7 @@ export async function runMaintenance(): Promise<MaintenanceReport> {
     0,
   );
 
-<<<<<<< Updated upstream
-=======
+
   const notificationLogDeleted = await step(
     "notificationLog",
     () =>
@@ -139,29 +134,25 @@ export async function runMaintenance(): Promise<MaintenanceReport> {
     unavailable: 0,
   });
 
->>>>>>> Stashed changes
   const report: MaintenanceReport = {
     ok: failed.length === 0,
     durationMs: Date.now() - started,
     orphanUploadsRemoved,
     expiredInvitesDeleted,
-<<<<<<< Updated upstream
-=======
-    notificationLogDeleted,
+        notificationLogDeleted,
     videosChecked: videos.checked,
     videosUnavailable: videos.unavailable,
->>>>>>> Stashed changes
+
     failed,
   };
   console.info(
     `[manutenzione] ${report.ok ? "completata" : "completata con errori"}: ` +
       `oggetti orfani eliminati ${orphanUploadsRemoved}, ` +
       `inviti scaduti eliminati ${expiredInvitesDeleted}, ` +
-<<<<<<< Updated upstream
-=======
+
       `notifiche eliminate dal registro ${notificationLogDeleted}, ` +
       `video controllati ${videos.checked} (non disponibili ${videos.unavailable}), ` +
->>>>>>> Stashed changes
+
       `durata ${report.durationMs} ms`,
   );
   return report;

@@ -66,39 +66,37 @@ export async function deleteAllOwnSubscriptions(userId: string) {
 
 export type PushTarget = { endpoint: string; p256dh: string; auth: string };
 
-export type ClientPushTargets = {
-  accountStatus: string;
-  studioName: string;
-  subscriptions: PushTarget[];
-};
-
-/** Stato, studio e dispositivi di un cliente (secret key: vedi sopra). */
-export async function getClientPushTargets(
-  clientId: string,
-): Promise<ClientPushTargets | null> {
+/** Dispositivi di un utente destinatario (secret key: vedi sopra). */
+export async function listSubscriptionsOfUser(
+  userId: string,
+): Promise<PushTarget[]> {
   const supabase = createAdminClient();
-  const { data: client, error } = await supabase
-    .from("clients")
-    .select("account_status, user_id, studios(name)")
-    .eq("id", clientId)
-    .maybeSingle();
+  const { data, error } = await supabase
+    .from("push_subscriptions")
+    .select("endpoint, p256dh, auth")
+    .eq("user_id", userId);
   if (error) throw error;
-  if (!client) return null;
+  return data;
+}
 
-  let subscriptions: PushTarget[] = [];
-  if (client.user_id) {
-    const { data, error: subError } = await supabase
-      .from("push_subscriptions")
-      .select("endpoint, p256dh, auth")
-      .eq("user_id", client.user_id);
-    if (subError) throw subError;
-    subscriptions = data;
-  }
-  return {
-    accountStatus: client.account_status,
-    studioName: client.studios.name,
-    subscriptions,
-  };
+/**
+ * Esito di un invio: azzera o incrementa i fallimenti consecutivi ed elimina
+ * le sottoscrizioni arrivate al limite. Restituisce quante ne ha eliminate.
+ */
+export async function recordPushResults(
+  succeeded: string[],
+  failed: string[],
+  maxFailures: number,
+): Promise<number> {
+  if (succeeded.length === 0 && failed.length === 0) return 0;
+  const supabase = createAdminClient();
+  const { data, error } = await supabase.rpc("record_push_results", {
+    p_succeeded: succeeded,
+    p_failed: failed,
+    p_max_failures: maxFailures,
+  });
+  if (error) throw error;
+  return data;
 }
 
 /** Elimina le sottoscrizioni scadute (il servizio push ha risposto 404 o 410). */

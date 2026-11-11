@@ -14,7 +14,8 @@ import {
 /*
  * Notifiche push (fase 8) in Chromium con il permesso concesso: il banner
  * compare, "Attiva" salva la sottoscrizione e il banner scompare;
- * l'interruttore del profilo la elimina e la ricrea; il logout la elimina.
+ * l'interruttore del profilo la elimina e la ricrea; dopo "Esci" e un nuovo
+ * accesso resta attiva, "Esci da tutti i dispositivi" la elimina.
  * La pubblicazione di un file riesce anche se l'invio della push fallisce.
  * Offline il service worker mostra solo la pagina offline, mai dati.
  *
@@ -120,7 +121,7 @@ async function pushEnabled(clientId: string) {
   return data?.push_enabled ?? null;
 }
 
-test("Attiva salva la sottoscrizione, il banner scompare, il profilo la gestisce, il logout la elimina", async ({
+test("Attiva salva la sottoscrizione, il banner scompare, il profilo la gestisce, resta dopo Esci", async ({
   browser,
 }) => {
   const client = await createActiveClient({
@@ -140,7 +141,7 @@ test("Attiva salva la sottoscrizione, il banner scompare, il profilo la gestisce
   const banner = page.getByRole("region", { name: "Attiva le notifiche" });
   await expect(banner).toBeVisible();
   await expect(banner).toContainText(
-    "Ti avvisiamo quando arriva un nuovo file.",
+    "Ti avvisiamo dei nuovi file e la sera ti ricordiamo il check-in.",
   );
   expect(await subscriptionsOf(client.userId)).toEqual([]);
   expect(await pushEnabled(client.clientId)).toBe(false);
@@ -181,8 +182,26 @@ test("Attiva salva la sottoscrizione, il banner scompare, il profilo la gestisce
     .toEqual([subscription.endpoint]);
   expect(await pushEnabled(client.clientId)).toBe(true);
 
-  // Logout: sottoscrizione eliminata sul server e annullata nel browser
+  // Esci e nuovo accesso: le notifiche restano attive, nessun banner
   await page.getByRole("button", { name: "Esci", exact: true }).click();
+  await expect(page).toHaveURL(/\/login\?motivo=uscito$/);
+  expect(await subscriptionsOf(client.userId)).toEqual([subscription.endpoint]);
+  expect(await pushEnabled(client.clientId)).toBe(true);
+  await login(page, client.phone.typed, PASSWORD);
+  await expect(page.getByText("Ciao Pia")).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Attiva le notifiche" }),
+  ).toHaveCount(0);
+
+  // Esci da tutti i dispositivi: sottoscrizione eliminata e annullata nel browser
+  await page.goto("/app/profilo");
+  await page
+    .getByRole("button", { name: "Esci da tutti i dispositivi" })
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Esci da tutti" })
+    .click();
   await expect(page).toHaveURL(/\/login\?motivo=uscito$/);
   await expect.poll(() => subscriptionsOf(client.userId)).toEqual([]);
   expect(await pushEnabled(client.clientId)).toBe(false);

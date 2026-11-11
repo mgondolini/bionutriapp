@@ -81,23 +81,15 @@ function useClientShell(): ClientShell {
   return shell;
 }
 
-<<<<<<< Updated upstream
-type TileTone = "primary" | "info" | "neutral" | "warning";
-=======
+
 type TileTone = "primary" | "info" | "report" | "neutral" | "warning" | "video";
->>>>>>> Stashed changes
+
 
 const tileVariants = cva(
   "flex size-10 shrink-0 items-center justify-center rounded-xl",
   {
     variants: {
       tone: {
-<<<<<<< Updated upstream
-        primary: "bg-primary-tint text-primary-ink",
-        info: "bg-info text-info-foreground",
-        neutral: "bg-muted text-secondary-foreground",
-        warning: "bg-warning text-warning-foreground",
-=======
         // mockup v2: fondi tinta, azzurro, giallo e pesca, icone sempre in
         // ink2; azzurro e giallo distinguono le sezioni Allenamenti e Report
         primary: "bg-primary-tint text-secondary-foreground",
@@ -105,9 +97,6 @@ const tileVariants = cva(
         report: "bg-file-report text-secondary-foreground",
         neutral: "bg-primary-tint text-secondary-foreground",
         warning: "bg-warning text-secondary-foreground",
-        // mockup v4: Lavanda per la sezione Video
-        video: "bg-video text-video-ink",
->>>>>>> Stashed changes
       } satisfies Record<TileTone, string>,
     },
   },
@@ -119,12 +108,7 @@ const ICONS: Record<
 > = {
   diets: { icon: Utensils, tone: "primary" },
   workouts: { icon: Dumbbell, tone: "info" },
-<<<<<<< Updated upstream
-  reports: { icon: ChartColumn, tone: "neutral" },
-=======
   reports: { icon: ChartColumn, tone: "report" },
-  videos: { icon: Clapperboard, tone: "video" },
->>>>>>> Stashed changes
   tracking: { icon: Activity, tone: "warning" },
   profile: { icon: UserRound, tone: "neutral" },
 };

@@ -10,6 +10,7 @@ import { ProfileHeader } from "@/features/cliente/profile/profile-header";
 import { PushPreference } from "@/features/cliente/profile/push-preference";
 import { copy } from "@/lib/copy/it";
 import { initialsOf } from "@/lib/studio/branding";
+import { getOwnPreferences } from "@/server/services/notifications.service";
 import { getClientProfile } from "@/server/services/profile.service";
 import { listOwnEndpoints } from "@/server/services/push.service";
 import { requireClient } from "@/server/services/session.service";
@@ -20,9 +21,10 @@ import { requireClient } from "@/server/services/session.service";
  */
 export default async function ProfilePage() {
   const session = await requireClient();
-  const [profile, endpoints] = await Promise.all([
+  const [profile, endpoints, preferences] = await Promise.all([
     getClientProfile(session.client.id),
     listOwnEndpoints(),
+    getOwnPreferences(),
   ]);
   if (!profile) notFound();
 
@@ -45,7 +47,10 @@ export default async function ProfilePage() {
       />
       <EmailCard email={profile.email} hint={copy.profile.email.clientHint} />
       <PasswordCard />
-      <PushPreference registeredEndpoints={endpoints} />
+      <PushPreference
+        registeredEndpoints={endpoints}
+        preferences={preferences}
+      />
       <InstallCard />
       <SessionCard />
     </div>

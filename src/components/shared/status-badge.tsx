@@ -14,13 +14,14 @@ const statusBadgeVariants = cva(
       status: {
         to_invite: "bg-muted text-secondary-foreground",
         invited: "bg-info text-info-foreground",
-        invite_expired: "bg-warning text-warning-foreground",
-        active: "bg-primary-tint text-primary-ink",
+        // pesca: richiede attenzione (mockup v2)
+        invite_expired: "bg-warm font-bold text-foreground",
+        active: "bg-wash text-foreground",
         disabled: "border border-line-strong bg-card text-muted-foreground",
-        onboarding: "bg-warning text-warning-foreground",
-        in_progress: "bg-primary-tint text-primary-ink",
-        paused: "bg-info text-info-foreground",
-        completed: "bg-muted text-secondary-foreground",
+        onboarding: "border-[1.5px] border-warm bg-card text-foreground",
+        in_progress: "bg-mint text-mint-foreground",
+        paused: "bg-muted text-secondary-foreground",
+        completed: "border border-line-strong bg-card text-muted-foreground",
         // autore di una registrazione del tracking (A-16)
         staff_created: "bg-info text-info-foreground",
         staff_edited: "bg-muted text-muted-foreground",

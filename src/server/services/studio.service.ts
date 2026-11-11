@@ -44,12 +44,11 @@ export async function getStudioLogoDataUrl(
 
 export type StudioSettingsInput = {
   name: string;
-  primaryColor: string;
   logo?: { file: File; mimeType: LogoMimeType };
 };
 
 /**
- * Salva nome, colore ed eventuale nuovo logo. Il nuovo logo ha sempre un nome
+ * Salva nome ed eventuale nuovo logo (il colore non si modifica dall'app). Il nuovo logo ha sempre un nome
  * diverso (cache di browser e PWA aggiornate) e il precedente viene eliminato.
  * Restituisce false se lo studio non è stato aggiornato (RLS).
  */
@@ -67,7 +66,6 @@ export async function updateStudioSettings(
 
   const updated = await studioRepository.updateStudio(studio.id, {
     name: input.name,
-    primary_color: input.primaryColor.toUpperCase(),
     ...(newLogoPath ? { logo_path: newLogoPath } : {}),
   });
 

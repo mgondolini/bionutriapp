@@ -52,7 +52,7 @@ select pg_temp.create_user('bbbbbbbb-0000-4000-8000-0000000000c2', 'paolo.viola@
 
 -- Studi (le 9 misure predefinite vengono create dal trigger)
 insert into public.studios (id, name, slug, primary_color, contact_email) values
-  ('aaaaaaaa-1111-4000-8000-000000000000', 'Studio Verde Nutrizione', 'studio-verde', '#2E6A4E', 'info@studio-verde.example.test'),
+  ('aaaaaaaa-1111-4000-8000-000000000000', 'Studio Verde Nutrizione', 'studio-verde', '#1F7A5C', 'info@studio-verde.example.test'),
   ('bbbbbbbb-1111-4000-8000-000000000000', 'Studio Blu Benessere',    'studio-blu',   '#1F4E80', 'info@studio-blu.example.test');
 
 insert into public.studio_members (studio_id, user_id, role, title, first_name, last_name) values

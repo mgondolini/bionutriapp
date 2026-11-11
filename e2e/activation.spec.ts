@@ -47,25 +47,34 @@ test.afterAll(async () => {
   await cleanup([imported.e164, fresh.e164]);
 });
 
+/**
+ * Pannello "Nuovo cliente": dati e fase; dopo la creazione resta aperto con
+ * "Invia invito su WhatsApp" (qui non usato: il test invia dalla tabella).
+ */
 async function createClient(
   page: Page,
-  mode: "Nuovo cliente" | "Con dati completi",
+  stage: "In percorso" | "Onboarding",
   client: { firstName: string; lastName: string; typed: string },
 ) {
   await page.goto("/admin/clienti");
   await page.getByRole("button", { name: "Nuovo cliente" }).click();
   const dialog = page.getByRole("dialog");
-  await dialog.getByRole("radio", { name: mode }).check();
+  await dialog.getByRole("radio", { name: stage }).check();
   await dialog
     .getByRole("textbox", { name: "Nome", exact: true })
     .fill(client.firstName);
-  if (mode === "Con dati completi") {
-    await dialog
-      .getByRole("textbox", { name: "Cognome", exact: true })
-      .fill(client.lastName);
-  }
+  await dialog
+    .getByRole("textbox", { name: "Cognome", exact: true })
+    .fill(client.lastName);
   await dialog.getByRole("textbox", { name: "Cellulare" }).fill(client.typed);
   await dialog.getByRole("button", { name: "Crea cliente" }).click();
+  await expect(
+    dialog.getByText(`${client.firstName} ${client.lastName} è nell'elenco`),
+  ).toBeVisible();
+  await expect(
+    dialog.getByRole("button", { name: "Invia invito su WhatsApp" }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
 }
 
@@ -84,7 +93,7 @@ test("cliente già nel database: invito, link scaduto, nuovo invito, attivazione
 }) => {
   await login(page, OWNER.email, OWNER.password);
   await expect(page).toHaveURL(/\/admin/);
-  await createClient(page, "Con dati completi", imported);
+  await createClient(page, "In percorso", imported);
 
   // Invito dalla riga della tabella (N-01)
   const name = `${imported.firstName} ${imported.lastName}`;
@@ -195,8 +204,12 @@ test("cliente nuovo: il secondo invito annulla il primo, attivazione in Onboardi
 }) => {
   await login(page, OWNER.email, OWNER.password);
   await expect(page).toHaveURL(/\/admin/);
-  await createClient(page, "Nuovo cliente", fresh);
-  await openProfile(page, fresh.firstName, fresh.firstName);
+  await createClient(page, "Onboarding", fresh);
+  await openProfile(
+    page,
+    fresh.firstName,
+    `${fresh.firstName} ${fresh.lastName}`,
+  );
 
   // A6: anteprima del messaggio con solo nome dello studio e link
   await expect(

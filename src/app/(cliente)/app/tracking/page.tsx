@@ -11,7 +11,7 @@ import { ROUTES } from "@/lib/constants/domain";
 
 const t = copy.client.sections.tracking;
 
-/** Tracking (C8, T-01): le 9 misure con spunta del periodo; bloccato in Onboarding (C-09). */
+/** Tracking (C8, T-01): le 11 misure in ordine di frequenza; bloccato in Onboarding (C-09). */
 export default async function TrackingPage() {
   const session = await requireClient({ unlocked: true });
   const actor = clientTrackingActor(session);

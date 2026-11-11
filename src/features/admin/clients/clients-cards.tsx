@@ -1,6 +1,5 @@
 import type { ClientListItem } from "@/lib/clients/list-filters";
 import { copy } from "@/lib/copy/it";
-import { cn } from "@/lib/utils";
 
 import { ClientRowActions } from "./client-row-actions";
 import {
@@ -9,7 +8,6 @@ import {
   LastFile,
   StatusAndStage,
   fullName,
-  isHighlighted,
 } from "./client-list-parts";
 
 const t = copy.admin.clients.table;
@@ -21,12 +19,7 @@ export function ClientsCards({ items }: { items: ClientListItem[] }) {
       {items.map((item) => (
         <li
           key={item.id}
-          data-onboarding={isHighlighted(item) || undefined}
-          className={cn(
-            "flex flex-col gap-3 rounded-[14px] border bg-card p-4",
-            isHighlighted(item) &&
-              "bg-[#fff9f1] shadow-[inset_4px_0_0_#d9a066]",
-          )}
+          className="flex flex-col gap-3 rounded-[20px] border border-admin-line bg-card p-4"
         >
           <div className="flex items-start justify-between gap-3">
             <ClientIdentity item={item} />

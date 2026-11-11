@@ -15,18 +15,13 @@ export function fullName(
   return [item.firstName, item.lastName].filter(Boolean).join(" ");
 }
 
-/** I clienti in Onboarding sono evidenziati (A-02). */
-export function isHighlighted(item: ClientListItem): boolean {
-  return item.journeyStage === "onboarding";
-}
-
 /** Iniziali, nome e cellulare (A-01). */
 export function ClientIdentity({ item }: { item: ClientListItem }) {
   return (
     <div className="flex min-w-0 items-center gap-3">
       <span
         aria-hidden="true"
-        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-tint text-[13px] font-bold text-primary-ink"
+        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-mint text-[13px] font-bold text-foreground"
       >
         {initialsOf(item.firstName, item.lastName)}
       </span>
@@ -34,7 +29,7 @@ export function ClientIdentity({ item }: { item: ClientListItem }) {
         <span className="truncate font-semibold">{fullName(item)}</span>
         <PhoneText
           phone={item.phone}
-          className="text-[13px] text-muted-foreground"
+          className="text-[13px] text-admin-muted"
         />
       </span>
     </div>
