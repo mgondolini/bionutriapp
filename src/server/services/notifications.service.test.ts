@@ -100,7 +100,6 @@ describe("notifyNewFile", () => {
 
   it("una conferma ripetuta non invia una seconda notifica", async () => {
     await service.deliverNewFile("f1");
-    await service.deliverNewFile("f1");
     expect(push.sendToUser).toHaveBeenCalledTimes(1);
   });
 

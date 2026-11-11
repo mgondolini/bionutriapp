@@ -101,55 +101,6 @@ async function deliverQueued(job: QueuedNotification): Promise<void> {
   }
 }
 
-/**
- * Nuovo file pubblicato: l'invio parte dopo la risposta (`after`), così il
- * caricamento non aspetta il servizio push e non fallisce mai per la notifica.
- */
-export function notifyNewFile(fileId: string) {
-  after(() => deliverNewFile(fileId));
-}
-
-/** L'invio dell'avviso di un file; non lancia mai. */
-export async function deliverNewFile(fileId: string): Promise<void> {
-  try {
-    const recipient = await notificationsRepository.getFileRecipient(fileId);
-    if (!recipient) return;
-    const event: NotificationEvent = {
-      type: "file",
-      category: recipient.category,
-      fileId,
-    };
-    const skip = fileSkipReason(recipient);
-    const [entry] = await notificationsRepository.insertLogEntries([
-      {
-        studioId: recipient.studioId,
-        clientId: recipient.clientId,
-        userId: recipient.userId,
-        type: notificationType(event),
-        dedupeKey: dedupeKey(event, recipient.clientId),
-        payload: logPayload(event),
-        ...(skip
-          ? { status: "skipped", skippedReason: skip }
-          : { status: "queued" }),
-      },
-    ]);
-    // già nel registro (conferma ripetuta) o da saltare: niente invio
-    if (!entry || skip || !recipient.userId) return;
-    await deliverQueued({
-      logId: entry.id,
-      clientId: recipient.clientId,
-      userId: recipient.userId,
-      studioName: recipient.studioName,
-      event,
-    });
-  } catch (error) {
-    console.error("[notifiche] avviso del file non riuscito", {
-      fileId,
-      error: error instanceof Error ? error.name : "unknown",
-    });
-  }
-}
-
 
 /**
  * Nuovo file pubblicato: l'invio parte dopo la risposta (`after`), così il
