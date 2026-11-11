@@ -50,6 +50,7 @@ export const ROUTES = {
   admin: {
     home: "/admin",
     clients: "/admin/clienti",
+    videos: "/admin/video",
     settings: "/admin/impostazioni",
     profile: "/admin/profilo",
   },
@@ -58,6 +59,7 @@ export const ROUTES = {
     diets: "/app/diete",
     workouts: "/app/allenamenti",
     reports: "/app/report",
+    videos: "/app/video",
     tracking: "/app/tracking",
     profile: "/app/profilo",
     install: "/app/installa",
@@ -76,6 +78,8 @@ export const CLIENT_NAV = [
   { key: "diets", href: ROUTES.client.diets, locked: true },
   { key: "workouts", href: ROUTES.client.workouts, locked: true },
   { key: "reports", href: ROUTES.client.reports, locked: true },
+  // in Onboarding si vedono solo le cartelle "anche in Onboarding" (RLS)
+  { key: "videos", href: ROUTES.client.videos, locked: false },
   { key: "tracking", href: ROUTES.client.tracking, locked: true },
 ] as const;
 export type ClientNavKey = (typeof CLIENT_NAV)[number]["key"];
@@ -83,6 +87,7 @@ export type ClientNavKey = (typeof CLIENT_NAV)[number]["key"];
 /** Voci della sidebar admin; `ownerOnly` = visibile solo al titolare. */
 export const ADMIN_NAV = [
   { key: "clients", href: ROUTES.admin.clients, ownerOnly: false },
+  { key: "videos", href: ROUTES.admin.videos, ownerOnly: false },
   { key: "settings", href: ROUTES.admin.settings, ownerOnly: true },
 ] as const;
 export type AdminNavKey = (typeof ADMIN_NAV)[number]["key"];
@@ -424,7 +429,28 @@ export const SERVICE_WORKER_SCOPE = "/app";
 /** Pagina mostrata dal service worker senza rete: statica, senza dati. */
 export const OFFLINE_PAGE_URL = "/offline.html";
 
+<<<<<<< Updated upstream
 /** Icona delle notifiche: quella della PWA, con il branding dello studio del dominio. */
+=======
+/** Endpoint del promemoria serale, chiamato ogni ora da pg_cron (stesso segreto del cron). */
+export const INTERNAL_API_PATH = "/api/internal";
+export const DAILY_CHECKIN_CRON_PATH = `${INTERNAL_API_PATH}/notifications/daily-checkin`;
+
+/**
+ * Tipi di notifica (N-06). Testi in `copy.notifications`, pagina, tag e
+ * icone in `src/lib/notifications/catalog.ts`.
+ */
+export const NOTIFICATION_TYPES = [
+  "file_diet",
+  "file_workout",
+  "file_report",
+  "daily_checkin",
+  "video",
+] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+/** Icona grande delle notifiche: quella della PWA, generata dal logo dello studio. */
+>>>>>>> Stashed changes
 export const NOTIFICATION_ICON_URL = "/icon/192";
 /** Pagina aperta dal tocco sulla notifica. */
 export const NOTIFICATION_TARGET_URL = ROUTES.client.home;
@@ -444,3 +470,45 @@ export const PUSH_SERVICE_HOSTS = [
 ] as const;
 export const PUSH_ENDPOINT_MAX_LENGTH = 1024;
 export const PUSH_USER_AGENT_MAX_LENGTH = 256;
+
+/*
+ * Video (mockup v4): libreria YouTube dello studio in cartelle con un livello
+ * di sottocartelle. Niente durata: oEmbed di YouTube non la fornisce.
+ */
+export const VIDEO_TITLE_MAX = 120;
+export const VIDEO_NOTE_MAX = 300;
+export const VIDEO_FOLDER_NAME_MAX = 40;
+export const VIDEO_FOLDER_DESCRIPTION_MAX = 200;
+/** Un video è "Nuovo" per i giorni dopo l'aggiunta (per il cliente, finché non lo apre). */
+export const VIDEO_NEW_DAYS = 14;
+/** Video per pagina nell'elenco della cartella (cliente). */
+export const VIDEOS_PAGE_SIZE = 10;
+/** Altri video della stessa cartella sotto il player. */
+export const VIDEO_RELATED_LIMIT = 3;
+/** oEmbed di YouTube (verifica del link sul server); sovrascrivibile per i test. */
+export const YOUTUBE_OEMBED_URL = "https://www.youtube.com/oembed";
+export const YOUTUBE_OEMBED_TIMEOUT_MS = 5000;
+/**
+ * Video ricontrollati a ogni esecuzione del cron di manutenzione (i meno
+ * recenti prima), VIDEO_RECHECK_CONCURRENCY richieste a YouTube alla volta.
+ */
+export const VIDEO_RECHECK_LIMIT = 60;
+export const VIDEO_RECHECK_CONCURRENCY = 5;
+/** Parametri dell'URL della libreria admin e della cartella del cliente. */
+export const VIDEO_PARAMS = { folder: "cartella", filter: "filtro" } as const;
+export const VIDEO_FILTER_TO_WATCH = "da-guardare";
+
+export function adminVideoFolderUrl(folderId: string | null): string {
+  return folderId
+    ? `${ROUTES.admin.videos}?${VIDEO_PARAMS.folder}=${folderId}`
+    : ROUTES.admin.videos;
+}
+export function videoFolderPath(folderId: string, toWatch = false): string {
+  const path = `${ROUTES.client.videos}/${folderId}`;
+  return toWatch
+    ? `${path}?${VIDEO_PARAMS.filter}=${VIDEO_FILTER_TO_WATCH}`
+    : path;
+}
+export function videoPath(folderId: string, videoId: string): string {
+  return `${ROUTES.client.videos}/${folderId}/${videoId}`;
+}

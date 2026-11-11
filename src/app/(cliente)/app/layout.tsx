@@ -13,19 +13,29 @@ import { CLIENT_NAV, ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { initialsOf } from "@/lib/studio/branding";
 import { requireClient } from "@/server/services/session.service";
+import { getClientVideoHome } from "@/server/services/videos.service";
 
 /**
  * Secondo livello di controllo (DEV-03b): solo clienti attivi. In Onboarding
  * le voci bloccate non compaiono (C-09); le pagine lo verificano a loro volta.
+ * La voce Video porta il numero dei video nuovi (mockup v4, C6).
  */
 async function ClientShell({ children }: { children: React.ReactNode }) {
   const { studio, client } = await requireClient();
+  const videos = await getClientVideoHome();
   const sections: ClientMenuItem[] = CLIENT_NAV.filter(
-    (item) => client.unlocked || !item.locked,
+    (item) =>
+      client.unlocked ||
+      // in Onboarding la voce Video c'è solo se lo studio ha video di benvenuto
+      (!item.locked && (item.key !== "videos" || videos.videoCount > 0)),
   ).map((item) => ({
     key: item.key,
     href: item.href,
     ...copy.client.nav[item.key],
+    badge:
+      item.key === "videos" && videos.newCount > 0
+        ? copy.client.videos.newCount(videos.newCount)
+        : undefined,
   }));
 
   return (

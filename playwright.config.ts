@@ -1,6 +1,8 @@
 import { loadEnvConfig } from "@next/env";
 import { defineConfig, devices } from "@playwright/test";
 
+import { E2E_OEMBED_URL } from "./e2e/fixtures/oembed";
+
 // Stesse variabili dell'app (.env.local): URL e chiavi del Supabase LOCALE.
 // Per un deploy di anteprima: E2E_ENV_FILE=.env.test.local (progetto Supabase
 // di PROVA) e PLAYWRIGHT_BASE_URL=<url dell'anteprima>; nessun server locale.
@@ -8,6 +10,11 @@ if (process.env.E2E_ENV_FILE) process.loadEnvFile(process.env.E2E_ENV_FILE);
 loadEnvConfig(process.cwd());
 
 const remoteBaseURL = process.env.PLAYWRIGHT_BASE_URL;
+<<<<<<< Updated upstream
+=======
+const PUSH_SERVICE_CERT = "e2e/fixtures/push-service/cert.pem";
+
+>>>>>>> Stashed changes
 const baseURL =
   remoteBaseURL ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -40,5 +47,15 @@ export default defineConfig({
         url: `${baseURL}/login`,
         reuseExistingServer: true,
         timeout: 180_000,
+<<<<<<< Updated upstream
+=======
+        // servizio push finto del test delle notifiche (HTTPS autofirmato) e
+        // oEmbed finto del test dei video; con un server già avviato vanno
+        // passati a mano
+        env: {
+          NODE_EXTRA_CA_CERTS: PUSH_SERVICE_CERT,
+          YOUTUBE_OEMBED_URL: E2E_OEMBED_URL,
+        },
+>>>>>>> Stashed changes
       },
 });

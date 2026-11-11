@@ -8,7 +8,11 @@
  *
  * Cambiare VERSION a ogni modifica di questo file o di offline.html.
  */
+<<<<<<< Updated upstream
 const VERSION = "v2";
+=======
+const VERSION = "v5";
+>>>>>>> Stashed changes
 const CACHE = `offline-${VERSION}`;
 const OFFLINE_URL = "/offline.html";
 const DEFAULT_URL = "/app";
@@ -57,6 +61,18 @@ function safeUrl(value) {
   }
 }
 
+<<<<<<< Updated upstream
+=======
+/*
+ * Badge monocromatico per tipo (Android; iOS lo ignora e mostra l'icona della
+ * PWA, non è un errore). Stessi tipi di NOTIFICATION_TYPES in domain.ts.
+ */
+const BADGE_TYPES = ["file_diet", "file_workout", "file_report", "daily_checkin", "video"];
+function badgeFor(type) {
+  return BADGE_TYPES.includes(type) ? `/notification-badges/${type}.png` : undefined;
+}
+
+>>>>>>> Stashed changes
 self.addEventListener("push", (event) => {
   let data = {};
   try {

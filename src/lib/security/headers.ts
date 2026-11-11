@@ -7,8 +7,14 @@
  * quindi script e stili inline sono ammessi con 'unsafe-inline'. Servono per
  * gli script di Next.js, INSTALL_PROMPT_CAPTURE (layout cliente), il colore
  * dello studio (StudioThemeStyle) e i grafici. Tutto il resto è limitato al
- * sito e al progetto Supabase.
+ * sito e al progetto Supabase; uniche eccezioni i video (mockup v4):
+ * miniature di YouTube e player di youtube-nocookie, caricato solo al tocco.
  */
+
+import {
+  YOUTUBE_EMBED_ORIGIN,
+  YOUTUBE_THUMBNAIL_ORIGIN,
+} from "../videos/youtube";
 
 type CspOptions = {
   /** NEXT_PUBLIC_SUPABASE_URL: caricamento dei PDF (PUT firmato) e loghi. */
@@ -34,12 +40,12 @@ export function contentSecurityPolicy({ supabaseUrl, dev }: CspOptions) {
     "default-src 'self'",
     `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
-    `img-src ${withSupabase("'self'", "data:", "blob:")}`,
+    `img-src ${withSupabase("'self'", "data:", "blob:", YOUTUBE_THUMBNAIL_ORIGIN)}`,
     "font-src 'self'",
     `connect-src ${withSupabase("'self'")}`,
     "worker-src 'self'",
     "manifest-src 'self'",
-    "frame-src 'none'",
+    `frame-src ${YOUTUBE_EMBED_ORIGIN}`,
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",

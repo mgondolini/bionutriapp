@@ -2,11 +2,14 @@ import {
   Activity,
   ChartColumn,
   Check,
+  Clapperboard,
   Dumbbell,
   Lock,
   Utensils,
   type LucideIcon,
 } from "lucide-react";
+
+import type { ReactNode } from "react";
 
 import { CLIENT_NAV, type ClientNavKey } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
@@ -18,6 +21,7 @@ const ICONS: Record<ClientNavKey, LucideIcon> = {
   diets: Utensils,
   workouts: Dumbbell,
   reports: ChartColumn,
+  videos: Clapperboard,
   tracking: Activity,
 };
 
@@ -26,7 +30,14 @@ const ICONS: Record<ClientNavKey, LucideIcon> = {
  * passi e chiamata. Le sezioni restano bloccate fino a In percorso: qui sono
  * solo elencate, senza link (le pagine rifiutano comunque l'accesso).
  */
-export function OnboardingHome({ studioName }: { studioName: string }) {
+export function OnboardingHome({
+  studioName,
+  videos,
+}: {
+  studioName: string;
+  /** "Intanto guarda" (mockup v4, C4), tra i passi e l'area bloccata. */
+  videos?: ReactNode;
+}) {
   return (
     <div className="flex flex-col gap-4">
       <section className="flex flex-col gap-3 rounded-[18px] bg-primary p-5 text-primary-foreground">
@@ -84,6 +95,8 @@ export function OnboardingHome({ studioName }: { studioName: string }) {
         </ol>
       </section>
 
+      {videos}
+
       <section
         aria-labelledby="onboarding-area"
         className="flex flex-col gap-3"
@@ -92,7 +105,7 @@ export function OnboardingHome({ studioName }: { studioName: string }) {
           {t.areaTitle}
         </h2>
         <ul className="flex flex-col divide-y divide-muted overflow-hidden rounded-[14px] border bg-card">
-          {CLIENT_NAV.map((item) => {
+          {CLIENT_NAV.filter((item) => item.locked).map((item) => {
             const Icon = ICONS[item.key];
             return (
               <li

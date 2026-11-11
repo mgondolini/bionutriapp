@@ -421,6 +421,109 @@ export type Database = {
           },
         ];
       };
+<<<<<<< Updated upstream
+=======
+      notification_log: {
+        Row: {
+          client_id: string;
+          created_at: string;
+          dedupe_key: string;
+          error: string | null;
+          id: string;
+          payload: NonNullable<Json>;
+          sent_at: string | null;
+          skipped_reason: string | null;
+          status: string;
+          studio_id: string;
+          type: string;
+          user_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          client_id: string;
+          created_at?: string;
+          dedupe_key: string;
+          error?: string | null;
+          id?: string;
+          payload?: NonNullable<Json>;
+          sent_at?: string | null;
+          skipped_reason?: string | null;
+          status?: string;
+          studio_id: string;
+          type: string;
+          user_id?: string | null;
+        };
+        Update: {
+          client_id?: string;
+          created_at?: string;
+          dedupe_key?: string;
+          error?: string | null;
+          id?: string;
+          payload?: NonNullable<Json>;
+          sent_at?: string | null;
+          skipped_reason?: string | null;
+          status?: string;
+          studio_id?: string;
+          type?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notification_log_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "client_list";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notification_log_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notification_log_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients_with_status";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notification_log_studio_id_fkey";
+            columns: ["studio_id"];
+            isOneToOne: false;
+            referencedRelation: "studios";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      notification_preferences: {
+        Row: {
+          daily_reminder_enabled: boolean;
+          files_enabled: boolean;
+          updated_at: string;
+          user_id: string;
+          videos_enabled: boolean;
+        };
+        ComputedFields: never;
+        Insert: {
+          daily_reminder_enabled?: boolean;
+          files_enabled?: boolean;
+          updated_at?: string;
+          user_id?: string;
+          videos_enabled?: boolean;
+        };
+        Update: {
+          daily_reminder_enabled?: boolean;
+          files_enabled?: boolean;
+          updated_at?: string;
+          user_id?: string;
+          videos_enabled?: boolean;
+        };
+        Relationships: [];
+      };
+>>>>>>> Stashed changes
       privacy_consents: {
         Row: {
           accepted_at: string;
@@ -673,6 +776,177 @@ export type Database = {
           },
         ];
       };
+      video_folders: {
+        Row: {
+          created_at: string;
+          description: string | null;
+          id: string;
+          name: string;
+          parent_id: string | null;
+          sort_order: number;
+          studio_id: string;
+          updated_at: string;
+          visible_in_onboarding: boolean;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          name: string;
+          parent_id?: string | null;
+          sort_order?: number;
+          studio_id: string;
+          updated_at?: string;
+          visible_in_onboarding?: boolean;
+        };
+        Update: {
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          name?: string;
+          parent_id?: string | null;
+          sort_order?: number;
+          studio_id?: string;
+          updated_at?: string;
+          visible_in_onboarding?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "video_folders_parent_id_fkey";
+            columns: ["parent_id"];
+            isOneToOne: false;
+            referencedRelation: "video_folders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "video_folders_studio_id_fkey";
+            columns: ["studio_id"];
+            isOneToOne: false;
+            referencedRelation: "studios";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      video_views: {
+        Row: {
+          client_id: string;
+          first_viewed_at: string;
+          studio_id: string;
+          video_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          client_id: string;
+          first_viewed_at?: string;
+          studio_id: string;
+          video_id: string;
+        };
+        Update: {
+          client_id?: string;
+          first_viewed_at?: string;
+          studio_id?: string;
+          video_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "video_views_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "client_list";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "video_views_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "video_views_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients_with_status";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "video_views_studio_id_fkey";
+            columns: ["studio_id"];
+            isOneToOne: false;
+            referencedRelation: "studios";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "video_views_video_id_fkey";
+            columns: ["video_id"];
+            isOneToOne: false;
+            referencedRelation: "videos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      videos: {
+        Row: {
+          availability_checked_at: string | null;
+          created_at: string;
+          created_by: string | null;
+          folder_id: string;
+          id: string;
+          note: string | null;
+          sort_order: number;
+          studio_id: string;
+          title: string;
+          unavailable_at: string | null;
+          updated_at: string;
+          youtube_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          availability_checked_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          folder_id: string;
+          id?: string;
+          note?: string | null;
+          sort_order?: number;
+          studio_id: string;
+          title: string;
+          unavailable_at?: string | null;
+          updated_at?: string;
+          youtube_id: string;
+        };
+        Update: {
+          availability_checked_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          folder_id?: string;
+          id?: string;
+          note?: string | null;
+          sort_order?: number;
+          studio_id?: string;
+          title?: string;
+          unavailable_at?: string | null;
+          updated_at?: string;
+          youtube_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "videos_folder_id_fkey";
+            columns: ["folder_id"];
+            isOneToOne: false;
+            referencedRelation: "video_folders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "videos_studio_id_fkey";
+            columns: ["studio_id"];
+            isOneToOne: false;
+            referencedRelation: "studios";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       client_list: {
@@ -819,6 +1093,22 @@ export type Database = {
         Args: { p_older_than_days?: number };
         Returns: number;
       };
+<<<<<<< Updated upstream
+=======
+      purge_notification_log: {
+        Args: { p_older_than_days?: number };
+        Returns: number;
+      };
+      record_push_results: {
+        Args: {
+          p_failed: string[];
+          p_max_failures?: number;
+          p_succeeded: string[];
+        };
+        Returns: number;
+      };
+      record_video_view: { Args: { p_video: string }; Returns: undefined };
+>>>>>>> Stashed changes
       register_push_subscription: {
         Args: {
           p_auth: string;
@@ -827,6 +1117,14 @@ export type Database = {
           p_user_agent?: string;
         };
         Returns: string;
+      };
+      reorder_video_folders: {
+        Args: { p_ids: string[]; p_parent: string };
+        Returns: undefined;
+      };
+      reorder_videos: {
+        Args: { p_folder: string; p_ids: string[] };
+        Returns: undefined;
       };
       save_daily_checkin: {
         Args: { p_client_id: string; p_recorded_on: string; p_values: Json };
@@ -853,6 +1151,13 @@ export type Database = {
       update_my_member_profile: {
         Args: { p_first_name: string; p_last_name: string; p_title: string };
         Returns: undefined;
+      };
+      video_notification_recipients: {
+        Args: { p_video: string };
+        Returns: {
+          client_id: string;
+          user_id: string;
+        }[];
       };
     };
     Enums: {

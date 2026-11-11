@@ -60,6 +60,8 @@ test("con il segreto: completa la manutenzione e non tocca i caricamenti recenti
       "failed",
       "ok",
       "orphanUploadsRemoved",
+      "videosChecked",
+      "videosUnavailable",
     ]);
 
     const { data: still } = await admin.storage

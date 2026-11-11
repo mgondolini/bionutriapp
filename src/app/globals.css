@@ -37,7 +37,32 @@
   --color-primary: var(--primary);
   --color-primary-ink: var(--primary-ink);
   --color-primary-tint: var(--primary-tint);
+<<<<<<< Updated upstream
   --color-primary-deep: var(--primary-deep);
+=======
+  --color-action: var(--action);
+  --color-wash: var(--wash);
+  --color-admin-line: var(--admin-line);
+  --color-admin-hover: var(--admin-hover);
+  --color-admin-field: var(--admin-field);
+  --color-admin-muted: var(--admin-muted);
+  --color-admin-row-hover: var(--admin-row-hover);
+  --color-admin-page: var(--admin-page);
+  --color-chip-workout: var(--chip-workout);
+  --color-chip-report: var(--chip-report);
+  --color-mint: var(--mint);
+  --color-mint-foreground: var(--mint-foreground);
+  --color-warm: var(--warm);
+  --color-warm-soft: var(--warm-soft);
+  --color-file-workout: var(--file-workout);
+  --color-habit: var(--habit);
+  --color-video: var(--video);
+  --color-video-tint: var(--video-tint);
+  --color-video-ink: var(--video-ink);
+  --color-file-report: var(--file-report);
+  --color-file-workout-line: var(--file-workout-line);
+  --color-file-report-line: var(--file-report-line);
+>>>>>>> Stashed changes
   --color-subtle: var(--subtle);
   --color-line-strong: var(--line-strong);
   --color-popover-foreground: var(--popover-foreground);
@@ -70,6 +95,7 @@
   --popover-foreground: #18211d;
   --primary: #2e6a4e;
   --primary-foreground: #ffffff;
+<<<<<<< Updated upstream
   /* primario per testi e icone su sfondo chiaro (inkColor in src/lib/color.ts) */
   --primary-ink: #2e6a4e;
   /* fondo tenue del primario: voce attiva, pillole, icone (accent-tint del mockup) */
@@ -87,6 +113,61 @@
   --input: #c9d0c7;
   /* bordo di bottoni secondari, campi e caselle (line2 del mockup) */
   --line-strong: #c9d0c7;
+=======
+  /* primario per testi e icone su sfondo chiaro e sulla tinta (inkColor) */
+  --primary-ink: #176248;
+  /* Tinta: badge "Attivo", pillole, icone, righe attive (tintColor) */
+  --primary-tint: #cfefe2;
+  /* Area admin (docs/mockups/mockup-v2-admin.html). Dal colore dello studio:
+     verde azione (actionColor, pulsanti primari con testo Profondo) e tinta
+     neutra (washColor). Fissi: anello, secondario, bordo campo, testo
+     secondario, hover delle righe, sfondo della pagina e chip delle categorie. */
+  --action: #35b68b;
+  --wash: #e2eeea;
+  --admin-line: #cfd8d5;
+  --admin-hover: #ecf0ef;
+  --admin-field: #84938f;
+  --admin-muted: #435a54;
+  --admin-row-hover: #f2f5f4;
+  --admin-page: #ffffff;
+  --chip-workout: #98d4e2;
+  --chip-report: #f2de92;
+  /* Menta: superfici in evidenza del cliente, badge "In percorso" e "Nuovo",
+     voce attiva del menu (mintColor); sopra sempre il testo Profondo */
+  --mint: #98e2c6;
+  --mint-foreground: #1f3a34;
+  /* Pesca: SOLO "richiede attenzione" (in ritardo, onboarding, invito scaduto) */
+  --warm: #fdbba3;
+  --warm-soft: #fff4ef;
+  /* schede dei file per categoria */
+  --file-workout: #c9e4f5;
+  --file-report: #fbefc4;
+  /* Lilla: tile delle icone delle abitudini giornaliere (le spunte restano nel primario) */
+  --habit: #ece7f6;
+  /* Video (mockup v4): Lavanda identifica la sezione (cartelle, tile del
+     menu), Tinta Video per i fondi tenui, Viola profondo per icone e testo
+     sulla Lavanda. Non è uno stato. */
+  --video: #cdbff4;
+  --video-tint: #eee9fc;
+  --video-ink: #4e3c93;
+  /* filo sopra l'archivio di Allenamenti e Report: dice in che sezione sei */
+  --file-workout-line: #8ec3e6;
+  --file-report-line: #e3c86a;
+  /* Neutro: riempimenti, "In pausa"; testo secondario scuro (ink2) */
+  --secondary: #e6f3ee;
+  --secondary-foreground: #2f4a43;
+  --muted: #e6f3ee;
+  --muted-foreground: #4b6159;
+  --accent: #e6f3ee;
+  --accent-foreground: #1f3a34;
+  /* errori dei form: mattone del mockup (warn), nessun rosso nella palette */
+  --destructive: #8a3a1e;
+  /* Bordo card: contorno decorativo di card e liste */
+  --border: #d5e6df;
+  /* Bordo controlli: campi, pulsanti secondari, caselle (3:1) */
+  --input: #6f8c80;
+  --line-strong: #6f8c80;
+>>>>>>> Stashed changes
   /* intestazioni di tabella e zone di rilascio */
   --subtle: #fafbf8;
   --ring: #2e6a4e;

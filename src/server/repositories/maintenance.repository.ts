@@ -48,3 +48,65 @@ export async function purgeExpiredInvites(days: number): Promise<number> {
   if (error) throw error;
   return data;
 }
+<<<<<<< Updated upstream
+=======
+
+/** Elimina le righe del registro delle notifiche più vecchie di `days` giorni. */
+export async function purgeNotificationLog(days: number): Promise<number> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase.rpc("purge_notification_log", {
+    p_older_than_days: days,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export type VideoToRecheck = {
+  id: string;
+  youtubeId: string;
+  unavailable: boolean;
+};
+
+/** I `limit` video controllati meno di recente (mai controllati prima). */
+export async function listVideosToRecheck(
+  limit: number,
+): Promise<VideoToRecheck[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("videos")
+    .select("id, youtube_id, unavailable_at")
+    .order("availability_checked_at", { ascending: true, nullsFirst: true })
+    .limit(limit);
+  if (error) throw error;
+  return data.map((row) => ({
+    id: row.id,
+    youtubeId: row.youtube_id,
+    unavailable: row.unavailable_at !== null,
+  }));
+}
+
+/**
+ * Esito del controllo: "Non disponibile" dal primo controllo fallito (la
+ * data non si sposta ai controlli successivi), tolto appena YouTube lo
+ * riproduce di nuovo.
+ */
+export async function saveVideoAvailability(
+  video: VideoToRecheck,
+  available: boolean,
+): Promise<void> {
+  const supabase = createAdminClient();
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from("videos")
+    .update({
+      availability_checked_at: now,
+      ...(available
+        ? { unavailable_at: null }
+        : video.unavailable
+          ? {}
+          : { unavailable_at: now }),
+    })
+    .eq("id", video.id);
+  if (error) throw error;
+}
+>>>>>>> Stashed changes

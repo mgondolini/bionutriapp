@@ -3,6 +3,7 @@
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import {
   ChevronsUpDown,
+  Clapperboard,
   LogOut,
   Menu,
   Settings,
@@ -45,6 +46,7 @@ type AdminFrameProps = {
 
 const ICONS: Record<AdminNavKey, LucideIcon> = {
   clients: Users,
+  videos: Clapperboard,
   settings: Settings,
 };
 

@@ -23,6 +23,9 @@ describe("contentSecurityPolicy", () => {
     expect(csp["connect-src"]).toEqual(["'self'", "https://abc.supabase.co"]);
     expect(csp["img-src"]).toContain("https://abc.supabase.co");
     expect(csp["frame-ancestors"]).toEqual(["'none'"]);
+    // video (mockup v4): solo il player senza cookie e le miniature
+    expect(csp["frame-src"]).toEqual(["https://www.youtube-nocookie.com"]);
+    expect(csp["img-src"]).toContain("https://i.ytimg.com");
     expect(csp["object-src"]).toEqual(["'none'"]);
     expect(csp["worker-src"]).toEqual(["'self'"]);
     expect(csp).toHaveProperty("upgrade-insecure-requests");

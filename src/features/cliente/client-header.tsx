@@ -7,6 +7,7 @@ import {
   ChartColumn,
   ChevronLeft,
   ChevronRight,
+  Clapperboard,
   Dumbbell,
   LogOut,
   Menu,
@@ -44,6 +45,8 @@ export type ClientMenuItem = {
   href: string;
   label: string;
   description: string;
+  /** Contatore accanto alla voce (mockup v4, C6: "2 nuovi" sulla voce Video). */
+  badge?: string;
 };
 
 type ClientShell = {
@@ -78,17 +81,33 @@ function useClientShell(): ClientShell {
   return shell;
 }
 
+<<<<<<< Updated upstream
 type TileTone = "primary" | "info" | "neutral" | "warning";
+=======
+type TileTone = "primary" | "info" | "report" | "neutral" | "warning" | "video";
+>>>>>>> Stashed changes
 
 const tileVariants = cva(
   "flex size-10 shrink-0 items-center justify-center rounded-xl",
   {
     variants: {
       tone: {
+<<<<<<< Updated upstream
         primary: "bg-primary-tint text-primary-ink",
         info: "bg-info text-info-foreground",
         neutral: "bg-muted text-secondary-foreground",
         warning: "bg-warning text-warning-foreground",
+=======
+        // mockup v2: fondi tinta, azzurro, giallo e pesca, icone sempre in
+        // ink2; azzurro e giallo distinguono le sezioni Allenamenti e Report
+        primary: "bg-primary-tint text-secondary-foreground",
+        info: "bg-file-workout text-secondary-foreground",
+        report: "bg-file-report text-secondary-foreground",
+        neutral: "bg-primary-tint text-secondary-foreground",
+        warning: "bg-warning text-secondary-foreground",
+        // mockup v4: Lavanda per la sezione Video
+        video: "bg-video text-video-ink",
+>>>>>>> Stashed changes
       } satisfies Record<TileTone, string>,
     },
   },
@@ -100,7 +119,12 @@ const ICONS: Record<
 > = {
   diets: { icon: Utensils, tone: "primary" },
   workouts: { icon: Dumbbell, tone: "info" },
+<<<<<<< Updated upstream
   reports: { icon: ChartColumn, tone: "neutral" },
+=======
+  reports: { icon: ChartColumn, tone: "report" },
+  videos: { icon: Clapperboard, tone: "video" },
+>>>>>>> Stashed changes
   tracking: { icon: Activity, tone: "warning" },
   profile: { icon: UserRound, tone: "neutral" },
 };
@@ -137,6 +161,11 @@ function MenuLink({ item, active }: { item: ClientMenuItem; active: boolean }) {
         <Icon aria-hidden="true" className="size-5" />
       </span>
       <ItemText label={item.label} description={item.description} />
+      {item.badge ? (
+        <span className="shrink-0 rounded-full bg-mint px-2.5 py-1 text-[12px] leading-none font-bold text-mint-foreground">
+          {item.badge}
+        </span>
+      ) : null}
       <ChevronRight
         aria-hidden="true"
         className="size-4 text-muted-foreground"

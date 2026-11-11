@@ -23,6 +23,10 @@ import type {
 } from "@/lib/constants/domain";
 import {
   CIRCUMFERENCE_INTERVAL_DAYS,
+  VIDEO_FOLDER_DESCRIPTION_MAX,
+  VIDEO_FOLDER_NAME_MAX,
+  VIDEO_NOTE_MAX,
+  VIDEO_TITLE_MAX,
   WORKOUT_RECENT_DAYS,
 } from "@/lib/constants/domain";
 import type { LoginReason } from "@/lib/auth/route-decision";
@@ -57,6 +61,7 @@ const staffRole: Record<StaffRole, string> = {
 
 const adminNav: Record<AdminNavKey, string> = {
   clients: "Clienti",
+  videos: "Video",
   settings: "Impostazioni studio",
 };
 
@@ -65,11 +70,15 @@ const clientNav: Record<ClientNavKey, { label: string; description: string }> =
     diets: { label: "Diete", description: "I tuoi piani alimentari" },
     workouts: { label: "Allenamenti", description: "Schede di allenamento" },
     reports: { label: "Report", description: "Report e controlli" },
+    videos: { label: "Video", description: "Ricette, esercizi e consigli" },
     tracking: {
       label: "Tracking",
       description: "Misure, check-in, allenamenti",
     },
   };
+
+const VIDEO_COUNT = (count: number) =>
+  count === 1 ? "1 video" : `${count} video`;
 
 export const copy = {
   app: {
@@ -274,6 +283,28 @@ export const copy = {
       installLink: "Come installare l'app",
       saved: (enabled: boolean) =>
         enabled ? "Notifiche attivate." : "Notifiche disattivate.",
+<<<<<<< Updated upstream
+=======
+      preferences: {
+        title: "Cosa ricevere",
+        hint: "Valgono per tutti i tuoi dispositivi.",
+        filesEnabled: {
+          label: "Nuovi file",
+          description:
+            "Diete, schede di allenamento e report appena pubblicati.",
+        },
+        dailyReminderEnabled: {
+          label: "Promemoria serale",
+          description: "Alle 20, se mancano le abitudini di oggi.",
+        },
+        videosEnabled: {
+          label: "Nuovi video",
+          description: "Quando lo studio segnala un video importante.",
+        },
+        saved: "Preferenza salvata.",
+        failed: "Non è stato possibile salvare la preferenza. Riprova.",
+      },
+>>>>>>> Stashed changes
     },
     install: {
       title: "App sul telefono",
@@ -312,6 +343,197 @@ export const copy = {
     nav: adminNav,
     navLabel: "Menu principale",
     openMenu: "Apri il menu",
+    /** Libreria video dello studio (mockup v4, A13–A16). */
+    videos: {
+      title: "Video",
+      description:
+        "Video YouTube scelti dallo studio, ordinati in cartelle. Li vedono tutti i clienti con account attivo.",
+      newFolder: "Nuova cartella",
+      addVideo: "Aggiungi video",
+      foldersTitle: "Cartelle",
+      foldersSummary: (folders: number, videos: number) =>
+        `${folders === 1 ? "1 cartella" : `${folders} cartelle`} · ${
+          videos === 1 ? "1 video" : `${videos} video`
+        }`,
+      videoCount: VIDEO_COUNT,
+      onboardingBadge: "Anche in Onboarding",
+      reorderFoldersHint:
+        "Trascina per cambiare l'ordine in cui i clienti vedono le cartelle.",
+      foldersListLabel: "Cartelle, nell'ordine in cui le vedono i clienti",
+      subfoldersListLabel: (name: string) => `Sottocartelle di ${name}`,
+      videosListLabel: (name: string) => `Video di ${name}`,
+      subfolders: "Sottocartelle",
+      newSubfolder: "Nuova sottocartella",
+      editFolder: "Modifica cartella",
+      deleteFolder: "Elimina cartella",
+      parentLabel: (name: string) => `In ${name}`,
+      visibleTo: {
+        active: "Visibile a: clienti con account attivo",
+        onboarding: "Visibile a: anche i clienti in Onboarding",
+      },
+      noFolders: {
+        title: "Ancora nessuna cartella",
+        description:
+          "Crea la prima cartella per raggruppare i video per tematica.",
+      },
+      emptyFolder: {
+        title: "Nessun video in questa cartella",
+        description:
+          "Aggiungi un video con il link di YouTube. Una cartella vuota non compare ai clienti.",
+      },
+      table: {
+        caption: "Video della cartella, nell'ordine in cui li vedono i clienti",
+        video: "Video",
+        addedOn: "Aggiunto il",
+        openedBy: "Aperto da",
+        actions: "Azioni",
+        openedCount: (count: number) =>
+          count === 1 ? "1 cliente" : `${count} clienti`,
+        newBadge: "Nuovo",
+        unavailable: "Non disponibile",
+        footer: (count: number) =>
+          `${count === 1 ? "1 video" : `${count} video`} · trascina le righe per cambiare l'ordine. “Aperto da” conta i clienti che hanno avviato il video almeno una volta.`,
+      },
+      reorder: {
+        handle: (name: string) => `Trascina per spostare ${name}`,
+        up: (name: string) => `Sposta su: ${name}`,
+        down: (name: string) => `Sposta giù: ${name}`,
+        saved: "Ordine salvato.",
+        failed:
+          "Non è stato possibile salvare l'ordine. Ricarica la pagina e riprova.",
+        stale: "L'elenco è cambiato nel frattempo: ricarica la pagina.",
+        picked: (name: string) => `${name} preso. Usa le frecce per spostarlo.`,
+        moved: (name: string, position: number, total: number) =>
+          `${name}: posizione ${position} di ${total}.`,
+        dropped: (name: string, position: number, total: number) =>
+          `${name} lasciato in posizione ${position} di ${total}.`,
+        cancelled: (name: string) => `Spostamento di ${name} annullato.`,
+      },
+      actions: {
+        edit: "Modifica",
+        editFor: (title: string) => `Modifica ${title}`,
+        delete: "Elimina",
+        deleteFor: (title: string) => `Elimina ${title}`,
+        openOnYoutube: "Apri su YouTube",
+      },
+      folderForm: {
+        createTitle: "Nuova cartella",
+        createSubTitle: (parent: string) => `Nuova sottocartella in ${parent}`,
+        editTitle: "Modifica cartella",
+        description: "Raggruppa i video per tematica.",
+        name: "Nome della cartella",
+        nameHint: (count: number, max: number) =>
+          `${count}/${max} · è il titolo che vedono i clienti`,
+        descriptionLabel: "Descrizione (facoltativa)",
+        visibility: "Chi la vede",
+        visibilityActive: {
+          label: "Clienti con account attivo",
+          description:
+            "In percorso, In pausa e Concluso. È la scelta per quasi tutte le cartelle.",
+        },
+        visibilityOnboarding: {
+          label: "Anche i clienti in Onboarding",
+          description:
+            "Per i video di benvenuto: compaiono nella home di chi aspetta la chiamata, mentre il resto della libreria resta bloccato.",
+        },
+        subfolderVisibility: (parent: string) =>
+          `La vedono gli stessi clienti della cartella ${parent}.`,
+        emptyNote:
+          "Una cartella vuota non compare ai clienti finché non ci aggiungi almeno un video.",
+        cancel: "Annulla",
+        create: "Crea cartella",
+        save: "Salva",
+        saving: "Salvataggio…",
+        created: (name: string) => `Cartella ${name} creata.`,
+        saved: "Cartella aggiornata.",
+        failed: "Non è stato possibile salvare la cartella. Riprova.",
+      },
+      deleteFolderDialog: {
+        title: (name: string) => `Eliminare la cartella ${name}?`,
+        description:
+          "La cartella è vuota: nessun video e nessuna sottocartella.",
+        notEmpty:
+          "La cartella contiene video o sottocartelle: spostali o eliminali prima.",
+        cancel: "Annulla",
+        confirm: "Elimina cartella",
+        deleted: "Cartella eliminata.",
+      },
+      videoForm: {
+        addTitle: "Aggiungi un video",
+        addDescription:
+          "Incolla il link di YouTube: titolo e anteprima vengono letti in automatico.",
+        editTitle: "Modifica video",
+        link: "Link del video YouTube",
+        linkPlaceholder: "https://youtu.be/…",
+        verify: "Verifica",
+        checking: "Verifica del link…",
+        found: "Video trovato e riproducibile nell'app",
+        previewAlt: "Anteprima da YouTube",
+        author: (author: string) => `${author} · YouTube`,
+        title: "Titolo visibile ai clienti",
+        titleHint: "Preso da YouTube, puoi modificarlo.",
+        titleWaiting: "Compare dopo un link valido",
+        folder: "Cartella",
+        note: "Nota per i clienti (facoltativa)",
+        count: (count: number, max: number) => `${count}/${max}`,
+        notify: "Avvisa i clienti",
+        notifyHint: (count: number) =>
+          `Invia una notifica push ${
+            count === 1 ? "al cliente" : `ai ${count} clienti`
+          } che vedono questa cartella. Il messaggio contiene solo il nome dello studio e “Nuovo video disponibile”. Usala per i video importanti.`,
+        accepted:
+          "Link accettati: youtube.com/watch?v=…, youtu.be/…, youtube.com/shorts/…. Funzionano i video pubblici e “Non in elenco”, non quelli privati.",
+        cancel: "Annulla",
+        add: "Aggiungi video",
+        adding: "Aggiunta…",
+        save: "Salva",
+        saving: "Salvataggio…",
+        added: (title: string) => `Video “${title}” aggiunto.`,
+        saved: "Video aggiornato.",
+        failed: "Non è stato possibile salvare il video. Riprova.",
+        duplicate: "Questo video è già nella cartella.",
+        errors: {
+          invalid_link: {
+            lead: "Questo non è un link di YouTube.",
+            title: "Link non riconosciuto",
+            text: "Copia il link dal pulsante “Condividi” di YouTube e incollalo qui.",
+          },
+          not_embeddable: {
+            lead: "Il proprietario di questo video non ne permette la riproduzione in altre app.",
+            title: "Il video non si può aggiungere",
+            text: "I clienti vedrebbero solo un messaggio di errore. Scegli un altro video, oppure, se il video è tuo, attiva “Consenti incorporamento” nelle impostazioni del video su YouTube Studio e riprova.",
+          },
+          unavailable: {
+            lead: "Il video è privato, è stato rimosso oppure il link non esiste.",
+            title: "Il video non si può aggiungere",
+            text: "Funzionano solo i video pubblici e “Non in elenco”. Controlla il link su YouTube e riprova.",
+          },
+          check_failed: {
+            lead: "Non è stato possibile verificare il link con YouTube.",
+            title: "Verifica non riuscita",
+            text: "Controlla la connessione e riprova tra poco.",
+          },
+        },
+      },
+      validation: {
+        nameRequired: "Scrivi il nome della cartella.",
+        nameTooLong: `Al massimo ${VIDEO_FOLDER_NAME_MAX} caratteri.`,
+        descriptionTooLong: `Al massimo ${VIDEO_FOLDER_DESCRIPTION_MAX} caratteri.`,
+        titleRequired: "Scrivi il titolo che vedono i clienti.",
+        titleTooLong: `Al massimo ${VIDEO_TITLE_MAX} caratteri.`,
+        noteTooLong: `Al massimo ${VIDEO_NOTE_MAX} caratteri.`,
+        linkInvalid: "Incolla un link di YouTube.",
+        folderRequired: "Scegli una cartella.",
+      },
+      deleteVideoDialog: {
+        title: (title: string) => `Eliminare il video “${title}”?`,
+        description:
+          "Sparisce dalla libreria dei clienti, insieme al conteggio di chi l'ha aperto. Il video resta su YouTube.",
+        cancel: "Annulla",
+        confirm: "Elimina video",
+        deleted: "Video eliminato.",
+      },
+    },
     clients: {
       title: "Clienti",
       description:
@@ -790,6 +1012,55 @@ export const copy = {
   },
   client: {
     nav: clientNav,
+    /** Video dello studio (mockup v4, C4–C6, C14–C18). */
+    videos: {
+      title: "Video",
+      subtitle: (studioName: string) =>
+        `Video scelti per te da ${studioName}: ricette, esercizi e consigli.`,
+      latest: "Ultimo aggiunto",
+      addedOn: (date: string) => `Aggiunto il ${date}`,
+      folders: "Cartelle",
+      foldersSummary: (folders: number, videos: number) =>
+        `${folders === 1 ? "1 cartella" : `${folders} cartelle`} · ${
+          videos === 1 ? "1 video" : `${videos} video`
+        }`,
+      videoCount: VIDEO_COUNT,
+      newCount: (count: number) => (count === 1 ? "1 nuovo" : `${count} nuovi`),
+      newBadge: "Nuovo",
+      viewedAria: "Già aperto",
+      subfolders: "Sottocartelle",
+      filter: {
+        label: "Filtra i video",
+        all: (count: number) => `Tutti · ${count}`,
+        toWatch: (count: number) => `Da guardare · ${count}`,
+      },
+      listFooter: "La spunta indica i video che hai già aperto.",
+      emptyFilter: "Hai già aperto tutti i video di questa cartella.",
+      play: (title: string) => `Riproduci ${title}`,
+      playerTitle: (title: string) => `Video: ${title}`,
+      playerSource: "Riproduzione da YouTube",
+      backToVideos: "Torna ai video",
+      backToFolder: (name: string) => `Torna a ${name}`,
+      noteFrom: (studioName: string) => `Nota di ${studioName}`,
+      quotedNote: (note: string) => `“${note}”`,
+      openOnYoutube: "Apri su YouTube",
+      sameFolder: "Nella stessa cartella",
+      unavailable: {
+        title: "Video non disponibile",
+        text: "YouTube non riesce a riprodurlo in questo momento. Riprova più tardi.",
+        retry: "Riprova",
+        hint: "Se il problema resta, lo studio vede il video segnalato come non disponibile e lo sostituisce.",
+        youtube: "Prova ad aprirlo su YouTube",
+      },
+      empty: {
+        title: "Ancora nessun video",
+        description:
+          "Qui troverai i video che lo studio prepara per te: ricette, esercizi e consigli. Ti avvisiamo quando arriva il primo.",
+        back: "Torna alla home",
+      },
+      home: { title: "Video", all: "Tutti i video" },
+      onboarding: { title: "Intanto guarda" },
+    },
     menuLabel: "Menu",
     openMenu: "Apri il menu",
     closeMenu: "Chiudi",
@@ -1295,7 +1566,19 @@ export const copy = {
   },
   // Testo delle notifiche push (N-05): generico, mai dati del file
   notifications: {
+<<<<<<< Updated upstream
     filePublished: "Hai un nuovo documento nella tua area riservata",
+=======
+    body: {
+      file_diet: "È disponibile il tuo nuovo piano alimentare.",
+      file_workout: "È disponibile la tua nuova scheda di allenamento.",
+      file_report: "È disponibile il tuo nuovo report.",
+      daily_checkin: "Com'è andata oggi? Un minuto per passi, sonno e acqua.",
+      daily_checkin_workout:
+        "Com'è andata oggi? Un minuto per passi, sonno e acqua, e se ti sei allenato il voto dell'allenamento.",
+      video: "Nuovo video disponibile.",
+    },
+>>>>>>> Stashed changes
   },
   push: {
     errors: {
