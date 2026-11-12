@@ -236,7 +236,7 @@ export const CSV_FILE_ERRORS = [
 export type CsvFileError = (typeof CSV_FILE_ERRORS)[number];
 
 /** Schede della scheda cliente (A4), rotte figlie di /admin/clienti/[id]. */
-export const CLIENT_TABS = ["profilo", "file", "tracking"] as const;
+export const CLIENT_TABS = ["profilo", "percorso", "file", "tracking"] as const;
 export type ClientTab = (typeof CLIENT_TABS)[number];
 
 export function clientDetailPath(
@@ -568,4 +568,59 @@ export function videoFolderPath(folderId: string, toWatch = false): string {
 }
 export function videoPath(folderId: string, videoId: string): string {
   return `${ROUTES.client.videos}/${folderId}/${videoId}`;
+}
+
+// ---------------------------------------------------------------------
+// Percorso (mockup v5: A17–A19, C5, C19–C21)
+// ---------------------------------------------------------------------
+
+/** Durata in mesi: 6 mesi oppure 1 anno. */
+export const JOURNEY_DURATIONS = [6, 12] as const;
+export type JourneyDuration = (typeof JOURNEY_DURATIONS)[number];
+/** Check del percorso, senza onboarding né omaggio aggiunto. */
+export const JOURNEY_CHECKS_BY_DURATION: Record<JourneyDuration, number> = {
+  6: 5,
+  12: 11,
+};
+/** Primo percorso, estensione (entro la soglia) o ripresa (oltre). */
+export const JOURNEY_KINDS = ["first", "extension", "resume"] as const;
+export type JourneyKind = (typeof JOURNEY_KINDS)[number];
+/** Check omaggio: nessuno, aggiunto ai check del percorso o incluso. */
+export const JOURNEY_GIFT_MODES = ["none", "added", "included"] as const;
+export type JourneyGiftMode = (typeof JOURNEY_GIFT_MODES)[number];
+export const JOURNEY_STATUSES = ["active", "concluded"] as const;
+export type JourneyStatus = (typeof JOURNEY_STATUSES)[number];
+export const JOURNEY_SESSION_TYPES = ["onboarding", "check", "gift"] as const;
+export type JourneySessionType = (typeof JOURNEY_SESSION_TYPES)[number];
+/** Stati salvati; "prossima" e "in ritardo" si calcolano. */
+export const JOURNEY_SESSION_STATUSES = ["todo", "done", "skipped"] as const;
+export type JourneySessionStatus = (typeof JOURNEY_SESSION_STATUSES)[number];
+/**
+ * Giorni dalla fine del percorso concluso entro cui si suggerisce
+ * l'estensione (senza onboarding, con omaggio aggiunto); oltre, la ripresa.
+ * DA CONFERMARE: in futuro impostazione dello studio.
+ */
+export const JOURNEY_EXTENSION_THRESHOLD_DAYS = 60;
+/** Ora locale (fuso dello studio) dei promemoria: sera prima e mattina stessa. DA CONFERMARE. */
+export const JOURNEY_REMINDER_HOURS = { dayBefore: 18, sameDay: 8 } as const;
+/** Le push del percorso valgono per la giornata. */
+export const PUSH_TTL_JOURNEY_SECONDS = 12 * 60 * 60;
+export const JOURNEY_NOTE_MAX = 500;
+/** Pagina Percorso del cliente (anche destinazione delle push). */
+export const JOURNEY_CLIENT_PATH = "/app/percorso";
+/** Parametro del percorso mostrato (storico admin e percorsi precedenti del cliente). */
+export const JOURNEY_PARAM = "percorso";
+export const JOURNEY_CRON_PATH = `${INTERNAL_API_PATH}/notifications/journeys`;
+
+export function journeyIcsPath(sessionId: string): string {
+  return `${JOURNEY_CLIENT_PATH}/sessioni/${sessionId}/calendario`;
+}
+export function clientJourneyUrl(journeyId?: string): string {
+  return journeyId
+    ? `${JOURNEY_CLIENT_PATH}?${JOURNEY_PARAM}=${journeyId}`
+    : JOURNEY_CLIENT_PATH;
+}
+export function adminJourneyUrl(clientId: string, journeyId?: string): string {
+  const path = clientDetailPath(clientId, "percorso");
+  return journeyId ? `${path}?${JOURNEY_PARAM}=${journeyId}` : path;
 }

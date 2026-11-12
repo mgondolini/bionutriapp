@@ -701,6 +701,7 @@ export const copy = {
         tabsLabel: "Sezioni della scheda cliente",
         tabs: {
           profilo: "Profilo",
+          percorso: "Percorso",
           file: "File",
           tracking: "Tracking",
         } satisfies Record<ClientTab, string>,
