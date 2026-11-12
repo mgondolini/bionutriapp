@@ -22,12 +22,14 @@ import {
   entryIdSchema,
   resetGoalSchema,
   saveGoalsSchema,
+  setMeasureCheckSchema,
   updateEntrySchema,
   type AddEntryInput,
   type CheckinInput,
   type EntryIdInput,
   type ResetGoalInput,
   type SaveGoalsInput,
+  type SetMeasureCheckInput,
   type UpdateEntryInput,
 } from "@/server/validation/tracking.schema";
 import { fail, ok, type ActionResult } from "@/types/action-result";
@@ -246,5 +248,35 @@ export async function resetGoalAction(
   );
   if (!result.ok) return fail(copy.admin.clients.detail.notFoundDescription);
   revalidateGoals(parsed.data.clientId);
+  return ok();
+}
+
+/**
+ * Prossimo check di peso e circonferenze (solo staff): una data da oggi a un
+ * anno, oppure `null` per tornare a ultima registrazione + 30 giorni.
+ */
+export async function setMeasureCheckAction(
+  input: SetMeasureCheckInput,
+): Promise<ActionResult> {
+  const session = await getStaffSession();
+  if (!session) return authFailure();
+
+  const parsed = setMeasureCheckSchema.safeParse(input);
+  if (!parsed.success) {
+    const day = z.flattenError(parsed.error).fieldErrors.day?.[0];
+    return fail(
+      day ?? copy.common.invalidInput,
+      day ? { day: [day] } : undefined,
+    );
+  }
+
+  const result = await trackingService.setMeasureCheck(
+    session.studio.id,
+    parsed.data.clientId,
+    parsed.data.day,
+  );
+  if (!result.ok) return fail(copy.admin.clients.detail.notFoundDescription);
+  revalidateGoals(parsed.data.clientId);
+  revalidatePath(ROUTES.admin.clients);
   return ok();
 }

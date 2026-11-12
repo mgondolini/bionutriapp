@@ -22,6 +22,7 @@ async function TrackingContent({
       clientName={data.clientName}
       heightCm={data.heightCm}
       overview={data.overview}
+      check={data.check}
       goals={data.goals}
       today={data.today}
     />

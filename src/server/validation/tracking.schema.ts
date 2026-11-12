@@ -12,6 +12,7 @@ import {
   HABIT_KEYS,
   HABIT_SCORE_RANGE,
   type HabitKey,
+  MEASURE_CHECK_MAX_DAYS_AHEAD,
   MEASURE_DECIMALS,
   METRIC_KIND_BY_FREQUENCY,
   TRACKING_NOTE_MAX,
@@ -19,7 +20,7 @@ import {
   type MetricKind,
 } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
-import { todayInRome } from "@/lib/domain/tracking/dates";
+import { addDays, todayInRome } from "@/lib/domain/tracking/dates";
 import { formatNumber } from "@/lib/format";
 
 const v = copy.tracking.validation;
@@ -301,3 +302,25 @@ export const resetGoalSchema = z.object({
   key: z.enum(HABIT_KEYS),
 });
 export type ResetGoalInput = z.input<typeof resetGoalSchema>;
+
+/** Prossimo check scelto dallo staff: da oggi a un anno (giorni a Roma). */
+export const measureCheckDaySchema = z.iso
+  .date(copy.admin.clients.tracking.check.dateRequired)
+  .refine(
+    (day) => day >= todayInRome(),
+    copy.admin.clients.tracking.check.datePast,
+  )
+  .refine(
+    (day) => day <= addDays(todayInRome(), MEASURE_CHECK_MAX_DAYS_AHEAD),
+    copy.admin.clients.tracking.check.dateTooFar,
+  );
+
+export const measureCheckFormSchema = z.object({ day: measureCheckDaySchema });
+export type MeasureCheckFormValues = z.input<typeof measureCheckFormSchema>;
+
+/** `day: null` = torna alla data predefinita. */
+export const setMeasureCheckSchema = z.object({
+  clientId: z.uuid(),
+  day: measureCheckDaySchema.nullable(),
+});
+export type SetMeasureCheckInput = z.input<typeof setMeasureCheckSchema>;

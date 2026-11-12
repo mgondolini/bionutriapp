@@ -2,7 +2,14 @@ import "server-only";
 
 import { after } from "next/server";
 
-import { DAILY_REMINDER_CONCURRENCY } from "@/lib/constants/domain";
+import {
+  DAILY_REMINDER_CONCURRENCY,
+  MEASURE_CHECK_REMINDER_HOUR,
+} from "@/lib/constants/domain";
+import {
+  measureCheck,
+  measureCheckReminder,
+} from "@/lib/domain/tracking/measure-check";
 import {
   buildNotification,
   dedupeKey,
@@ -101,7 +108,6 @@ async function deliverQueued(job: QueuedNotification): Promise<void> {
   }
 }
 
-
 /**
  * Nuovo file pubblicato: l'invio parte dopo la risposta (`after`), così il
  * caricamento non aspetta il servizio push e non fallisce mai per la notifica.
@@ -170,6 +176,7 @@ export async function deliverNewVideo(videoId: string): Promise<void> {
       type: "video",
       videoId: target.videoId,
       folderId: target.folderId,
+      folderName: target.folderName,
     };
     const entries: NewLogEntry[] = target.recipients.map((recipient) => ({
       studioId: target.studioId,
@@ -325,6 +332,88 @@ export async function sendDailyReminders(
   return report;
 }
 
+export type MeasureCheckReport = {
+  studios: number;
+  queued: number;
+  duplicates: number;
+};
+
+/**
+ * Promemoria del check delle misure: alle 6 nel fuso dello studio, ai
+ * clienti il cui check è domani ("eve") o oggi ("day"). Stessa data del
+ * tracking (measure-check.ts): data scelta dal nutrizionista o ultima
+ * registrazione mensile + 30. Chi registra le misure prima sposta il check
+ * e non riceve più il promemoria di quella data.
+ */
+export async function prepareMeasureCheckReminders(
+  now: Date,
+): Promise<{ report: MeasureCheckReport; jobs: QueuedNotification[] }> {
+  const report: MeasureCheckReport = { studios: 0, queued: 0, duplicates: 0 };
+  const jobs: QueuedNotification[] = [];
+  const studios = await notificationsRepository.listStudios();
+
+  for (const studio of studios) {
+    if (!isValidTimeZone(studio.timezone)) continue;
+    const local = localDateTime(now, studio.timezone);
+    if (local.hour !== MEASURE_CHECK_REMINDER_HOUR) continue;
+    report.studios += 1;
+
+    const candidates = await notificationsRepository.listMeasureCheckCandidates(
+      studio.id,
+    );
+    const planned = candidates.flatMap((candidate) => {
+      const { dueOn } = measureCheck(candidate);
+      const when = measureCheckReminder(dueOn, local.day);
+      if (!dueOn || !when) return [];
+      const event: NotificationEvent = { type: "measure_check", dueOn, when };
+      const entry: NewLogEntry = {
+        studioId: studio.id,
+        clientId: candidate.clientId,
+        userId: candidate.userId,
+        type: "measure_check",
+        dedupeKey: dedupeKey(event, candidate.clientId),
+        payload: logPayload(event),
+        status: "queued",
+      };
+      return [{ candidate, event, entry }];
+    });
+
+    const inserted = new Map(
+      (
+        await notificationsRepository.insertLogEntries(
+          planned.map((p) => p.entry),
+        )
+      ).map((row) => [row.dedupeKey, row.id]),
+    );
+    for (const plan of planned) {
+      const logId = inserted.get(plan.entry.dedupeKey);
+      if (!logId) {
+        report.duplicates += 1;
+        continue;
+      }
+      report.queued += 1;
+      jobs.push({
+        logId,
+        clientId: plan.candidate.clientId,
+        userId: plan.candidate.userId,
+        studioName: studio.name,
+        event: plan.event,
+      });
+    }
+  }
+  return { report, jobs };
+}
+
+/** Promemoria del check (cron orario): conteggi subito, invii dopo la risposta. */
+export async function sendMeasureCheckReminders(
+  now: Date = new Date(),
+): Promise<MeasureCheckReport> {
+  const { report, jobs } = await prepareMeasureCheckReminders(now);
+  if (jobs.length > 0) after(() => deliverAll(jobs));
+  console.info("[promemoria-check]", report);
+  return report;
+}
+
 /** Preferenze dell'utente della sessione (interruttori del profilo, C-07). */
 export function getOwnPreferences(): Promise<NotificationPreferences> {
   return notificationsRepository.getOwnPreferences();
@@ -341,4 +430,3 @@ export async function setOwnPreference(
     [key]: enabled,
   });
 }
-

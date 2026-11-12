@@ -63,6 +63,8 @@ const db = {
 vi.mock("@/server/repositories/tracking.repository", () => ({
   listMetrics: vi.fn(async () => db.metrics),
   listGoals: vi.fn(async () => db.goals),
+  getMeasureCheck: vi.fn(async () => null),
+  setMeasureCheck: vi.fn(async () => undefined),
   listEntries: vi.fn(async (clientId: string) =>
     db.entries.filter((entry) => entry.client_id === clientId),
   ),

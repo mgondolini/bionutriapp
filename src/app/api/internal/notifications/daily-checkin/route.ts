@@ -1,11 +1,16 @@
 import { isAuthorizedCronRequest } from "@/lib/cron/authorize";
-import { sendDailyReminders } from "@/server/services/notifications.service";
+import {
+  sendDailyReminders,
+  sendMeasureCheckReminders,
+} from "@/server/services/notifications.service";
 
 /**
- * Promemoria serale del check-in, chiamato ogni ora (minuto 0) da pg_cron
+ * Promemoria orari, chiamati ogni ora (minuto 0) da pg_cron
  * con pg_net (migrazione 20261106000000_notifiche.sql). Senza
- * `Authorization: Bearer <CRON_SECRET>` risponde 401 e non fa nulla. Invia
- * solo agli studi che sono alle 20 nel proprio fuso; risponde subito con i
+ * `Authorization: Bearer <CRON_SECRET>` risponde 401 e non fa nulla. Il
+ * check-in serale va agli studi che sono alle 20 nel proprio fuso, il check
+ * delle misure a quelli che sono alle 6 (giorno prima e giorno stesso). Il
+ * percorso resta "daily-checkin" per non cambiare il job. Risponde subito con i
  * conteggi e invia dopo la risposta. Idempotente: il registro delle notifiche
  * impedisce un secondo invio nello stesso giorno.
  */
@@ -24,8 +29,9 @@ export async function POST(request: Request) {
 
   try {
     const report = await sendDailyReminders();
+    const measureCheck = await sendMeasureCheckReminders();
     return Response.json(
-      { ok: true, ...report },
+      { ok: true, ...report, measureCheck },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (error) {

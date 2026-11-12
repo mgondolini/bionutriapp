@@ -19,6 +19,7 @@ import {
   type CircumferenceSummary,
 } from "./circumferences";
 import { weeklyHabitStats, type WeeklyHabitStats } from "./habits";
+import { measureCheck, type MeasureCheck } from "./measure-check";
 import { workoutStats, type WorkoutStats } from "./workouts";
 
 /** Configurazione di una misura dello studio (tabella metrics). */
@@ -124,11 +125,13 @@ export function metricOverview(
   metricEntries: readonly TrackingEntry[],
   goals: readonly PersonalGoal[],
   today: string,
+  /** Data del check scelta dal nutrizionista (vale per peso e circonferenze). */
+  staffDueOn: string | null = null,
 ): MetricOverview {
   const entries = [...metricEntries].sort(byRecordedDesc);
   switch (metricKind(metric)) {
     case "circumference": {
-      const summary = circumferenceSummary(entries, today);
+      const summary = circumferenceSummary(entries, today, staffDueOn);
       return {
         kind: "circumference",
         metric,
@@ -159,13 +162,50 @@ export function metricOverview(
   }
 }
 
+/** Data del check scelta dal nutrizionista (`clients.measure_check_on`). */
+export type MeasureCheckOverride = { on: string; setAt: string | null };
+
+/** Prossimo check del cliente dalle registrazioni mensili (peso e circonferenze). */
+export function measureCheckOf(input: {
+  metrics: readonly MetricConfig[];
+  entries: readonly TrackingEntry[];
+  override: MeasureCheckOverride | null;
+}): MeasureCheck {
+  const monthly = new Set(
+    input.metrics
+      .filter((metric) => metricKind(metric) === "circumference")
+      .map((metric) => metric.id),
+  );
+  let lastRecordedOn: string | null = null;
+  let lastCreatedAt: string | null = null;
+  for (const entry of input.entries) {
+    if (!monthly.has(entry.metricId)) continue;
+    if (!lastRecordedOn || entry.recordedOn > lastRecordedOn)
+      lastRecordedOn = entry.recordedOn;
+    if (
+      !lastCreatedAt ||
+      Date.parse(entry.createdAt) > Date.parse(lastCreatedAt)
+    )
+      lastCreatedAt = entry.createdAt;
+  }
+  return measureCheck({
+    override: input.override?.on ?? null,
+    overrideSetAt: input.override?.setAt ?? null,
+    lastRecordedOn,
+    lastCreatedAt,
+  });
+}
+
 /** Tutte le misure attive, nell'ordine dello studio. Le registrazioni si raggruppano una sola volta. */
 export function buildTrackingOverview(input: {
   metrics: readonly MetricConfig[];
   goals: readonly PersonalGoal[];
   entries: readonly TrackingEntry[];
   today: string;
+  /** Prossimo check: se l'ha scelto il nutrizionista vale per tutte le misure mensili. */
+  check?: MeasureCheck;
 }): MetricOverview[] {
+  const staffDueOn = input.check?.source === "staff" ? input.check.dueOn : null;
   const byMetric = new Map<string, TrackingEntry[]>();
   for (const entry of input.entries) {
     const list = byMetric.get(entry.metricId);
@@ -180,6 +220,7 @@ export function buildTrackingOverview(input: {
         byMetric.get(metric.id) ?? [],
         input.goals,
         input.today,
+        staffDueOn,
       ),
     );
 }

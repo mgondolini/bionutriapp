@@ -3,6 +3,7 @@ import {
   Clapperboard,
   Dumbbell,
   FileChartColumn,
+  Ruler,
   Utensils,
   type LucideIcon,
 } from "lucide-react";
@@ -20,4 +21,5 @@ export const NOTIFICATION_ICONS: Record<NotificationType, LucideIcon> = {
   file_report: FileChartColumn,
   daily_checkin: ClipboardCheck,
   video: Clapperboard,
+  measure_check: Ruler,
 };

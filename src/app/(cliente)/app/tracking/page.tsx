@@ -16,11 +16,16 @@ export default async function TrackingPage() {
   const session = await requireClient({ unlocked: true });
   const actor = clientTrackingActor(session);
   if (!actor) redirect(ROUTES.client.home);
-  const { overview, today, canWrite } = await getClientTracking(actor);
+  const { overview, check, today, canWrite } = await getClientTracking(actor);
   return (
     <div className="flex flex-col gap-4">
       <ClientPageHeader title={t.title} />
-      <TrackingOverview overview={overview} today={today} canWrite={canWrite} />
+      <TrackingOverview
+        overview={overview}
+        checkDueOn={check.dueOn}
+        today={today}
+        canWrite={canWrite}
+      />
     </div>
   );
 }

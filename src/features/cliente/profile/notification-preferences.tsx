@@ -20,6 +20,7 @@ const ROWS: { key: PreferenceKey; icon: LucideIcon }[] = [
   { key: "filesEnabled", icon: Files },
   { key: "dailyReminderEnabled", icon: NOTIFICATION_ICONS.daily_checkin },
   { key: "videosEnabled", icon: NOTIFICATION_ICONS.video },
+  { key: "measureCheckEnabled", icon: NOTIFICATION_ICONS.measure_check },
 ];
 
 function PreferenceRow({

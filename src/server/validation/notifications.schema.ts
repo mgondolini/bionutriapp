@@ -3,7 +3,12 @@ import { z } from "zod";
 
 /** Interruttori del profilo (C-07): un'impostazione alla volta. */
 export const notificationPreferenceSchema = z.object({
-  key: z.enum(["filesEnabled", "dailyReminderEnabled", "videosEnabled"]),
+  key: z.enum([
+    "filesEnabled",
+    "dailyReminderEnabled",
+    "videosEnabled",
+    "measureCheckEnabled",
+  ]),
   enabled: z.boolean(),
 });
 export type NotificationPreferenceInput = z.infer<

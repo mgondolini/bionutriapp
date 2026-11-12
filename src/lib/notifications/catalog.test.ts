@@ -139,11 +139,12 @@ describe("deduplicazione e registro", () => {
       type: "video",
       videoId: "v-1",
       folderId: "f-1",
+      folderName: "Ricette veloci",
     };
     expect(buildNotification(event, STUDIO)).toEqual({
       type: "video",
       title: "Studio Verde",
-      body: "Nuovo video disponibile.",
+      body: "Nuovo video disponibile in Ricette veloci",
       icon: "/icon/192",
       url: "/app/video/f-1/v-1",
       tag: "videos",
@@ -156,6 +157,30 @@ describe("deduplicazione e registro", () => {
       videoId: "v-1",
     });
     expect(notificationTtl(event)).toBe(86_400);
+  });
+
+  it("check delle misure: tracking, una chiave per cliente, data e momento", () => {
+    const eve: NotificationEvent = {
+      type: "measure_check",
+      dueOn: "2026-12-01",
+      when: "eve",
+    };
+    expect(buildNotification(eve, STUDIO)).toEqual({
+      type: "measure_check",
+      title: "Studio Verde",
+      body: "Domani è il giorno del check: prepara metro e bilancia.",
+      icon: "/icon/192",
+      url: "/app/tracking",
+      tag: "measure-check-2026-12-01",
+    });
+    expect(buildNotification({ ...eve, when: "day" }, STUDIO).body).toBe(
+      "Oggi è il giorno del check: registra peso e circonferenze.",
+    );
+    expect(dedupeKey(eve, "c1")).toBe("measure_check:c1:2026-12-01:eve");
+    expect(dedupeKey({ ...eve, when: "day" }, "c1")).toBe(
+      "measure_check:c1:2026-12-01:day",
+    );
+    expect(notificationTtl(eve)).toBe(12 * 60 * 60);
   });
 
   it("badge statico per tipo", () => {

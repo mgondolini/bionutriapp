@@ -299,6 +299,10 @@ export const copy = {
           label: "Nuovi video",
           description: "Quando lo studio segnala un video importante.",
         },
+        measureCheckEnabled: {
+          label: "Check delle misure",
+          description: "Alle 6 del giorno prima e del giorno del check.",
+        },
         saved: "Preferenza salvata.",
         failed: "Non è stato possibile salvare la preferenza. Riprova.",
       },
@@ -475,7 +479,7 @@ export const copy = {
         notifyHint: (count: number) =>
           `Invia una notifica push ${
             count === 1 ? "al cliente" : `ai ${count} clienti`
-          } che vedono questa cartella. Il messaggio contiene solo il nome dello studio e “Nuovo video disponibile”. Usala per i video importanti.`,
+          } che vedono questa cartella. Il messaggio contiene solo il nome dello studio e “Nuovo video disponibile in” seguito dal nome della cartella. Usala per i video importanti.`,
         accepted:
           "Link accettati: youtube.com/watch?v=…, youtu.be/…, youtube.com/shorts/…. Funzionano i video pubblici e “Non in elenco”, non quelli privati.",
         cancel: "Annulla",
@@ -708,7 +712,32 @@ export const copy = {
       tracking: {
         overdue: (count: number, names: string) =>
           `${count === 1 ? "1 misura in ritardo" : `${count} misure in ritardo`}: ${names}.`,
-        overdueHint: `Sono passati più di ${CIRCUMFERENCE_INTERVAL_DAYS} giorni dall'ultima registrazione.`,
+        overdueHint: "La data del check è passata.",
+        check: {
+          pill: (date: string) => `Prossimo check ${date}`,
+          pillStaff: (date: string) => `Prossimo check ${date} · scelto da te`,
+          none: "Prossimo check: dopo la prima misura",
+          edit: "Cambia data",
+          /** Dopo il testo visibile della pillola (WCAG 2.5.3). */
+          editAria: (clientName: string) =>
+            ` · cambia la data del prossimo check di ${clientName}`,
+          dialogTitle: "Prossimo check delle misure",
+          dialogDescription: (clientName: string) =>
+            `Peso e circonferenze di ${clientName}. Il cliente riceve un promemoria alle 6 del giorno prima e del giorno stesso.`,
+          label: "Data del check",
+          hint: (defaultDate: string | null) =>
+            defaultDate
+              ? `Senza una data scelta: ${defaultDate} (${CIRCUMFERENCE_INTERVAL_DAYS} giorni dall'ultima registrazione). Dopo la prossima registrazione si riparte da ${CIRCUMFERENCE_INTERVAL_DAYS} giorni.`
+              : `Dopo la prossima registrazione si riparte da ${CIRCUMFERENCE_INTERVAL_DAYS} giorni.`,
+          reset: "Usa la data standard",
+          save: "Salva",
+          cancel: "Annulla",
+          saved: "Data del check salvata",
+          resetDone: "Torna la data standard",
+          dateRequired: "Scegli una data.",
+          datePast: "La data non può essere passata.",
+          dateTooFar: "Scegli una data entro un anno.",
+        },
         height: {
           value: (height: string) => `Altezza ${height}`,
           missing: "Altezza non indicata: aggiungila nel profilo",
@@ -1173,6 +1202,7 @@ export const copy = {
       },
       circumferences: {
         hint: "Una volta al mese",
+        nextCheck: (date: string) => `Prossimo check ${date}`,
         progress: (recorded: number, total: number) =>
           `${recorded} su ${total} registrate questo mese`,
         missing: (names: string) => `mancano ${names}`,
@@ -1662,7 +1692,12 @@ export const copy = {
       daily_checkin: "Com'è andata oggi? Un minuto per passi, sonno e acqua.",
       daily_checkin_workout:
         "Com'è andata oggi? Un minuto per passi, sonno e acqua, e se ti sei allenato il voto dell'allenamento.",
-      video: "Nuovo video disponibile.",
+      /** Il nome della cartella è della libreria dello studio, non un dato del cliente. */
+      video: (folderName: string) => `Nuovo video disponibile in ${folderName}`,
+      measure_check_eve:
+        "Domani è il giorno del check: prepara metro e bilancia.",
+      measure_check_day:
+        "Oggi è il giorno del check: registra peso e circonferenze.",
     },
   },
   push: {

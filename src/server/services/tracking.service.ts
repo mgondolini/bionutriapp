@@ -12,6 +12,7 @@ import { addDays, todayInRome } from "@/lib/domain/tracking/dates";
 import {
   buildTrackingOverview,
   effectiveGoal,
+  measureCheckOf,
   metricKind,
   toRecord,
   type EffectiveGoal,
@@ -21,6 +22,7 @@ import {
   type ToRecordItem,
   type TrackingEntry,
 } from "@/lib/domain/tracking/overview";
+import type { MeasureCheck } from "@/lib/domain/tracking/measure-check";
 import {
   canEditEntry,
   canWriteTracking,
@@ -127,6 +129,8 @@ type TrackingData = {
   metrics: MetricConfig[];
   goals: PersonalGoal[];
   entries: TrackingEntry[];
+  /** Prossimo check di peso e circonferenze. */
+  check: MeasureCheck;
 };
 
 /** Misure, obiettivi e registrazioni: tre query in parallelo, una sola per tutte le registrazioni. */
@@ -134,18 +138,31 @@ async function loadTracking(
   studioId: string,
   clientId: string,
 ): Promise<TrackingData> {
-  const [metrics, goals, entries] = await Promise.all([
+  const [metricRows, goals, entryRows, checkRow] = await Promise.all([
     trackingRepository.listMetrics(studioId),
     trackingRepository.listGoals(clientId),
     trackingRepository.listEntries(clientId),
+    trackingRepository.getMeasureCheck(clientId),
   ]);
+  const metrics = metricRows.map(toMetric);
+  const entries = entryRows.map(toEntry);
   return {
-    metrics: metrics.map(toMetric),
+    metrics,
     goals: goals.map((goal) => ({
       metricId: goal.metric_id,
       goalValue: Number(goal.goal_value),
     })),
-    entries: entries.map(toEntry),
+    entries,
+    check: measureCheckOf({
+      metrics,
+      entries,
+      override: checkRow?.measure_check_on
+        ? {
+            on: checkRow.measure_check_on,
+            setAt: checkRow.measure_check_set_at,
+          }
+        : null,
+    }),
   };
 }
 
@@ -155,6 +172,7 @@ async function loadTracking(
 
 export type ClientTracking = {
   overview: MetricOverview[];
+  check: MeasureCheck;
   today: string;
   canWrite: boolean;
 };
@@ -167,6 +185,7 @@ export async function getClientTracking(
   const today = todayInRome();
   return {
     overview: buildTrackingOverview({ ...data, today }),
+    check: data.check,
     today,
     canWrite: actor.canWrite,
   };
@@ -487,6 +506,8 @@ export type StaffTracking = {
   /** Altezza del cliente (dato anagrafico), accanto a peso e circonferenze. */
   heightCm: number | null;
   overview: MetricOverview[];
+  /** Prossimo check di peso e circonferenze (data modificabile dallo staff). */
+  check: MeasureCheck;
   /** Obiettivi effettivi di passi, sonno e acqua, nell'ordine del check-in. */
   goals: StaffGoal[];
   today: string;
@@ -526,6 +547,7 @@ export async function getStaffTracking(
     clientName: [client.first_name, client.last_name].filter(Boolean).join(" "),
     heightCm: client.height_cm,
     overview: buildTrackingOverview({ ...data, today }),
+    check: data.check,
     goals,
     today,
   };
@@ -606,5 +628,21 @@ export async function resetGoal(
   );
   if (!metric) return { ok: false, reason: "not_found" };
   await trackingRepository.deleteGoals(clientId, [metric.id]);
+  return { ok: true };
+}
+
+/**
+ * Prossimo check di peso e circonferenze scelto dallo staff; null torna alla
+ * data predefinita (ultima registrazione + 30 giorni).
+ */
+export async function setMeasureCheck(
+  studioId: string,
+  clientId: string,
+  day: string | null,
+): Promise<{ ok: true } | { ok: false; reason: "not_found" }> {
+  if (!(await loadOwnedClient(studioId, clientId))) {
+    return { ok: false, reason: "not_found" };
+  }
+  await trackingRepository.setMeasureCheck(clientId, day);
   return { ok: true };
 }

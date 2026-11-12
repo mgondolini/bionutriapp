@@ -295,6 +295,8 @@ export type Database = {
           id: string;
           journey_stage: string;
           last_name: string | null;
+          measure_check_on: string | null;
+          measure_check_set_at: string | null;
           origin: string;
           phone: string;
           privacy_consent_at: string | null;
@@ -315,6 +317,8 @@ export type Database = {
           id?: string;
           journey_stage?: string;
           last_name?: string | null;
+          measure_check_on?: string | null;
+          measure_check_set_at?: string | null;
           origin: string;
           phone: string;
           privacy_consent_at?: string | null;
@@ -334,6 +338,8 @@ export type Database = {
           id?: string;
           journey_stage?: string;
           last_name?: string | null;
+          measure_check_on?: string | null;
+          measure_check_set_at?: string | null;
           origin?: string;
           phone?: string;
           privacy_consent_at?: string | null;
@@ -500,6 +506,7 @@ export type Database = {
         Row: {
           daily_reminder_enabled: boolean;
           files_enabled: boolean;
+          measure_check_enabled: boolean;
           updated_at: string;
           user_id: string;
           videos_enabled: boolean;
@@ -508,6 +515,7 @@ export type Database = {
         Insert: {
           daily_reminder_enabled?: boolean;
           files_enabled?: boolean;
+          measure_check_enabled?: boolean;
           updated_at?: string;
           user_id?: string;
           videos_enabled?: boolean;
@@ -515,6 +523,7 @@ export type Database = {
         Update: {
           daily_reminder_enabled?: boolean;
           files_enabled?: boolean;
+          measure_check_enabled?: boolean;
           updated_at?: string;
           user_id?: string;
           videos_enabled?: boolean;
@@ -1097,6 +1106,17 @@ export type Database = {
         Returns: string[];
       };
       mark_file_read: { Args: { p_file_id: string }; Returns: string };
+      measure_check_candidates: {
+        Args: { p_studio: string };
+        Returns: {
+          client_id: string;
+          last_created_at: string;
+          last_recorded_on: string;
+          measure_check_on: string;
+          measure_check_set_at: string;
+          user_id: string;
+        }[];
+      };
       my_context: {
         Args: Record<PropertyKey, never>;
         Returns: {

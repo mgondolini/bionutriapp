@@ -23,6 +23,7 @@ export type NotificationPreferences = {
   filesEnabled: boolean;
   dailyReminderEnabled: boolean;
   videosEnabled: boolean;
+  measureCheckEnabled: boolean;
 };
 
 /** Senza riga valgono i default: tutto attivo. */
@@ -30,6 +31,7 @@ export const DEFAULT_PREFERENCES: NotificationPreferences = {
   filesEnabled: true,
   dailyReminderEnabled: true,
   videosEnabled: true,
+  measureCheckEnabled: true,
 };
 
 export type FileRecipient = {
@@ -119,6 +121,34 @@ export async function listDailyReminderCandidates(
   }));
 }
 
+export type MeasureCheckCandidate = {
+  clientId: string;
+  userId: string;
+  override: string | null;
+  overrideSetAt: string | null;
+  lastRecordedOn: string | null;
+  lastCreatedAt: string | null;
+};
+
+/** Clienti che possono ricevere il promemoria del check (RPC solo service_role). */
+export async function listMeasureCheckCandidates(
+  studioId: string,
+): Promise<MeasureCheckCandidate[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase.rpc("measure_check_candidates", {
+    p_studio: studioId,
+  });
+  if (error) throw error;
+  return (data ?? []).map((row) => ({
+    clientId: row.client_id,
+    userId: row.user_id,
+    override: row.measure_check_on,
+    overrideSetAt: row.measure_check_set_at,
+    lastRecordedOn: row.last_recorded_on,
+    lastCreatedAt: row.last_created_at,
+  }));
+}
+
 export type LogStatus = "queued" | "sent" | "partial" | "failed" | "skipped";
 
 export type NewLogEntry = {
@@ -192,7 +222,9 @@ export async function getOwnPreferences(): Promise<NotificationPreferences> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("notification_preferences")
-    .select("files_enabled, daily_reminder_enabled, videos_enabled")
+    .select(
+      "files_enabled, daily_reminder_enabled, videos_enabled, measure_check_enabled",
+    )
     .maybeSingle();
   if (error) throw error;
   return data
@@ -200,6 +232,7 @@ export async function getOwnPreferences(): Promise<NotificationPreferences> {
         filesEnabled: data.files_enabled,
         dailyReminderEnabled: data.daily_reminder_enabled,
         videosEnabled: data.videos_enabled,
+        measureCheckEnabled: data.measure_check_enabled,
       }
     : DEFAULT_PREFERENCES;
 }
@@ -216,6 +249,7 @@ export async function saveOwnPreferences(
       files_enabled: preferences.filesEnabled,
       daily_reminder_enabled: preferences.dailyReminderEnabled,
       videos_enabled: preferences.videosEnabled,
+      measure_check_enabled: preferences.measureCheckEnabled,
     },
     { onConflict: "user_id" },
   );
@@ -225,6 +259,7 @@ export async function saveOwnPreferences(
 export type VideoNotificationTarget = {
   videoId: string;
   folderId: string;
+  folderName: string;
   studioId: string;
   studioName: string;
   recipients: { clientId: string; userId: string }[];
@@ -241,7 +276,7 @@ export async function getVideoNotificationTarget(
   const supabase = createAdminClient();
   const { data: video, error } = await supabase
     .from("videos")
-    .select("id, folder_id, studio_id, studios(name)")
+    .select("id, folder_id, studio_id, studios(name), video_folders(name)")
     .eq("id", videoId)
     .maybeSingle();
   if (error) throw error;
@@ -254,6 +289,7 @@ export async function getVideoNotificationTarget(
   return {
     videoId: video.id,
     folderId: video.folder_id,
+    folderName: video.video_folders.name,
     studioId: video.studio_id,
     studioName: video.studios.name,
     recipients: (recipients ?? []).map((row) => ({

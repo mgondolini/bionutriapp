@@ -373,7 +373,14 @@ function missingText(missing: CircumferenceOverview[]): string {
  * completo a un tocco. Aperto in partenza se manca qualcosa. `<details>`:
  * nessun JavaScript, la pagina resta un Server Component.
  */
-function CircumferenceSection({ items }: { items: CircumferenceOverview[] }) {
+function CircumferenceSection({
+  items,
+  checkDueOn,
+}: {
+  items: CircumferenceOverview[];
+  /** Prossimo check (data del nutrizionista o ultima + 30). */
+  checkDueOn: string | null;
+}) {
   if (items.length === 0) return null;
   const progress = circumferenceProgress(items);
   const complete = progress.missing.length === 0;
@@ -386,7 +393,11 @@ function CircumferenceSection({ items }: { items: CircumferenceOverview[] }) {
       <SectionHeader
         id="tracking-circumference-title"
         title={tt.kinds.circumference.title}
-        hint={t.circumferences.hint}
+        hint={
+          checkDueOn
+            ? t.circumferences.nextCheck(formatDayMonthShort(checkDueOn))
+            : t.circumferences.hint
+        }
       />
       <details
         open={!complete}
@@ -471,10 +482,12 @@ function ofKind<K extends MetricKind>(
  */
 export function TrackingOverview({
   overview,
+  checkDueOn,
   today,
   canWrite,
 }: {
   overview: MetricOverview[];
+  checkDueOn: string | null;
   today: string;
   canWrite: boolean;
 }) {
@@ -506,7 +519,7 @@ export function TrackingOverview({
         canWrite={canWrite}
       />
       <HabitSection items={ofKind(overview, "habit")} />
-      <CircumferenceSection items={circumferences} />
+      <CircumferenceSection items={circumferences} checkDueOn={checkDueOn} />
     </div>
   );
 }

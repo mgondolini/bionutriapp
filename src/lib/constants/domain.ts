@@ -367,6 +367,10 @@ export type HabitKey = (typeof HABIT_KEYS)[number];
 export const CIRCUMFERENCE_INTERVAL_DAYS = 30;
 /** "In scadenza" nella home: mancano al massimo 3 giorni (C-02). */
 export const DUE_SOON_DAYS = 3;
+/** Il nutrizionista sposta il prossimo check al massimo di un anno. */
+export const MEASURE_CHECK_MAX_DAYS_AHEAD = 365;
+/** Ora locale (fuso dello studio) dei promemoria del check: giorno prima e giorno stesso. */
+export const MEASURE_CHECK_REMINDER_HOUR = 6;
 /** Cifre decimali dei valori delle circonferenze (precisione del metro). */
 export const MEASURE_DECIMALS = 1;
 export const TRACKING_NOTE_MAX = 500;
@@ -484,6 +488,7 @@ export const NOTIFICATION_TYPES = [
   "file_report",
   "daily_checkin",
   "video",
+  "measure_check",
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
@@ -496,6 +501,8 @@ export const NOTIFICATION_BADGES_PATH = "/notification-badges";
 export const PUSH_TTL_FILE_SECONDS = 24 * 60 * 60;
 /** Il promemoria delle 20 dopo le 22 non serve più. */
 export const PUSH_TTL_CHECKIN_SECONDS = 2 * 60 * 60;
+/** Il promemoria del check delle 6 vale per la giornata. */
+export const PUSH_TTL_MEASURE_CHECK_SECONDS = 12 * 60 * 60;
 /** Fallimenti consecutivi dopo cui una sottoscrizione si elimina. */
 export const PUSH_MAX_CONSECUTIVE_FAILURES = 5;
 /** Ora locale (fuso dello studio) del promemoria serale. */

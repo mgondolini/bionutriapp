@@ -23,6 +23,7 @@ import type {
   MetricOverview,
   WorkoutOverview,
 } from "@/lib/domain/tracking/overview";
+import type { MeasureCheck } from "@/lib/domain/tracking/measure-check";
 import { formatGoalAmount } from "@/lib/domain/tracking/score-scale";
 import { formatDayMonthShort, formatSignedDelta } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,7 @@ import type { StaffGoal } from "@/server/services/tracking.service";
 import { AddEntryDialog } from "./add-entry-dialog";
 import { GoalsDialog } from "./goals-dialog";
 import { HeightPill } from "./height-pill";
+import { MeasureCheckDialog } from "./measure-check-dialog";
 
 const t = copy.admin.clients.tracking;
 
@@ -319,6 +321,7 @@ function Section({
   clientId,
   clientName,
   heightCm,
+  check,
   today,
 }: {
   kind: MetricKind;
@@ -326,6 +329,7 @@ function Section({
   clientId: string;
   clientName: string;
   heightCm: number | null;
+  check: MeasureCheck;
   today: string;
 }) {
   if (items.length === 0) return null;
@@ -343,7 +347,15 @@ function Section({
             {tt.kinds[kind].title}
           </h2>
           {kind === "circumference" ? (
-            <HeightPill clientId={clientId} heightCm={heightCm} />
+            <>
+              <HeightPill clientId={clientId} heightCm={heightCm} />
+              <MeasureCheckDialog
+                clientId={clientId}
+                clientName={clientName}
+                check={check}
+                today={today}
+              />
+            </>
           ) : null}
         </div>
         <p className="text-[13px] text-muted-foreground">{subtitle}</p>
@@ -458,6 +470,7 @@ export function TrackingBoard({
   clientName,
   heightCm,
   overview,
+  check,
   goals,
   today,
 }: {
@@ -465,6 +478,7 @@ export function TrackingBoard({
   clientName: string;
   heightCm: number | null;
   overview: MetricOverview[];
+  check: MeasureCheck;
   goals: StaffGoal[];
   today: string;
 }) {
@@ -510,6 +524,7 @@ export function TrackingBoard({
           clientId={clientId}
           clientName={clientName}
           heightCm={heightCm}
+          check={check}
           today={today}
         />
       ))}

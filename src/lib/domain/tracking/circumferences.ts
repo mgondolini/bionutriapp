@@ -26,23 +26,25 @@ export type CircumferenceSchedule = {
   daysLeft: number | null;
 };
 
+/**
+ * `staffDueOn`: data del check scelta dal nutrizionista (measure-check.ts),
+ * che vale per tutte le misure già registrate al posto di ultima + 30.
+ */
 export function circumferenceSchedule(
   lastRecordedOn: string | null,
   today: string,
+  staffDueOn: string | null = null,
 ): CircumferenceSchedule {
   if (!lastRecordedOn) {
     return { status: "never", dueOn: null, daysSince: null, daysLeft: null };
   }
   const daysSince = daysBetween(lastRecordedOn, today);
-  const daysLeft = CIRCUMFERENCE_INTERVAL_DAYS - daysSince;
+  const dueOn =
+    staffDueOn ?? addDays(lastRecordedOn, CIRCUMFERENCE_INTERVAL_DAYS);
+  const daysLeft = daysBetween(today, dueOn);
   const status: CircumferenceStatus =
     daysLeft < 0 ? "overdue" : daysLeft <= DUE_SOON_DAYS ? "due_soon" : "ok";
-  return {
-    status,
-    dueOn: addDays(lastRecordedOn, CIRCUMFERENCE_INTERVAL_DAYS),
-    daysSince,
-    daysLeft,
-  };
+  return { status, dueOn, daysSince, daysLeft };
 }
 
 /** Spunta di T-01: c'è un valore negli ultimi 30 giorni. */
@@ -97,6 +99,7 @@ export type CircumferenceSummary<T extends MeasureEntry = MeasureEntry> = {
 export function circumferenceSummary<T extends MeasureEntry>(
   entries: readonly T[],
   today: string,
+  staffDueOn: string | null = null,
 ): CircumferenceSummary<T> {
   const last = entries[0] ?? null;
   const previous = entries[1] ?? null;
@@ -107,6 +110,10 @@ export function circumferenceSummary<T extends MeasureEntry>(
     first,
     delta: last && previous ? difference(last.value, previous.value) : null,
     deltaFromStart: last && first ? difference(last.value, first.value) : null,
-    schedule: circumferenceSchedule(last?.recordedOn ?? null, today),
+    schedule: circumferenceSchedule(
+      last?.recordedOn ?? null,
+      today,
+      staffDueOn,
+    ),
   };
 }

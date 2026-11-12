@@ -198,3 +198,28 @@ export async function deleteGoals(clientId: string, metricIds: string[]) {
     .in("metric_id", metricIds);
   if (error) throw error;
 }
+
+/** Data del prossimo check scelta dal nutrizionista (null se predefinita). */
+export async function getMeasureCheck(clientId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("clients")
+    .select("measure_check_on, measure_check_set_at")
+    .eq("id", clientId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Sposta il prossimo check (solo staff: per il cliente guard_client lo
+ * rifiuta). null = torna alla data predefinita. Il trigger annota quando.
+ */
+export async function setMeasureCheck(clientId: string, day: string | null) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("clients")
+    .update({ measure_check_on: day })
+    .eq("id", clientId);
+  if (error) throw error;
+}

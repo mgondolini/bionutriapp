@@ -24,6 +24,7 @@ vi.mock("@/server/repositories/notifications.repository", () => ({
   getFileRecipient: vi.fn(),
   listStudios: vi.fn(),
   listDailyReminderCandidates: vi.fn(),
+  listMeasureCheckCandidates: vi.fn(),
   insertLogEntries: vi.fn(async (entries: NewLogEntry[]) =>
     entries.flatMap((entry) => {
       if (log.has(entry.dedupeKey)) return [];
@@ -218,5 +219,84 @@ describe("promemoria serale", () => {
     expect(report.studios).toBe(0);
     expect(repo.listDailyReminderCandidates).not.toHaveBeenCalled();
     expect(scheduled).toHaveLength(0);
+  });
+});
+
+describe("promemoria del check delle misure", () => {
+  // 05:00 UTC del 30 novembre: 6:00 a Roma (ora solare)
+  const NOW = new Date("2026-11-30T05:00:00Z");
+  const base = {
+    override: null,
+    overrideSetAt: null,
+    lastCreatedAt: "2026-10-01T08:00:00Z",
+  };
+
+  beforeEach(() => {
+    vi.mocked(repo.listStudios).mockResolvedValue([
+      { id: "roma", name: "Studio Roma", timezone: "Europe/Rome" },
+      { id: "ny", name: "Studio NY", timezone: "America/New_York" },
+    ]);
+    vi.mocked(repo.listMeasureCheckCandidates).mockResolvedValue([
+      // check domani (31 ottobre + 30)
+      { ...base, clientId: "c1", userId: "u1", lastRecordedOn: "2026-11-01" },
+      // check oggi
+      { ...base, clientId: "c2", userId: "u2", lastRecordedOn: "2026-10-31" },
+      // check fra tre giorni: niente
+      { ...base, clientId: "c3", userId: "u3", lastRecordedOn: "2026-11-03" },
+      // data scelta dallo staff: oggi
+      {
+        clientId: "c4",
+        userId: "u4",
+        override: "2026-11-30",
+        overrideSetAt: "2026-11-20T10:00:00Z",
+        lastRecordedOn: "2026-11-15",
+        lastCreatedAt: "2026-11-15T08:00:00Z",
+      },
+      // mai registrato e nessuna data: niente
+      {
+        ...base,
+        clientId: "c5",
+        userId: "u5",
+        lastRecordedOn: null,
+        lastCreatedAt: null,
+      },
+    ]);
+  });
+
+  it("alle 6 nel fuso dello studio: giorno prima e giorno stesso", async () => {
+    const { report, jobs } = await service.prepareMeasureCheckReminders(NOW);
+    expect(repo.listMeasureCheckCandidates).toHaveBeenCalledWith("roma");
+    expect(report).toEqual({ studios: 1, queued: 3, duplicates: 0 });
+    expect(jobs.map((job) => [job.clientId, job.event])).toEqual([
+      ["c1", { type: "measure_check", dueOn: "2026-12-01", when: "eve" }],
+      ["c2", { type: "measure_check", dueOn: "2026-11-30", when: "day" }],
+      ["c4", { type: "measure_check", dueOn: "2026-11-30", when: "day" }],
+    ]);
+  });
+
+  it("una seconda esecuzione non invia di nuovo; il testo non ha misure", async () => {
+    await service.sendMeasureCheckReminders(NOW);
+    const second = await service.sendMeasureCheckReminders(NOW);
+    expect(second).toEqual({ studios: 1, queued: 0, duplicates: 3 });
+    expect(scheduled).toHaveLength(1);
+    await scheduled[0]();
+    expect(push.sendToUser).toHaveBeenCalledWith(
+      "u1",
+      expect.objectContaining({
+        type: "measure_check",
+        body: "Domani è il giorno del check: prepara metro e bilancia.",
+        url: "/app/tracking",
+        tag: "measure-check-2026-12-01",
+      }),
+      12 * 60 * 60,
+    );
+  });
+
+  it("fuori dalle 6 non fa nulla", async () => {
+    const report = await service.sendMeasureCheckReminders(
+      new Date("2026-11-30T06:00:00Z"),
+    );
+    expect(report.studios).toBe(0);
+    expect(repo.listMeasureCheckCandidates).not.toHaveBeenCalled();
   });
 });
