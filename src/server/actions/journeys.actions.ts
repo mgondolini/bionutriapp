@@ -37,6 +37,7 @@ const FAILURES: Record<JourneyFailure, string> = {
   concluded: e.concluded,
   previous_not_concluded: e.previousNotConcluded,
   shorten_blocked: copy.journeys.admin.recalcBlocked,
+  shorten_blocked_photos: copy.journeys.admin.recalcBlockedPhotos,
 };
 
 /**

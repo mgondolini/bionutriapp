@@ -1866,6 +1866,8 @@ export const copy = {
         n === 1 ? "Si toglie 1 sessione." : `Si tolgono ${n} sessioni.`,
       recalcBlocked:
         "Non puoi accorciare il percorso: tra le sessioni da togliere ce ne sono già completate o saltate.",
+      recalcBlockedPhotos:
+        "Non puoi accorciare il percorso: tra i check da togliere ce ne sono con foto di avanzamento già caricate.",
       applyDuration: "Aggiorna le date",
       durationSaved: "Percorso aggiornato",
       recalcNote:

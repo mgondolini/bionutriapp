@@ -30,6 +30,7 @@ import {
 import { daysBetween, todayInRome } from "@/lib/domain/tracking/dates";
 import * as clientsRepository from "@/server/repositories/clients.repository";
 import * as journeysRepository from "@/server/repositories/journeys.repository";
+import * as photosRepository from "@/server/repositories/photos.repository";
 import { notifySessionsChanged } from "@/server/services/journey-notifications.service";
 
 /*
@@ -227,7 +228,8 @@ export type JourneyFailure =
   | "already_active"
   | "concluded"
   | "previous_not_concluded"
-  | "shorten_blocked";
+  | "shorten_blocked"
+  | "shorten_blocked_photos";
 
 type Result<T = undefined> =
   | ({ ok: true } & (T extends undefined ? object : { data: T }))
@@ -344,6 +346,17 @@ export async function updateJourney(
     input.startDate,
   );
   if (plan.blocked) return { ok: false, reason: "shorten_blocked" };
+  // un check da togliere ha già foto (in bozza o salvate): non si perdono
+  if (plan.deletes.length > 0) {
+    const sets = await photosRepository.listSetsOfClient(journey.client_id);
+    if (
+      sets.some(
+        (set) => plan.deletes.includes(set.session_id) && set.photos.length > 0,
+      )
+    ) {
+      return { ok: false, reason: "shorten_blocked_photos" };
+    }
+  }
 
   await journeysRepository.updateJourneyDates(input.journeyId, {
     durationMonths: input.durationMonths,
