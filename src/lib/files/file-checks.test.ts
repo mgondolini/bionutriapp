@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-import { FILE_MAX_BYTES } from "@/lib/constants/domain";
-
 import {
   checkDeclaredFile,
   countByCategory,
@@ -25,10 +23,10 @@ describe("hasPdfHeader", () => {
 
 describe("checkDeclaredFile", () => {
   const pdf = { name: "Piano.PDF", type: "application/pdf", size: 1000 };
-  it("accetta un PDF fino a 10 MB, anche con tipo vuoto", () => {
+  it("accetta un PDF di qualsiasi dimensione, anche con tipo vuoto", () => {
     expect(checkDeclaredFile(pdf)).toBeNull();
     expect(checkDeclaredFile({ ...pdf, type: "" })).toBeNull();
-    expect(checkDeclaredFile({ ...pdf, size: FILE_MAX_BYTES })).toBeNull();
+    expect(checkDeclaredFile({ ...pdf, size: 200 * 1024 * 1024 })).toBeNull();
   });
   it("rifiuta altri tipi o estensioni", () => {
     expect(checkDeclaredFile({ ...pdf, name: "piano.docx" })).toBe("not_pdf");
@@ -36,11 +34,8 @@ describe("checkDeclaredFile", () => {
       "not_pdf",
     );
   });
-  it("rifiuta file vuoti o oltre 10 MB", () => {
+  it("rifiuta i file vuoti", () => {
     expect(checkDeclaredFile({ ...pdf, size: 0 })).toBe("empty");
-    expect(checkDeclaredFile({ ...pdf, size: FILE_MAX_BYTES + 1 })).toBe(
-      "too_large",
-    );
   });
 });
 

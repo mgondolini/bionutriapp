@@ -5,8 +5,8 @@ select tests.create_fixtures();
 
 select results_eq(
   $$ select id, public, file_size_limit, allowed_mime_types from storage.buckets where id = 'client-files' $$,
-  $$ values ('client-files'::text, false, 10485760::bigint, array['application/pdf']::text[]) $$,
-  'client-files è privato, solo PDF, max 10 MB'
+  $$ values ('client-files'::text, false, null::bigint, array['application/pdf']::text[]) $$,
+  'client-files è privato, solo PDF, senza limite di dimensione proprio'
 );
 select results_eq(
   $$ select public, allowed_mime_types from storage.buckets where id = 'studio-assets' $$,

@@ -35,7 +35,7 @@ function revalidateStaffFiles(clientId: string) {
 
 /**
  * Caricamento, primo passaggio (A-08): valida metadati e file dichiarati
- * (solo PDF, al massimo 10 MB) e restituisce l'URL firmato per caricare il
+ * (solo PDF, non vuoto) e restituisce l'URL firmato per caricare il
  * file direttamente su Storage (il corpo delle richieste di Netlify è
  * limitato a circa 6 MB). Il percorso lo decide il server.
  */

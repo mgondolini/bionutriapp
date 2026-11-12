@@ -263,9 +263,11 @@ export function activationPath(token: string): string {
   return `${ROUTES.activate}/${token}`;
 }
 
-/** File dei clienti (A-08…A-11): bucket privato, solo PDF, al massimo 10 MB. */
+/**
+ * File dei clienti (A-08…A-11): bucket privato, solo PDF. Nessun limite di
+ * dimensione dell'app: vale quello globale del progetto Supabase.
+ */
 export const CLIENT_FILES_BUCKET = "client-files";
-export const FILE_MAX_BYTES = 10 * 1024 * 1024;
 export const FILE_MIME_TYPE = "application/pdf";
 export const FILE_EXTENSION = ".pdf";
 /** Ogni PDF inizia con questi byte; un .docx rinominato inizia con "PK". */

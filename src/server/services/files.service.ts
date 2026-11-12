@@ -3,7 +3,6 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 
 import {
-  FILE_MAX_BYTES,
   PDF_MAGIC,
   clientFilePath,
   type FileCategory,
@@ -169,8 +168,8 @@ async function discardObject(path: string, fileId: string) {
 }
 
 /**
- * Terzo passaggio: verifica l'oggetto REALE (esiste, al massimo 10 MB, inizia
- * con "%PDF-") e solo allora crea la riga. Se la verifica fallisce, l'oggetto
+ * Terzo passaggio: verifica l'oggetto REALE (esiste, non vuoto, inizia con
+ * "%PDF-") e solo allora crea la riga. Se la verifica fallisce, l'oggetto
  * viene eliminato. Con "Avvisa il cliente" passa da notifyNewFile (N-06).
  */
 export async function confirmUpload(
@@ -187,7 +186,6 @@ export async function confirmUpload(
 
   let rejection: FileUploadError | null = null;
   if (info.size <= 0) rejection = "empty";
-  else if (info.size > FILE_MAX_BYTES) rejection = "too_large";
   else {
     const head = await filesRepository.readObjectHead(path, PDF_MAGIC.length);
     if (!head || !hasPdfHeader(head)) rejection = "invalid_pdf";

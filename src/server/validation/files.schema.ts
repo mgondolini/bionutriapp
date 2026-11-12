@@ -4,7 +4,6 @@ import { z } from "zod";
 import {
   FILE_CATEGORIES,
   FILE_EXTENSION,
-  FILE_MAX_BYTES,
   FILE_MIME_TYPE,
   FILE_NAME_MAX,
   FILE_NOTE_MAX,
@@ -52,7 +51,7 @@ export const prepareUploadSchema = fileFormSchema.extend({
   fileType: z
     .string()
     .refine((type) => type === "" || type === FILE_MIME_TYPE, e.not_pdf),
-  fileSize: z.number().int().min(1, e.empty).max(FILE_MAX_BYTES, e.too_large),
+  fileSize: z.number().int().min(1, e.empty),
 });
 export type PrepareUploadInput = z.input<typeof prepareUploadSchema>;
 

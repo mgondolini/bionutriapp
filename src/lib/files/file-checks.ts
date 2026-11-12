@@ -5,7 +5,6 @@
 import {
   FILE_CATEGORIES,
   FILE_EXTENSION,
-  FILE_MAX_BYTES,
   FILE_MIME_TYPE,
   PDF_MAGIC,
   type FileCategory,
@@ -36,7 +35,6 @@ export function checkDeclaredFile(file: {
     return "not_pdf";
   }
   if (file.size <= 0) return "empty";
-  if (file.size > FILE_MAX_BYTES) return "too_large";
   return null;
 }
 

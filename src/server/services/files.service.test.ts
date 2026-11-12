@@ -1,7 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { FILE_MAX_BYTES } from "@/lib/constants/domain";
-
 /*
  * Servizio dei file con Supabase simulato. Il finto repository imita la RLS
  * (lo staff vede solo il proprio studio, il cliente solo i propri file) e la
@@ -248,11 +246,6 @@ describe("caricamento", () => {
   });
 
   it.each([
-    [
-      "oltre 10 MB",
-      { size: FILE_MAX_BYTES + 1, head: "%PDF-1.4" },
-      "too_large",
-    ],
     [
       "un .docx rinominato",
       { size: 1000, head: "PK\u0003\u0004" },

@@ -84,22 +84,16 @@ test("il titolare carica un PDF, la cliente lo apre, il titolare vede Letto il‚Ä
     buffer: Buffer.from("PK\u0003\u0004"),
   });
   await expect(page.getByText("Puoi caricare solo file PDF.")).toBeVisible();
-  await input.setInputFiles({
-    name: "troppo-grande.pdf",
-    mimeType: "application/pdf",
-    buffer: samplePdf("Troppo grande", 11 * MB),
-  });
-  await expect(page.getByText("Il file supera i 10 MB.")).toBeVisible();
 
-  // PDF da 9 MB: caricamento diretto su Storage e conferma
+  // PDF da 12 MB (oltre il vecchio limite di 10 MB): caricamento diretto su Storage e conferma
   await input.setInputFiles({
     name: "Piano_prova.pdf",
     mimeType: "application/pdf",
-    buffer: samplePdf(TITLE, 9 * MB),
+    buffer: samplePdf(TITLE, 12 * MB),
   });
   await expect(page.getByText("Piano_prova.pdf")).toBeVisible();
   await expect(
-    page.getByText(/9 MB ¬∑ pronto per la pubblicazione/),
+    page.getByText(/12 MB ¬∑ pronto per la pubblicazione/),
   ).toBeVisible();
   await page.getByRole("radio", { name: "Dieta" }).check();
   await page.getByLabel("Titolo visibile al cliente").fill(TITLE);
@@ -113,7 +107,7 @@ test("il titolare carica un PDF, la cliente lo apre, il titolare vede Letto il‚Ä
   await expect(row).toContainText("In corso");
   await expect(row).toContainText("Non ancora letto");
   const stored = await readFirstReadAt(TITLE);
-  expect(stored.size_bytes).toBe(9 * MB);
+  expect(stored.size_bytes).toBe(12 * MB);
   expect(stored.first_read_at).toBeNull();
 
   // La cliente lo vede in home con "Nuovo" e la nota
@@ -211,7 +205,7 @@ test("il titolare carica un PDF, la cliente lo apre, il titolare vede Letto il‚Ä
   expect(objects).toHaveLength(0);
 });
 
-test("il server rifiuta un file non PDF o troppo grande anche se il browser viene aggirato", async ({
+test("il server rifiuta un file non PDF anche se il browser viene aggirato", async ({
   page,
 }) => {
   await login(page, OWNER.email, OWNER.password);
@@ -249,12 +243,6 @@ test("il server rifiuta un file non PDF o troppo grande anche se il browser vien
     `Docx ${run}`,
     Buffer.from("PK\u0003\u0004 documento word rinominato"),
     "Il file non √® un PDF valido.",
-  );
-  // oltre 10 MB: rifiutato gi√† dal bucket (limite di Storage)
-  await attempt(
-    `Grande ${run}`,
-    samplePdf("grande", 11 * MB),
-    "Il file supera i 10 MB.",
   );
 
   // nessun oggetto rimasto in Storage per Anna oltre a quelli delle righe

@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-import { FILE_MAX_BYTES } from "@/lib/constants/domain";
-
 import {
   confirmUploadSchema,
   fileCategoryParamSchema,
@@ -29,9 +27,9 @@ describe("prepareUploadSchema", () => {
     expect(parsed.note).toBeNull();
   });
 
-  it("accetta un PDF di esattamente 10 MB e un tipo vuoto", () => {
+  it("accetta un PDF oltre i 10 MB e un tipo vuoto", () => {
     expect(
-      prepareUploadSchema.safeParse({ ...valid, fileSize: FILE_MAX_BYTES })
+      prepareUploadSchema.safeParse({ ...valid, fileSize: 200 * 1024 * 1024 })
         .success,
     ).toBe(true);
     expect(
@@ -40,11 +38,6 @@ describe("prepareUploadSchema", () => {
   });
 
   it.each([
-    [
-      "oltre 10 MB",
-      { fileSize: FILE_MAX_BYTES + 1 },
-      "Il file supera i 10 MB.",
-    ],
     ["vuoto", { fileSize: 0 }, "Il file è vuoto."],
     [
       "non PDF (estensione)",

@@ -834,7 +834,7 @@ export const copy = {
           title: "Pubblica un nuovo file",
           category: "Categoria",
           dropzone: "Trascina qui il PDF o scegli un file",
-          dropzoneHint: "Solo PDF, massimo 10 MB",
+          dropzoneHint: "Solo PDF",
           chooseFile: "Scegli file",
           changeFile: "Cambia file",
           removeFile: "Rimuovi il file selezionato",
@@ -1518,7 +1518,7 @@ export const copy = {
     downloadFallback: "documento",
     uploadErrors: {
       not_pdf: "Puoi caricare solo file PDF.",
-      too_large: "Il file supera i 10 MB.",
+      too_large: "Il file è troppo grande per essere caricato.",
       empty: "Il file è vuoto.",
       invalid_pdf: "Il file non è un PDF valido.",
       upload_failed:
