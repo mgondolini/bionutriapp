@@ -13,7 +13,7 @@ import { journeyParamSchema } from "@/server/validation/journeys.schema";
 export default async function ClientJourneyPage({
   searchParams,
 }: PageProps<"/app/percorso">) {
-  await requireClient();
+  const session = await requireClient();
   const journeyId = journeyParamSchema.parse(
     (await searchParams)[JOURNEY_PARAM],
   );
@@ -21,7 +21,7 @@ export default async function ClientJourneyPage({
   return (
     <div className="flex flex-col gap-4">
       <ClientPageHeader title={copy.journeys.client.title} />
-      <JourneyPage data={data} />
+      <JourneyPage data={data} studioName={session.studio.name} />
     </div>
   );
 }

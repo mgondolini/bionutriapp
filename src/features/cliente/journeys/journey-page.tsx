@@ -1,17 +1,18 @@
 import {
-  CalendarPlus,
   Check,
   ChevronRight,
   Minus,
   PhoneCall,
   Route,
+  Video,
 } from "lucide-react";
 import Link from "next/link";
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { buttonVariants } from "@/components/ui/button";
-import { clientJourneyUrl, journeyIcsPath } from "@/lib/constants/domain";
+import { clientJourneyUrl } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import { eventEnd } from "@/lib/domain/journeys/calendar";
 import { dateRange, sessionLabel } from "@/lib/domain/journeys/labels";
 import { groupClosedSessions } from "@/lib/domain/journeys/sessions";
 import { formatLongDate, formatShortDate } from "@/lib/format";
@@ -22,6 +23,7 @@ import type {
   ClientSessionView,
 } from "@/server/services/journeys.service";
 
+import { CalendarSheet } from "./calendar-sheet";
 import { JourneyBars } from "./journey-bars";
 
 const t = copy.journeys;
@@ -103,15 +105,21 @@ function SessionRow({
   session,
   isLast,
   readOnly,
+  studioName,
 }: {
   session: ClientSessionView;
   isLast: boolean;
   readOnly: boolean;
+  studioName: string;
 }) {
   const next = session.state === "next";
   const details = [
     formatLongDate(session.date),
-    session.time ? t.timeAt(session.time) : null,
+    session.time
+      ? t.timeRange(session.time, eventEnd(session.date, session.time).time)
+      : null,
+    // il link arriva solo per il prossimo check
+    session.meetingUrl ? t.meet : null,
     isLast && session.name.kind === "check" ? t.client.lastCheck : null,
   ]
     .filter(Boolean)
@@ -153,14 +161,20 @@ function SessionRow({
         ) : null}
       </div>
       {next && !readOnly ? (
-        <a
-          href={journeyIcsPath(session.id)}
-          download
-          className={cn(buttonVariants({ variant: "outline" }), "w-full")}
-        >
-          <CalendarPlus aria-hidden="true" />
-          {t.client.addToCalendar}
-        </a>
+        <div className="flex flex-col gap-2">
+          {session.meetingUrl ? (
+            <a
+              href={session.meetingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(buttonVariants(), "w-full")}
+            >
+              <Video aria-hidden="true" />
+              {t.client.joinMeet}
+            </a>
+          ) : null}
+          <CalendarSheet session={session} studioName={studioName} />
+        </div>
       ) : null}
     </li>
   );
@@ -203,7 +217,13 @@ function GroupedRow({ sessions }: { sessions: ClientSessionView[] }) {
  * una riga), "Aggiungi al calendario" sul prossimo check e, dal secondo
  * percorso, i percorsi precedenti. Sola lettura: le date le gestisce lo studio.
  */
-export function JourneyPage({ data }: { data: ClientJourneys }) {
+export function JourneyPage({
+  data,
+  studioName,
+}: {
+  data: ClientJourneys;
+  studioName: string;
+}) {
   const { shown, previous, isCurrent } = data;
   if (!shown) {
     return (
@@ -252,6 +272,7 @@ export function JourneyPage({ data }: { data: ClientJourneys }) {
               session={session}
               isLast={session.id === lastId}
               readOnly={readOnly}
+              studioName={studioName}
             />
           ))}
         </ol>
