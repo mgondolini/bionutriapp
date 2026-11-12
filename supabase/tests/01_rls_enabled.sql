@@ -22,7 +22,8 @@ select tables_are('public', array[
   'studios', 'studio_members', 'clients', 'client_stage_events', 'client_invites',
   'client_files', 'metrics', 'client_metric_goals', 'tracking_entries', 'push_subscriptions',
   'privacy_consents', 'notification_log', 'notification_preferences',
-  'video_folders', 'videos', 'video_views'
+  'video_folders', 'videos', 'video_views',
+  'client_journeys', 'journey_sessions', 'journey_notifications'
 ], 'lo schema public contiene esattamente le tabelle della v1.0');
 
 select is_empty(

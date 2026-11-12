@@ -153,6 +153,97 @@ export type Database = {
           },
         ];
       };
+      client_journeys: {
+        Row: {
+          client_id: string;
+          concluded_at: string | null;
+          created_at: string;
+          created_by: string | null;
+          duration_months: number;
+          end_date: string;
+          gift_mode: string;
+          id: string;
+          include_onboarding: boolean;
+          kind: string;
+          previous_journey_id: string | null;
+          start_date: string;
+          status: string;
+          studio_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          client_id: string;
+          concluded_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          duration_months: number;
+          end_date: string;
+          gift_mode: string;
+          id?: string;
+          include_onboarding: boolean;
+          kind: string;
+          previous_journey_id?: string | null;
+          start_date: string;
+          status?: string;
+          studio_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          client_id?: string;
+          concluded_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          duration_months?: number;
+          end_date?: string;
+          gift_mode?: string;
+          id?: string;
+          include_onboarding?: boolean;
+          kind?: string;
+          previous_journey_id?: string | null;
+          start_date?: string;
+          status?: string;
+          studio_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "client_journeys_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "client_list";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_journeys_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_journeys_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients_with_status";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_journeys_previous_journey_id_fkey";
+            columns: ["previous_journey_id"];
+            isOneToOne: false;
+            referencedRelation: "client_journeys";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_journeys_studio_id_fkey";
+            columns: ["studio_id"];
+            isOneToOne: false;
+            referencedRelation: "studios";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       client_metric_goals: {
         Row: {
           client_id: string;
@@ -351,6 +442,173 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "clients_studio_id_fkey";
+            columns: ["studio_id"];
+            isOneToOne: false;
+            referencedRelation: "studios";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      journey_notifications: {
+        Row: {
+          client_id: string;
+          created_at: string;
+          error: string | null;
+          id: string;
+          kind: string;
+          outcome: string;
+          reference_date: string;
+          reference_time: string | null;
+          sent_at: string | null;
+          session_id: string;
+          studio_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          client_id: string;
+          created_at?: string;
+          error?: string | null;
+          id?: string;
+          kind: string;
+          outcome?: string;
+          reference_date: string;
+          reference_time?: string | null;
+          sent_at?: string | null;
+          session_id: string;
+          studio_id: string;
+        };
+        Update: {
+          client_id?: string;
+          created_at?: string;
+          error?: string | null;
+          id?: string;
+          kind?: string;
+          outcome?: string;
+          reference_date?: string;
+          reference_time?: string | null;
+          sent_at?: string | null;
+          session_id?: string;
+          studio_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "journey_notifications_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "client_list";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "journey_notifications_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "journey_notifications_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients_with_status";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "journey_notifications_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: false;
+            referencedRelation: "journey_sessions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "journey_notifications_studio_id_fkey";
+            columns: ["studio_id"];
+            isOneToOne: false;
+            referencedRelation: "studios";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      journey_sessions: {
+        Row: {
+          calculated_date: string;
+          client_id: string;
+          created_at: string;
+          custom_date: string | null;
+          id: string;
+          journey_id: string;
+          note: string | null;
+          position: number;
+          session_time: string | null;
+          status: string;
+          studio_id: string;
+          type: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          calculated_date: string;
+          client_id: string;
+          created_at?: string;
+          custom_date?: string | null;
+          id?: string;
+          journey_id: string;
+          note?: string | null;
+          position: number;
+          session_time?: string | null;
+          status?: string;
+          studio_id: string;
+          type: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          calculated_date?: string;
+          client_id?: string;
+          created_at?: string;
+          custom_date?: string | null;
+          id?: string;
+          journey_id?: string;
+          note?: string | null;
+          position?: number;
+          session_time?: string | null;
+          status?: string;
+          studio_id?: string;
+          type?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "journey_sessions_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "client_list";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "journey_sessions_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "journey_sessions_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients_with_status";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "journey_sessions_journey_id_fkey";
+            columns: ["journey_id"];
+            isOneToOne: false;
+            referencedRelation: "client_journeys";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "journey_sessions_studio_id_fkey";
             columns: ["studio_id"];
             isOneToOne: false;
             referencedRelation: "studios";
@@ -1082,6 +1340,20 @@ export type Database = {
         Returns: string;
       };
       client_account_status: { Args: { p_client_id: string }; Returns: string };
+      create_client_journey: {
+        Args: {
+          p_client_id: string;
+          p_duration_months: number;
+          p_end_date: string;
+          p_gift_mode: string;
+          p_include_onboarding: boolean;
+          p_kind: string;
+          p_previous_journey_id: string;
+          p_sessions: Json;
+          p_start_date: string;
+        };
+        Returns: string;
+      };
       daily_reminder_candidates: {
         Args: { p_day: string; p_studio: string };
         Returns: {
@@ -1099,6 +1371,19 @@ export type Database = {
           name: string;
           primary_color: string;
           slug: string;
+        }[];
+      };
+      journey_reminder_candidates: {
+        Args: { p_day: string; p_studio: string };
+        Returns: {
+          check_number: number;
+          client_id: string;
+          session_date: string;
+          session_id: string;
+          session_time: string;
+          staff_name: string;
+          type: string;
+          user_id: string;
         }[];
       };
       list_orphan_client_files: {
@@ -1127,6 +1412,31 @@ export type Database = {
         }[];
       };
       my_email_available: { Args: { p_email: string }; Returns: boolean };
+      my_journey_sessions: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          id: string;
+          journey_id: string;
+          seq: number;
+          session_date: string;
+          session_time: string;
+          status: string;
+          type: string;
+        }[];
+      };
+      my_journeys: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          concluded_at: string;
+          duration_months: number;
+          end_date: string;
+          id: string;
+          kind: string;
+          number: number;
+          start_date: string;
+          status: string;
+        }[];
+      };
       purge_expired_invites: {
         Args: { p_older_than_days?: number };
         Returns: number;
