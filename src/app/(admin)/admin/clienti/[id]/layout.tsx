@@ -9,7 +9,8 @@ import { requireStaff } from "@/server/services/session.service";
 import { clientIdSchema } from "@/server/validation/clients.schema";
 
 /**
- * Scheda cliente (A4): intestazione e schede Profilo, File, Tracking.
+ * Scheda cliente (A4): intestazione e schede Profilo, Percorso, File,
+ * Tracking, Note cliniche.
  * Un id non valido, inesistente o di un altro studio (nascosto dalla RLS) dà 404.
  */
 async function ClientDetailShell({
@@ -24,8 +25,11 @@ async function ClientDetailShell({
 
   return (
     <div className="flex flex-col gap-6">
-      <ClientDetailHeader client={client} />
-      <ClientTabs clientId={client.id} />
+      {/* sul telefono una nota aperta occupa lo schermo (Note cliniche) */}
+      <div className="contents max-lg:[body:has([data-note-fullscreen])_&]:hidden">
+        <ClientDetailHeader client={client} />
+        <ClientTabs clientId={client.id} />
+      </div>
       {children}
     </div>
   );

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 import { CLIENT_TABS, clientDetailPath } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
@@ -9,12 +10,24 @@ import { cn } from "@/lib/utils";
 
 const t = copy.admin.clients.detail;
 
-/** Schede Profilo, File, Tracking come rotte figlie della scheda cliente. */
+/** Schede della scheda cliente (CLIENT_TABS) come rotte figlie. */
 export function ClientTabs({ clientId }: { clientId: string }) {
   const pathname = usePathname();
+  const listRef = useRef<HTMLUListElement>(null);
+  // sul telefono le schede scorrono: quella attiva resta in vista (es. Note cliniche)
+  useEffect(() => {
+    const list = listRef.current;
+    const active = list?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (!list || !active || list.scrollWidth <= list.clientWidth) return;
+    const left =
+      active.getBoundingClientRect().left -
+      list.getBoundingClientRect().left +
+      list.scrollLeft;
+    list.scrollLeft = left - (list.clientWidth - active.offsetWidth) / 2;
+  }, [pathname]);
   return (
     <nav aria-label={t.tabsLabel} className="border-b">
-      <ul className="-mb-px flex gap-1.5 overflow-x-auto">
+      <ul ref={listRef} className="-mb-px flex gap-1.5 overflow-x-auto">
         {CLIENT_TABS.map((tab) => {
           const href = clientDetailPath(clientId, tab);
           const active = pathname === href || pathname.startsWith(`${href}/`);

@@ -42,7 +42,7 @@ export type NoteDetail = Omit<NoteListEntry, "excerpt" | "createdAt"> & {
 
 export type StaffNotes = {
   notes: NoteListEntry[];
-  /** La nota aperta; null se non richiesta o non di questo cliente. */
+  /** La nota aperta (di default l'anamnesi); null se non è di questo cliente. */
   selected: NoteDetail | null;
 };
 
@@ -77,8 +77,10 @@ function toListEntry(row: ListRow): NoteListEntry {
 }
 
 /**
- * Elenco delle note (anamnesi in cima, creata se manca) e, se richiesta, la
- * nota aperta con il contenuto; null se il cliente non è dello studio.
+ * Elenco delle note (anamnesi in cima, creata se manca) e la nota aperta
+ * con il contenuto: quella richiesta, altrimenti l'anamnesi. `selected` è
+ * null se la nota richiesta non è di questo cliente; il risultato è null se
+ * il cliente non è dello studio.
  */
 export async function getStaffNotes(
   studioId: string,
@@ -86,7 +88,7 @@ export async function getStaffNotes(
   noteId?: string,
 ): Promise<StaffNotes | null> {
   if (!(await ownsClient(studioId, clientId))) return null;
-  const [listed, note] = await Promise.all([
+  const [listed, requested] = await Promise.all([
     clientNotesRepository.listNotes(clientId),
     noteId ? clientNotesRepository.getNote(noteId) : null,
   ]);
@@ -104,6 +106,12 @@ export async function getStaffNotes(
     });
     rows = await clientNotesRepository.listNotes(clientId);
   }
+  const anamnesisId = rows.find((row) => row.kind === "anamnesis")?.id;
+  const note = noteId
+    ? requested
+    : anamnesisId
+      ? await clientNotesRepository.getNote(anamnesisId)
+      : null;
   const selected =
     note && note.client_id === clientId && note.studio_id === studioId
       ? note

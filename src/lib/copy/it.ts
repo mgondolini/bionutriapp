@@ -2105,7 +2105,6 @@ export const copy = {
           ? `Aggiornata ieri, ${time}`
           : `Aggiornata il ${date}`,
     privateBadge: "Solo tu, il cliente non la vede",
-    privateShort: "Solo tu",
     privateList: "Solo tu vedi questi documenti, il cliente no.",
     editorLabel: "Editor di testo",
     titleLabel: "Titolo del documento",

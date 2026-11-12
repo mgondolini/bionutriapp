@@ -155,6 +155,7 @@ describe("getStaffNotes", () => {
     expect(first?.notes.map((n) => n.kind)).toEqual(["anamnesis"]);
     expect(second?.notes).toHaveLength(1);
     expect(first?.notes[0]?.title).toBe("Anamnesi");
+    expect(first?.selected?.kind).toBe("anamnesis");
   });
 
   it("altro studio: null e nessuna anamnesi creata", async () => {
