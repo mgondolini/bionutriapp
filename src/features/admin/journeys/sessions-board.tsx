@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 
 import { copy } from "@/lib/copy/it";
 import type {
+  StaffJourneys,
   StaffJourneyView,
   StaffSessionView,
 } from "@/server/services/journeys.service";
@@ -30,13 +31,13 @@ export function SessionsBoard({
   journey,
   title,
   description,
-  pushEnabled,
+  client,
   today,
 }: {
   journey: StaffJourneyView;
   title: string;
   description: string;
-  pushEnabled: boolean;
+  client: StaffJourneys["client"];
   today: string;
 }) {
   const ids = useId();
@@ -85,7 +86,7 @@ export function SessionsBoard({
         <SessionDetail
           key={`${selected.id}-${selected.date}-${selected.time}-${selected.status}`}
           session={selected}
-          pushEnabled={pushEnabled}
+          client={client}
         />
       ) : null}
     </section>

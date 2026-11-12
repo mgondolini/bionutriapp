@@ -245,7 +245,7 @@ export function JourneyTab({
                       (selected.giftMode === "included" ? 1 : 0),
                   )
             }
-            pushEnabled={client.pushEnabled}
+            client={client}
             today={today}
           />
           <p className="flex gap-2.5 rounded-xl bg-info px-4 py-3 text-sm text-info-foreground">

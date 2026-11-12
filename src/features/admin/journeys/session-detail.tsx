@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BellOff, BellRing, CalendarPlus, RotateCcw } from "lucide-react";
+import { BellOff, BellRing, RotateCcw } from "lucide-react";
 import { useId, useState, useTransition } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { toast } from "sonner";
@@ -16,23 +16,53 @@ import {
   JOURNEY_SESSION_STATUSES,
 } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import type { CalendarEvent } from "@/lib/domain/journeys/calendar";
 import { sessionLabel } from "@/lib/domain/journeys/labels";
-import { formatLongDate } from "@/lib/format";
+import { resolveMeetingUrl } from "@/lib/domain/journeys/meeting";
+import { formatLongDate, formatShortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useHydrated } from "@/lib/use-hydrated";
 import {
   restoreSessionDateAction,
   updateSessionAction,
 } from "@/server/actions/journeys.actions";
-import type { StaffSessionView } from "@/server/services/journeys.service";
+import type {
+  StaffJourneys,
+  StaffSessionView,
+} from "@/server/services/journeys.service";
 import {
   sessionFormSchema,
   type SessionFormValues,
 } from "@/server/validation/journeys.schema";
 
+import { CalendarMenu } from "./calendar-menu";
 import { SegmentedControl } from "./segmented-control";
+import { MeetingField, MeetingLink } from "./session-meeting";
 
 const t = copy.journeys;
+
+/** Evento dello staff (A17): "Check 8 · G. Bianchi", invito all'email del cliente. */
+function staffEvent(
+  session: StaffSessionView,
+  client: StaffJourneys["client"],
+  meetingUrl: string | null,
+): CalendarEvent {
+  const initial = client.firstName.charAt(0);
+  const shortName = client.lastName
+    ? `${initial}. ${client.lastName}`
+    : client.firstName;
+  return {
+    uid: `${session.id}@nutrify`,
+    title: t.ics.staffTitle(sessionLabel(session.name), shortName),
+    description: t.ics.staffDescription(
+      `${client.firstName} ${client.lastName}`.trim(),
+    ),
+    date: session.date,
+    time: session.time,
+    meetingUrl,
+    attendeeEmail: client.email,
+  };
+}
 
 function valuesOf(session: StaffSessionView): SessionFormValues {
   return {
@@ -50,11 +80,12 @@ function valuesOf(session: StaffSessionView): SessionFormValues {
  */
 export function SessionDetail({
   session,
-  pushEnabled,
+  client,
 }: {
   session: StaffSessionView;
-  pushEnabled: boolean;
+  client: StaffJourneys["client"];
 }) {
+  const { pushEnabled } = client;
   const ids = useId();
   const hydrated = useHydrated();
   const [error, setError] = useState<string | null>(null);
@@ -66,6 +97,9 @@ export function SessionDetail({
     defaultValues: valuesOf(session),
   });
   const name = sessionLabel(session.name);
+  const meetingUrl = resolveMeetingUrl(session, client);
+  const event = staffEvent(session, client, meetingUrl);
+  const when = t.ics.when(formatShortDate(session.date), session.time);
 
   const onSubmit = form.handleSubmit((values) => {
     setError(null);
@@ -181,6 +215,14 @@ export function SessionDetail({
             {t.admin.restore}
           </Button>
         ) : null}
+        <p className="flex flex-col text-sm">
+          <span className="font-semibold">{t.admin.sessionDuration}</span>
+          <span>{t.admin.sessionDurationValue}</span>
+        </p>
+        <MeetingLink
+          url={meetingUrl}
+          sessionOnly={session.meetingUrl !== null}
+        />
       </div>
 
       <div className="flex flex-col gap-4">
@@ -231,6 +273,14 @@ export function SessionDetail({
             </Field>
           )}
         />
+        <MeetingField
+          key={`${client.meetingUrl}-${session.meetingUrl}`}
+          sessionId={session.id}
+          clientId={client.id}
+          clientName={client.firstName}
+          clientUrl={client.meetingUrl}
+          sessionUrl={session.meetingUrl}
+        />
       </div>
 
       <div className="flex flex-col gap-3">
@@ -241,18 +291,14 @@ export function SessionDetail({
         >
           {t.admin.save}
         </Button>
-        <Button
-          type="button"
-          variant="neutral"
-          disabled
-          aria-describedby={`${ids}-calendar`}
-        >
-          <CalendarPlus aria-hidden="true" />
-          {t.admin.calendar}
-        </Button>
-        <p id={`${ids}-calendar`} className="text-xs text-admin-muted">
-          {t.admin.calendarSoon}
-        </p>
+        <CalendarMenu
+          event={event}
+          summary={t.admin.calendarSummary(
+            when,
+            client.email ? client.firstName : null,
+          )}
+          fileName={t.ics.fileName(name)}
+        />
         <p className="text-[13px] text-admin-muted">{t.admin.notifyNote}</p>
         <span
           className={cn(

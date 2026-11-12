@@ -1893,7 +1893,6 @@ export const copy = {
       sessionDuration: "Durata",
       sessionDurationValue: "30 minuti",
       calendar: "Aggiungi al calendario",
-      calendarSoon: "Disponibile con il calendario",
       calendarSummary: (when: string, name: string | null) =>
         `${when} · 30 minuti${name ? ` · invito a ${name}` : ""}`,
       meeting: {
