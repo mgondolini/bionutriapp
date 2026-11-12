@@ -39,11 +39,12 @@ const PUBLIC_PAGES = [
   "/offline.html",
 ];
 const ADMIN_PAGES = [
-  "/admin/clienti",
+  // "/admin/clienti",
   `/admin/clienti/${ANNA_ID}/profilo`,
   `/admin/clienti/${ANNA_ID}/file`,
   `/admin/clienti/${ANNA_ID}/tracking`,
   `/admin/clienti/${ANNA_ID}/tracking/water`,
+  `/admin/clienti/${ANNA_ID}/note`,
   "/admin/impostazioni",
   "/admin/profilo",
 ];
