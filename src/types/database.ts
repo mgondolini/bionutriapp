@@ -875,6 +875,155 @@ export type Database = {
         };
         Relationships: [];
       };
+      photo_sets: {
+        Row: {
+          client_id: string;
+          created_at: string;
+          id: string;
+          saved_at: string | null;
+          saved_by: string | null;
+          saved_by_role: string | null;
+          session_id: string;
+          status: string;
+          studio_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          client_id: string;
+          created_at?: string;
+          id?: string;
+          saved_at?: string | null;
+          saved_by?: string | null;
+          saved_by_role?: string | null;
+          session_id: string;
+          status?: string;
+          studio_id: string;
+        };
+        Update: {
+          client_id?: string;
+          created_at?: string;
+          id?: string;
+          saved_at?: string | null;
+          saved_by?: string | null;
+          saved_by_role?: string | null;
+          session_id?: string;
+          status?: string;
+          studio_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "photo_sets_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "client_list";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "photo_sets_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "photo_sets_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients_with_status";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "photo_sets_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: true;
+            referencedRelation: "journey_sessions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "photo_sets_studio_id_fkey";
+            columns: ["studio_id"];
+            isOneToOne: false;
+            referencedRelation: "studios";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      photos: {
+        Row: {
+          client_id: string;
+          id: string;
+          set_id: string;
+          size_bytes: number;
+          storage_path: string;
+          studio_id: string;
+          uploaded_at: string;
+          uploaded_by: string | null;
+          uploaded_by_role: string;
+          view: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          client_id: string;
+          id?: string;
+          set_id: string;
+          size_bytes: number;
+          storage_path: string;
+          studio_id: string;
+          uploaded_at?: string;
+          uploaded_by?: string | null;
+          uploaded_by_role: string;
+          view: string;
+        };
+        Update: {
+          client_id?: string;
+          id?: string;
+          set_id?: string;
+          size_bytes?: number;
+          storage_path?: string;
+          studio_id?: string;
+          uploaded_at?: string;
+          uploaded_by?: string | null;
+          uploaded_by_role?: string;
+          view?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "photos_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "client_list";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "photos_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "photos_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients_with_status";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "photos_set_id_fkey";
+            columns: ["set_id"];
+            isOneToOne: false;
+            referencedRelation: "photo_sets";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "photos_studio_id_fkey";
+            columns: ["studio_id"];
+            isOneToOne: false;
+            referencedRelation: "studios";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       privacy_consents: {
         Row: {
           accepted_at: string;
@@ -1477,6 +1626,10 @@ export type Database = {
         Args: { p_limit?: number; p_older_than_hours?: number };
         Returns: string[];
       };
+      list_orphan_client_photos: {
+        Args: { p_limit?: number; p_older_than_hours?: number };
+        Returns: string[];
+      };
       mark_file_read: { Args: { p_file_id: string }; Returns: string };
       measure_check_candidates: {
         Args: { p_studio: string };
@@ -1524,6 +1677,19 @@ export type Database = {
           number: number;
           start_date: string;
           status: string;
+        }[];
+      };
+      photo_reminder_candidates: {
+        Args: { p_day: string; p_studio: string };
+        Returns: {
+          check_number: number;
+          client_id: string;
+          missing_views: string[];
+          photo_count: number;
+          session_date: string;
+          session_id: string;
+          session_time: string;
+          user_id: string;
         }[];
       };
       purge_expired_invites: {
