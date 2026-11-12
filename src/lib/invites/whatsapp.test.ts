@@ -40,11 +40,11 @@ describe("buildWhatsAppUrl", () => {
 });
 
 describe("messaggio di invito", () => {
-  it("contiene solo nome dello studio e link (N-05)", () => {
+  it("contiene solo nome di chi invia e link (N-05)", () => {
     const link = activationUrl("https://app.test", "TOKEN");
     expect(link).toBe("https://app.test/attiva/TOKEN");
-    expect(copy.invites.whatsappMessage("Studio Verde", link)).toBe(
-      "Studio Verde e il suo team ti invitano ad attivare l'account: https://app.test/attiva/TOKEN",
+    expect(copy.invites.whatsappMessage("Dott.ssa Elena Verdi", link)).toBe(
+      "Dott.ssa Elena Verdi e il suo team ti invitano ad attivare l'account: https://app.test/attiva/TOKEN",
     );
   });
 });

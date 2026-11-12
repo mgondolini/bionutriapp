@@ -14,17 +14,17 @@ const t = copy.admin.clients.profile.invite;
 
 /**
  * Invito su WhatsApp (A-07, N-01, N-02): ultimo invio, scadenza o utilizzo,
- * anteprima del messaggio (solo nome dello studio e link, N-05) e invio,
+ * anteprima del messaggio (solo nome di chi invia e link, N-05) e invio,
  * reinvio o nuovo link per chi ha già un account.
  */
 export function InviteCard({
   client,
   name,
-  studioName,
+  senderName,
 }: {
   client: ClientProfile;
   name: string;
-  studioName: string;
+  senderName: string;
 }) {
   const status = client.accountStatus;
   const invite = client.lastInvite;
@@ -80,7 +80,7 @@ export function InviteCard({
             {t.previewTitle(formatPhone(client.phone))}
           </figcaption>
           <blockquote className="max-w-[420px] rounded-[14px] border border-mint bg-primary-tint px-3.5 py-3 text-[13.5px]">
-            {copy.invites.whatsappMessage(studioName, t.previewLinkPlaceholder)}
+            {copy.invites.whatsappMessage(senderName, t.previewLinkPlaceholder)}
           </blockquote>
           <span className="text-xs text-muted-foreground">{t.previewNote}</span>
         </figure>

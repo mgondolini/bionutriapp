@@ -392,7 +392,7 @@ describe("createInvite", () => {
     const result = await invitesService.createInvite({
       clientId: "client-1",
       studioId: "studio-1",
-      studioName: "Studio Verde",
+      senderName: "Dott.ssa Elena Verdi",
     });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -403,7 +403,7 @@ describe("createInvite", () => {
       result.whatsappUrl.startsWith("https://wa.me/393331234567?text="),
     ).toBe(true);
     expect(text).toBe(
-      `Studio Verde e il suo team ti invitano ad attivare l'account: https://app.test/attiva/${token}`,
+      `Dott.ssa Elena Verdi e il suo team ti invitano ad attivare l'account: https://app.test/attiva/${token}`,
     );
     const [, , savedHash] = vi.mocked(invitesRepository.insertInvite).mock
       .calls[0]!;
@@ -421,7 +421,7 @@ describe("createInvite", () => {
       await invitesService.createInvite({
         clientId: "c",
         studioId: "studio-1",
-        studioName: "S",
+        senderName: "S",
       }),
     ).toEqual({ ok: false, reason: "not_found" });
 
@@ -434,7 +434,7 @@ describe("createInvite", () => {
       await invitesService.createInvite({
         clientId: "c",
         studioId: "studio-1",
-        studioName: "S",
+        senderName: "S",
       }),
     ).toEqual({ ok: false, reason: "disabled" });
     expect(invitesRepository.insertInvite).not.toHaveBeenCalled();

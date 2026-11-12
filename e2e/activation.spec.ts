@@ -109,7 +109,7 @@ test("cliente già nel database: invito, link scaduto, nuovo invito, attivazione
   );
   expect(first.phoneDigits).toBe(imported.e164.slice(1));
   expect(first.text).toBe(
-    `${OWNER.studioName} e il suo team ti invitano ad attivare l'account: ${first.link}`,
+    `${OWNER.displayName} e il suo team ti invitano ad attivare l'account: ${first.link}`,
   );
   // la riga si aggiorna senza ricaricare: ora c'è "Reinvia invito"
   await expect(
@@ -211,10 +211,10 @@ test("cliente nuovo: il secondo invito annulla il primo, attivazione in Onboardi
     `${fresh.firstName} ${fresh.lastName}`,
   );
 
-  // A6: anteprima del messaggio con solo nome dello studio e link
+  // A6: anteprima del messaggio con solo nome di chi invia e link
   await expect(
     page.getByText(
-      `${OWNER.studioName} e il suo team ti invitano ad attivare l'account: [link personale]`,
+      `${OWNER.displayName} e il suo team ti invitano ad attivare l'account: [link personale]`,
     ),
   ).toBeVisible();
   await expect(page.getByText("Non ancora assegnata")).toBeVisible();

@@ -9,10 +9,10 @@ import { StageHistory } from "./stage-history";
 /** Scheda Profilo (A4, A5, A6): dati e storico a sinistra, account, invito e fase a destra. */
 export function ClientProfile({
   client,
-  studioName,
+  senderName,
 }: {
   client: Profile;
-  studioName: string;
+  senderName: string;
 }) {
   const name = [client.firstName, client.lastName].filter(Boolean).join(" ");
   // data dell'ultimo ingresso nella fase corrente (storico dal più recente)
@@ -28,7 +28,7 @@ export function ClientProfile({
       </div>
       <div className="flex flex-col gap-6">
         <AccountCard client={client} name={name} />
-        <InviteCard client={client} name={name} studioName={studioName} />
+        <InviteCard client={client} name={name} senderName={senderName} />
         <StageCard client={client} stageSince={stageSince} />
       </div>
     </div>

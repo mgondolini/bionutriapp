@@ -43,12 +43,13 @@ export type CreateInviteResult =
 /**
  * Nuovo invito per un cliente dello studio della sessione: revoca i
  * precedenti (stessa transazione, trigger), registra l'invio e restituisce il
- * link wa.me con il messaggio precompilato (solo nome dello studio e link, N-05).
+ * link wa.me con il messaggio precompilato (solo nome di chi invia e link, N-05).
  */
 export async function createInvite(input: {
   clientId: string;
   studioId: string;
-  studioName: string;
+  /** Titolo, nome e cognome del professionista che invia (display_name). */
+  senderName: string;
 }): Promise<CreateInviteResult> {
   // RLS + controllo esplicito: il cliente deve essere dello studio della sessione
   const client = await clientsRepository.getClientProfile(input.clientId);
@@ -68,7 +69,7 @@ export async function createInvite(input: {
   if (!inserted.ok) return inserted;
 
   const text = copy.invites.whatsappMessage(
-    input.studioName,
+    input.senderName,
     activationUrl(appUrl(), token),
   );
   return {

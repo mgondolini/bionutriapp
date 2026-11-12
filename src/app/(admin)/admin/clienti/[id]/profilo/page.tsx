@@ -16,7 +16,7 @@ async function ProfileContent({
   if (!parsed.success || !session.studio.id) notFound();
   const client = await getClientProfile(session.studio.id, parsed.data);
   if (!client) notFound();
-  return <ClientProfile client={client} studioName={session.studio.name} />;
+  return <ClientProfile client={client} senderName={session.displayName} />;
 }
 
 export default function ClientProfiloPage({

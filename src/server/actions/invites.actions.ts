@@ -43,7 +43,7 @@ export async function sendWhatsAppInviteAction(
   const result = await invitesService.createInvite({
     clientId: parsed.data.clientId,
     studioId: session.studio.id,
-    studioName: session.studio.name,
+    senderName: session.displayName,
   });
   if (!result.ok) {
     return fail(

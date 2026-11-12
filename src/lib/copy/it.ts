@@ -925,7 +925,7 @@ export const copy = {
           previewTitle: (phone: string) =>
             `Messaggio che si apre in WhatsApp, verso ${phone}`,
           previewLinkPlaceholder: "[link personale]",
-          previewNote: "Solo nome dello studio e link",
+          previewNote: "Solo il tuo nome e il link",
           send: "Invia invito su WhatsApp",
           resend: "Reinvia invito su WhatsApp",
           newLink: "Invia nuovo link su WhatsApp",
@@ -1503,9 +1503,12 @@ export const copy = {
     },
   },
   invites: {
-    /** Messaggio WhatsApp precompilato: SOLO nome dello studio e link (N-05). */
-    whatsappMessage: (studioName: string, link: string) =>
-      `${studioName} e il suo team ti invitano ad attivare l'account: ${link}`,
+    /**
+     * Messaggio WhatsApp precompilato: SOLO nome del professionista che invia
+     * (titolo, nome e cognome dal suo profilo) e link, mai dati del cliente (N-05).
+     */
+    whatsappMessage: (senderName: string, link: string) =>
+      `${senderName} e il suo team ti invitano ad attivare l'account: ${link}`,
   },
   activation: {
     metaTitle: "Attiva il tuo account",
