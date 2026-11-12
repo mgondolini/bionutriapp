@@ -1904,7 +1904,7 @@ export const copy = {
         current: number,
         name: string,
       ) =>
-        `Percorso ${previous} concluso il ${concludedOn}. Il ${createdOn} hai creato il Percorso ${current}: ${name} è tornato In percorso in automatico.`,
+        `Percorso ${previous} concluso il ${concludedOn}. Il ${createdOn} hai creato il Percorso ${current}: ${name} è di nuovo In percorso, in automatico.`,
       compositionSummary: (onboarding: boolean, gift: string, checks: number) =>
         `${onboarding ? "Con onboarding" : "Senza onboarding"}${gift === "added" ? `, con 1 check omaggio aggiunto ai ${checks} check del percorso` : gift === "included" ? `, con 1 check omaggio incluso nei ${checks} check del percorso` : ""}.${gift === "none" ? "" : " Il cliente vede solo “Check”, senza l’etichetta omaggio."}`,
       dialog: {

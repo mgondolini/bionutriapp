@@ -2,7 +2,7 @@
 -- fra studi, letture del cliente senza nota né omaggio, conclusione con la
 -- fase Concluso, sola lettura dei conclusi, registro delle notifiche.
 begin;
-select plan(24);
+select plan(25);
 select tests.create_fixtures();
 
 create function pg_temp.sessions() returns jsonb language sql immutable as $$
@@ -131,6 +131,11 @@ select is_empty(
 select is_empty(
   $$ select 1 from public.journey_reminder_candidates(tests.id('studio1'), '2026-11-13') $$,
   'nessun promemoria per un giorno senza sessioni'
+);
+
+select lives_ok(
+  $$ delete from public.clients where id = tests.id('c1') $$,
+  'eliminando il cliente si eliminano percorsi e sessioni a cascata'
 );
 
 select * from finish();
