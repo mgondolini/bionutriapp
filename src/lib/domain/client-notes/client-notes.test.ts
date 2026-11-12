@@ -215,6 +215,8 @@ describe("appendAnamnesisTemplate", () => {
   it("un documento vuoto diventa la sola traccia", () => {
     for (const empty of [
       emptyNoteDoc(),
+      // getJSON() di Tiptap per un documento vuoto
+      { type: "doc" } as unknown as NoteDoc,
       { type: "doc", content: [{ type: "paragraph" }] } as NoteDoc,
     ]) {
       const doc = appendAnamnesisTemplate(empty);

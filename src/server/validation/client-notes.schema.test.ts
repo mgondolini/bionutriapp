@@ -7,14 +7,15 @@ import { addDays, todayInRome } from "@/lib/domain/tracking/dates";
 import { saveNoteSchema } from "./client-notes.schema";
 
 const e = copy.clientNotes.errors;
+const doc = {
+  type: "doc",
+  content: [{ type: "paragraph", content: [{ type: "text", text: "Ok" }] }],
+};
 const base = {
   noteId: "3f0e8a52-0d8b-4c47-9a35-1b7f3e1d0002",
   title: "  Visita di controllo ",
   visitDate: todayInRome(),
-  content: {
-    type: "doc",
-    content: [{ type: "paragraph", content: [{ type: "text", text: "Ok" }] }],
-  },
+  content: JSON.stringify(doc),
   expectedUpdatedAt: "2026-11-12T17:42:00.123456+00:00",
 };
 
@@ -43,12 +44,15 @@ describe("saveNoteSchema", () => {
     ["data non valida", { visitDate: "12/11/2026" }, e.dateRequired],
     [
       "contenuto non previsto",
-      { content: { type: "doc", content: [{ type: "image" }] } },
+      { content: JSON.stringify({ type: "doc", content: [{ type: "image" }] }) },
       e.contentInvalid,
     ],
-    ["contenuto mancante", { content: undefined }, e.contentInvalid],
+    ["JSON non valido", { content: "{non json" }, e.contentInvalid],
+    ["oggetto invece della stringa", { content: doc }, null],
   ])("rifiuta: %s", (_, change, message) => {
-    expect(firstError({ ...base, ...change })).toBe(message);
+    const error = firstError({ ...base, ...change });
+    if (message) expect(error).toBe(message);
+    else expect(error).toBeTruthy();
   });
 
   it("titolo di 120 caratteri accettato", () => {
@@ -60,10 +64,10 @@ describe("saveNoteSchema", () => {
     expect(
       firstError({
         ...base,
-        content: {
+        content: JSON.stringify({
           type: "doc",
           content: [{ type: "paragraph", content: [{ type: "text", text }] }],
-        },
+        }),
       }),
     ).toBe(e.contentTooLarge);
   });
@@ -71,7 +75,7 @@ describe("saveNoteSchema", () => {
   it("il contenuto salvato è quello ripulito", () => {
     const parsed = saveNoteSchema.parse({
       ...base,
-      content: {
+      content: JSON.stringify({
         type: "doc",
         content: [
           {
@@ -82,8 +86,8 @@ describe("saveNoteSchema", () => {
             ],
           },
         ],
-      },
+      }),
     });
-    expect(parsed.content).toEqual(base.content);
+    expect(parsed.content).toEqual(doc);
   });
 });

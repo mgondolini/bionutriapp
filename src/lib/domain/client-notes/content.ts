@@ -146,9 +146,10 @@ export function sanitizeNoteDoc(value: unknown): NoteDoc | null {
   return { type: "doc", content };
 }
 
-/** Dimensione in byte del JSON, come arriva al database. */
+/** Dimensione in byte (UTF-8) del JSON, come stringa o come oggetto. */
 export function noteDocBytes(doc: unknown): number {
-  return new TextEncoder().encode(JSON.stringify(doc)).length;
+  const json = typeof doc === "string" ? doc : JSON.stringify(doc);
+  return new TextEncoder().encode(json ?? "").length;
 }
 
 function inlineText(nodes: NoteNode[] | undefined): string {
@@ -204,7 +205,7 @@ export function noteExcerpt(text: string): string {
 }
 
 function isEmptyDoc(doc: NoteDoc): boolean {
-  return doc.content.every(
+  return (doc.content ?? []).every(
     (node) => node.type === "paragraph" && !node.content?.length,
   );
 }
@@ -212,7 +213,7 @@ function isEmptyDoc(doc: NoteDoc): boolean {
 /**
  * "Inserisci traccia": i titoli standard (h2) con un paragrafo vuoto sotto,
  * in fondo al testo esistente, che non viene toccato. Un documento vuoto
- * diventa la sola traccia.
+ * diventa la sola traccia (Tiptap lo restituisce anche senza `content`).
  */
 export function appendAnamnesisTemplate(doc: NoteDoc): NoteDoc {
   const template: NoteNode[] = ANAMNESIS_TEMPLATE_HEADINGS.flatMap(
@@ -227,6 +228,6 @@ export function appendAnamnesisTemplate(doc: NoteDoc): NoteDoc {
   );
   return {
     type: "doc",
-    content: isEmptyDoc(doc) ? template : [...doc.content, ...template],
+    content: isEmptyDoc(doc) ? template : [...(doc.content ?? []), ...template],
   };
 }

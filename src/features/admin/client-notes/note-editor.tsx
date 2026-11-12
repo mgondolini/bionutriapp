@@ -167,7 +167,7 @@ export function NoteEditor({
       noteId: note.id,
       title,
       visitDate: isVisit ? visitDate : null,
-      content: editor.getJSON(),
+      content: JSON.stringify(editor.getJSON()),
       expectedUpdatedAt: version,
       force,
     });

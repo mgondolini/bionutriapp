@@ -26,6 +26,19 @@ export async function listNotes(clientId: string) {
   return data;
 }
 
+/** L'anamnesi del cliente, per chi non è riuscito a crearla (già creata). */
+export async function getAnamnesis(clientId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("client_notes")
+    .select(LIST_COLUMNS)
+    .eq("client_id", clientId)
+    .eq("kind", "anamnesis")
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
 export async function getNote(noteId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -48,7 +61,7 @@ export type NewNoteRow = {
   contentText: string;
 };
 
-/** Nuova nota; null se esiste già l'anamnesi (indice unico, 23505). */
+/** Nuova nota (colonne dell'elenco); null se esiste già l'anamnesi (indice unico, 23505). */
 export async function insertNote(row: NewNoteRow) {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -62,7 +75,7 @@ export async function insertNote(row: NewNoteRow) {
       content: row.content as unknown as NonNullable<Json>,
       content_text: row.contentText,
     })
-    .select("id")
+    .select(LIST_COLUMNS)
     .single();
   if (error?.code === "23505") return null;
   if (error) throw error;

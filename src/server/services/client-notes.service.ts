@@ -94,17 +94,21 @@ export async function getStaffNotes(
   ]);
   let rows = listed;
   if (!rows.some((row) => row.kind === "anamnesis")) {
-    // due aperture insieme: l'indice unico ne lascia passare una sola
-    await clientNotesRepository.insertNote({
-      studioId,
-      clientId,
-      kind: "anamnesis",
-      title: ANAMNESIS_TITLE,
-      visitDate: null,
-      content: emptyNoteDoc(),
-      contentText: "",
-    });
-    rows = await clientNotesRepository.listNotes(clientId);
+    // Due aperture insieme: l'indice unico ne lascia passare una sola e
+    // l'altra legge quella creata. Non si rilegge l'elenco: React
+    // restituirebbe la stessa risposta della prima lettura (fetch
+    // memorizzate nella richiesta), ancora senza anamnesi.
+    const created =
+      (await clientNotesRepository.insertNote({
+        studioId,
+        clientId,
+        kind: "anamnesis",
+        title: ANAMNESIS_TITLE,
+        visitDate: null,
+        content: emptyNoteDoc(),
+        contentText: "",
+      })) ?? (await clientNotesRepository.getAnamnesis(clientId));
+    if (created) rows = [...rows, created];
   }
   const anamnesisId = rows.find((row) => row.kind === "anamnesis")?.id;
   const note = noteId

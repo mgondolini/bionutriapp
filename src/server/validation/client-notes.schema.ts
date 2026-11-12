@@ -31,19 +31,32 @@ export const visitDateSchema = z.iso
   .date(e.dateRequired)
   .refine((day) => day <= todayInRome(), e.dateFuture);
 
-export const noteContentSchema = z.unknown().transform((value, ctx): NoteDoc => {
-  // prima la dimensione: un JSON enorme non si analizza nemmeno
-  if (noteDocBytes(value) > CLIENT_NOTE_CONTENT_MAX_BYTES) {
-    ctx.addIssue({ code: "custom", message: e.contentTooLarge });
-    return z.NEVER;
-  }
-  const doc = sanitizeNoteDoc(value);
-  if (!doc) {
-    ctx.addIssue({ code: "custom", message: e.contentInvalid });
-    return z.NEVER;
-  }
-  return doc;
-});
+/**
+ * Il documento arriva come stringa JSON: un oggetto passato direttamente a
+ * una Server Action perde gli `attrs` condivisi fra più nodi (ProseMirror
+ * riusa lo stesso oggetto, es. tutti i titoli h2), e con la stringa la
+ * dimensione si controlla prima di analizzarla.
+ */
+export const noteContentSchema = z
+  .string()
+  .transform((value, ctx): NoteDoc => {
+    if (noteDocBytes(value) > CLIENT_NOTE_CONTENT_MAX_BYTES) {
+      ctx.addIssue({ code: "custom", message: e.contentTooLarge });
+      return z.NEVER;
+    }
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(value);
+    } catch {
+      parsed = null;
+    }
+    const doc = sanitizeNoteDoc(parsed);
+    if (!doc) {
+      ctx.addIssue({ code: "custom", message: e.contentInvalid });
+      return z.NEVER;
+    }
+    return doc;
+  });
 
 export const clientIdInputSchema = z.object({ clientId: z.uuid() });
 export type ClientIdInput = z.input<typeof clientIdInputSchema>;

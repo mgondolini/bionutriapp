@@ -81,8 +81,14 @@ vi.mock("@/server/repositories/client-notes.repository", () => ({
         created_at: at,
         updated_at: at,
       });
-      return { id };
+      return db.notes.get(id)!;
     },
+  ),
+  getAnamnesis: vi.fn(
+    async (clientId: string) =>
+      [...db.notes.values()].find(
+        (n) => n.client_id === clientId && n.kind === "anamnesis",
+      ) ?? null,
   ),
   updateNote: vi.fn(
     async (
@@ -156,6 +162,42 @@ describe("getStaffNotes", () => {
     expect(second?.notes).toHaveLength(1);
     expect(first?.notes[0]?.title).toBe("Anamnesi");
     expect(first?.selected?.kind).toBe("anamnesis");
+  });
+
+  it("non rilegge l'elenco dopo la creazione (fetch memorizzate da React)", async () => {
+    const { listNotes } = await import(
+      "@/server/repositories/client-notes.repository"
+    );
+    vi.mocked(listNotes).mockClear();
+    const result = await service.getStaffNotes(STUDIO, CLIENT);
+    expect(listNotes).toHaveBeenCalledTimes(1);
+    expect(result?.notes.map((n) => n.kind)).toEqual(["anamnesis"]);
+    expect(result?.selected?.kind).toBe("anamnesis");
+  });
+
+  it("creazione concorrente: legge l'anamnesi creata dall'altra richiesta", async () => {
+    const { insertNote } = await import(
+      "@/server/repositories/client-notes.repository"
+    );
+    vi.mocked(insertNote).mockImplementationOnce(async () => {
+      const at = tick();
+      db.notes.set("other", {
+        id: "other",
+        studio_id: STUDIO,
+        client_id: CLIENT,
+        kind: "anamnesis",
+        title: "Anamnesi",
+        visit_date: null,
+        content: { type: "doc", content: [] },
+        content_text: "",
+        created_at: at,
+        updated_at: at,
+      });
+      return null;
+    });
+    const result = await service.getStaffNotes(STUDIO, CLIENT);
+    expect(result?.notes.map((n) => n.id)).toEqual(["other"]);
+    expect(result?.selected?.id).toBe("other");
   });
 
   it("altro studio: null e nessuna anamnesi creata", async () => {
