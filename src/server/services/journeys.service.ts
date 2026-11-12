@@ -71,6 +71,8 @@ export type StaffJourneyView = {
   previousJourneyId: string | null;
   sessions: StaffSessionView[];
   completed: number;
+  /** Alla creazione il cliente è tornato In percorso in automatico (storico fasi). */
+  autoStageChanged: boolean;
 };
 
 export type StaffJourneys = {
@@ -141,8 +143,12 @@ function toStaffJourney(
       state: deriveSessionState(session, today, nextId),
     })),
     completed: completedCount(dated),
+    autoStageChanged: false,
   };
 }
+
+/** Margine fra la creazione del percorso e il cambio di fase automatico. */
+const AUTO_STAGE_WINDOW_MS = 5 * 60 * 1000;
 
 async function loadOwnedClient(studioId: string, clientId: string) {
   const client = await clientsRepository.getClientProfile(clientId);
@@ -156,7 +162,19 @@ export async function getStaffJourneys(
 ): Promise<StaffJourneys | null> {
   const client = await loadOwnedClient(studioId, clientId);
   if (!client) return null;
-  const rows = await journeysRepository.listJourneysOfClient(clientId);
+  const [rows, history] = await Promise.all([
+    journeysRepository.listJourneysOfClient(clientId),
+    clientsRepository.listStageHistory(clientId),
+  ]);
+  const automaticResumes = history
+    .filter(
+      (event) =>
+        event.to_stage === "in_progress" &&
+        event.from_stage === "completed" &&
+        event.source === "automatic" &&
+        event.changed_at,
+    )
+    .map((event) => Date.parse(event.changed_at!));
   const today = todayInRome();
   return {
     client: {
@@ -166,7 +184,14 @@ export async function getStaffJourneys(
       pushEnabled: Boolean(client.push_enabled),
     },
     journeys: rows
-      .map((row, index) => toStaffJourney(row, index + 1, today))
+      .map((row, index) => {
+        const view = toStaffJourney(row, index + 1, today);
+        const created = Date.parse(row.created_at);
+        view.autoStageChanged = automaticResumes.some(
+          (at) => at >= created && at - created <= AUTO_STAGE_WINDOW_MS,
+        );
+        return view;
+      })
       .reverse(),
     today,
     threshold: JOURNEY_EXTENSION_THRESHOLD_DAYS,

@@ -38,9 +38,8 @@ export function mergeCustomDates<T extends JourneySession>(
     .map((session) => ({
       ...session,
       date: session.customDate ?? session.calculatedDate,
-      modified:
-        session.customDate !== null &&
-        session.customDate !== session.calculatedDate,
+      // fissata a mano: resta ferma ai ricalcoli anche se coincide con la calcolata
+      modified: session.customDate !== null,
     }));
 }
 

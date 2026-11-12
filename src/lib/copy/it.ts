@@ -1820,6 +1820,7 @@ export const copy = {
       resume: "Ripresa",
     },
     journeyNumber: (n: number) => `Percorso ${n}`,
+    journeyHeading: (n: number, detail: string) => `Percorso ${n} · ${detail}`,
     completedOf: (done: number, total: number) =>
       `${done} di ${total} completate`,
     month: (current: number, total: number) => `Mese ${current} di ${total}`,
