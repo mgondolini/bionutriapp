@@ -1,10 +1,12 @@
 /**
- * File .ics di una sessione (C19, "Aggiungi al calendario"). Con l'ora:
- * evento di un'ora nel fuso Europe/Rome; senza: evento di una giornata.
+ * File .ics di una sessione (A17, C22: Apple Calendar e "Altro calendario").
+ * Con l'ora: evento di JOURNEY_SESSION_MINUTES nel fuso Europe/Rome; senza:
+ * evento di una giornata. Il link Meet va in LOCATION, URL e descrizione;
+ * l'evento dello staff invita l'email del cliente (ATTENDEE).
  */
 import { addDays } from "@/lib/domain/tracking/dates";
 
-export const ICS_DURATION_MINUTES = 60;
+import { eventDetails, eventEnd, type CalendarEvent } from "./calendar";
 
 function escapeText(value: string): string {
   return value
@@ -23,20 +25,6 @@ function stamp(now: Date): string {
     .toISOString()
     .replace(/[-:]/g, "")
     .replace(/\.\d{3}/, "");
-}
-
-function addMinutes(
-  time: string,
-  minutes: number,
-): { time: string; nextDay: boolean } {
-  const [h, m] = time.split(":").map(Number) as [number, number];
-  const total = h * 60 + m + minutes;
-  const nextDay = total >= 24 * 60;
-  const wrapped = total % (24 * 60);
-  return {
-    time: `${String(Math.floor(wrapped / 60)).padStart(2, "0")}${String(wrapped % 60).padStart(2, "0")}00`,
-    nextDay,
-  };
 }
 
 /** Regole del fuso di Roma (ora legale UE), per i client che non le conoscono. */
@@ -60,14 +48,31 @@ const VTIMEZONE_ROME = [
   "END:VTIMEZONE",
 ];
 
-export function buildIcs(event: {
-  uid: string;
-  title: string;
-  description?: string;
-  date: string;
-  time: string | null;
-  now?: Date;
-}): string {
+/** Righe oltre 75 byte spezzate come vuole RFC 5545 (continuazione con uno spazio). */
+function fold(line: string): string {
+  const encoder = new TextEncoder();
+  const parts: string[] = [];
+  let current = "";
+  let bytes = 0;
+  for (const char of line) {
+    const size = encoder.encode(char).length;
+    const limit = parts.length === 0 ? 75 : 74;
+    if (bytes + size > limit) {
+      parts.push(current);
+      current = "";
+      bytes = 0;
+    }
+    current += char;
+    bytes += size;
+  }
+  parts.push(current);
+  return parts.join("\r\n ");
+}
+
+export function buildIcs(
+  event: CalendarEvent & { now?: Date },
+  meetLine: string,
+): string {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -82,11 +87,10 @@ export function buildIcs(event: {
     `DTSTAMP:${stamp(event.now ?? new Date())}`,
   );
   if (event.time) {
-    const start = `${event.time.replace(":", "")}00`;
-    const end = addMinutes(event.time, ICS_DURATION_MINUTES);
+    const end = eventEnd(event.date, event.time);
     lines.push(
-      `DTSTART;TZID=Europe/Rome:${compactDay(event.date)}T${start}`,
-      `DTEND;TZID=Europe/Rome:${compactDay(end.nextDay ? addDays(event.date, 1) : event.date)}T${end.time}`,
+      `DTSTART;TZID=Europe/Rome:${compactDay(event.date)}T${event.time.replace(":", "")}00`,
+      `DTEND;TZID=Europe/Rome:${compactDay(end.date)}T${end.time.replace(":", "")}00`,
     );
   } else {
     lines.push(
@@ -95,9 +99,18 @@ export function buildIcs(event: {
     );
   }
   lines.push(`SUMMARY:${escapeText(event.title)}`);
-  if (event.description) {
-    lines.push(`DESCRIPTION:${escapeText(event.description)}`);
+  lines.push(`DESCRIPTION:${escapeText(eventDetails(event, meetLine))}`);
+  if (event.meetingUrl) {
+    lines.push(
+      `LOCATION:${escapeText(event.meetingUrl)}`,
+      `URL:${event.meetingUrl}`,
+    );
+  }
+  if (event.attendeeEmail) {
+    lines.push(
+      `ATTENDEE;ROLE=REQ-PARTICIPANT;RSVP=TRUE:mailto:${event.attendeeEmail}`,
+    );
   }
   lines.push("END:VEVENT", "END:VCALENDAR");
-  return `${lines.join("\r\n")}\r\n`;
+  return `${lines.map(fold).join("\r\n")}\r\n`;
 }

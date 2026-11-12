@@ -1825,6 +1825,16 @@ export const copy = {
       `${done} di ${total} completate`,
     month: (current: number, total: number) => `Mese ${current} di ${total}`,
     timeAt: (time: string) => `ore ${time}`,
+    // word joiner: l'orario non va a capo sul trattino
+    timeRange: (start: string, end: string) => `${start}\u2060–\u2060${end}`,
+    meet: "Google Meet",
+    /** Voci di "Aggiungi al calendario" (A17, C22). */
+    calendarOptions: {
+      google: { label: "Google Calendar", hint: "Si apre Google Calendar" },
+      apple: { label: "Apple Calendar", hint: "Scarica il file .ics" },
+      outlook: { label: "Outlook", hint: "Si apre Outlook sul web" },
+      other: { label: "Altro calendario", hint: "Scarica il file .ics" },
+    },
     admin: {
       empty: {
         title: "Nessun percorso impostato",
@@ -1880,8 +1890,35 @@ export const copy = {
       notePlaceholder: "Per esempio: portare le misure aggiornate",
       save: "Salva modifiche",
       saved: "Sessione salvata",
-      calendar: "Fissa nel calendario dello studio",
+      sessionDuration: "Durata",
+      sessionDurationValue: "30 minuti",
+      calendar: "Aggiungi al calendario",
       calendarSoon: "Disponibile con il calendario",
+      calendarSummary: (when: string, name: string | null) =>
+        `${when} · 30 minuti${name ? ` · invito a ${name}` : ""}`,
+      meeting: {
+        title: "Videochiamata",
+        none: "Nessun link Meet per questa sessione.",
+        sessionOnly: "Link solo per questo check",
+        copy: "Copia link",
+        copied: "Link copiato",
+        copyFailed:
+          "Non è stato possibile copiare il link. Selezionalo e copialo a mano.",
+        fieldLabel: (name: string) => `Link Google Meet di ${name}`,
+        placeholder: "https://meet.google.com/abc-defg-hij",
+        hint: "Un link per ogni cliente, usato in tutti i suoi check.",
+        missing: (name: string) =>
+          `Aggiungi il link Meet di ${name} per inserirlo negli eventi del calendario.`,
+        reuseWarning:
+          "Riusare lo stesso link per più check è meno sicuro: Google consiglia una stanza nuova per ogni evento. Con il calendario v2.0 il link si creerà da solo per ogni check.",
+        saveClient: "Salva link",
+        useForSession: "Usa un link solo per questo check",
+        useClientLink: (name: string) => `Torna al link di ${name}`,
+        savedClient: "Link salvato",
+        removedClient: "Link rimosso",
+        savedSession: "Link salvato per questo check",
+        removedSession: "Il check usa di nuovo il link del cliente",
+      },
       notifyNote:
         "Salvando, il cliente riceve una notifica push con la nuova data e ora. Promemoria automatici il giorno prima e la mattina stessa.",
       pushActive: "Notifiche push attive",
@@ -1955,6 +1992,9 @@ export const copy = {
         dateRange: "Scegli una data entro due anni da oggi.",
         timeInvalid: "Inserisci un’ora valida, per esempio 10:30.",
         noteTooLong: `Massimo ${500} caratteri.`,
+        meetingUrlInvalid:
+          "Inserisci un link Google Meet come https://meet.google.com/abc-defg-hij, senza altro dopo.",
+        meetingUrlRequired: "Inserisci il link Google Meet di questo check.",
       },
     },
     client: {
@@ -1976,6 +2016,22 @@ export const copy = {
         from === to ? `Check ${from}` : `Check ${from}–${to}`,
       lastCheck: "ultimo check",
       addToCalendar: "Aggiungi al calendario",
+      joinMeet: "Partecipa su Google Meet",
+      calendarSheet: {
+        description: (
+          name: string,
+          studio: string,
+          when: string,
+          meet: boolean,
+        ) =>
+          `${name} · ${studio} · ${when}${meet ? ", con il link alla videochiamata su Google Meet" : ""}.`,
+        appleHint: "Scarica il file per Apple Calendar",
+        dateChangeNote:
+          "Se la data cambia ti avvisiamo con una notifica: aggiorna l’evento dallo stesso pulsante.",
+        inviteNote:
+          "Se hai già ricevuto l’invito da Google Calendar, non serve aggiungerlo.",
+        cancel: "Annulla",
+      },
       managedNote:
         "Le date le gestisce il tuo nutrizionista: se cambiano, le trovi aggiornate qui.",
       previousTitle: "Percorsi precedenti",
@@ -2020,9 +2076,17 @@ export const copy = {
         `${time ? `Alle ${time}. ` : ""}Puoi aggiungerlo al calendario dalla pagina del percorso.`,
     },
     ics: {
-      title: (name: string, studio: string) => `${name} – ${studio}`,
+      title: (name: string, studio: string) => `${name} · ${studio}`,
       description:
         "Sessione del tuo percorso. La data la gestisce il tuo nutrizionista.",
+      /** "Check 8 · G. Bianchi" (evento dello staff). */
+      staffTitle: (name: string, client: string) => `${name} · ${client}`,
+      staffDescription: (client: string) =>
+        `Sessione del percorso di ${client}.`,
+      meetLine: "Videochiamata su Google Meet:",
+      /** "30 ottobre 2026, 10:30–11:00" o solo la data. */
+      when: (date: string, range: string | null) =>
+        range ? `${date}, ${range}` : date,
       fileName: (name: string) =>
         `${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.ics`,
     },

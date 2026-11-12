@@ -12,7 +12,14 @@ import {
   journeyEndDate,
   monthsBetween,
 } from "./dates";
+import {
+  eventEnd,
+  googleCalendarUrl,
+  outlookCalendarUrl,
+  romeOffset,
+} from "./calendar";
 import { buildIcs } from "./ics";
+import { meetingLinkText, resolveMeetingUrl } from "./meeting";
 import { isReminderDue, reminderSlot, reminderTimes } from "./reminders";
 import {
   deriveSessionState,
@@ -362,32 +369,162 @@ describe("promemoria", () => {
 
 describe("file .ics", () => {
   const now = new Date("2026-11-12T09:00:00Z");
+  const base = {
+    uid: "s1@nutrify",
+    title: "Check 6, Studio Verde",
+    description: "Sessione del tuo percorso.",
+    meetingUrl: null,
+    now,
+  };
 
-  it("con l'ora: evento di un'ora nel fuso di Roma", () => {
-    const ics = buildIcs({
-      uid: "s1@nutrify",
-      title: "Check 6, Studio Verde",
-      date: "2026-11-05",
-      time: "10:30",
-      now,
-    });
+  it("con l'ora: evento di 30 minuti nel fuso di Roma", () => {
+    const ics = buildIcs({ ...base, date: "2026-11-05", time: "10:30" }, MEET);
     expect(ics).toContain("DTSTART;TZID=Europe/Rome:20261105T103000");
-    expect(ics).toContain("DTEND;TZID=Europe/Rome:20261105T113000");
+    expect(ics).toContain("DTEND;TZID=Europe/Rome:20261105T110000");
     expect(ics).toContain("SUMMARY:Check 6\\, Studio Verde");
     expect(ics).toContain("BEGIN:VTIMEZONE");
-    expect(ics.split("\r\n").length).toBeGreaterThan(10);
+    expect(ics).not.toContain("LOCATION");
+    expect(ics).not.toContain("ATTENDEE");
+  });
+
+  it("alle 23:45 finisce il giorno dopo", () => {
+    const ics = buildIcs({ ...base, date: "2026-12-31", time: "23:45" }, MEET);
+    expect(ics).toContain("DTEND;TZID=Europe/Rome:20270101T001500");
   });
 
   it("senza ora: evento di una giornata", () => {
-    const ics = buildIcs({
-      uid: "s1@nutrify",
-      title: "Check 6",
-      date: "2026-12-31",
-      time: null,
-      now,
-    });
+    const ics = buildIcs({ ...base, date: "2026-12-31", time: null }, MEET);
     expect(ics).toContain("DTSTART;VALUE=DATE:20261231");
     expect(ics).toContain("DTEND;VALUE=DATE:20270101");
     expect(ics).not.toContain("VTIMEZONE");
+  });
+
+  it("con il link Meet e l'invito dello staff", () => {
+    const ics = buildIcs(
+      {
+        ...base,
+        date: "2027-01-11",
+        time: "10:30",
+        meetingUrl: URL_CLIENT,
+        attendeeEmail: "giulia@example.test",
+      },
+      MEET,
+    );
+    const unfolded = ics.replace(/\r\n /g, "");
+    expect(unfolded).toContain(`LOCATION:${URL_CLIENT}`);
+    expect(unfolded).toContain(`URL:${URL_CLIENT}`);
+    expect(unfolded).toContain(`${MEET} ${URL_CLIENT}`);
+    expect(unfolded).toContain(
+      "ATTENDEE;ROLE=REQ-PARTICIPANT;RSVP=TRUE:mailto:giulia@example.test",
+    );
+    // RFC 5545: righe di al massimo 75 byte
+    for (const line of ics.split("\r\n")) {
+      expect(new TextEncoder().encode(line).length).toBeLessThanOrEqual(75);
+    }
+  });
+});
+
+const MEET = "Videochiamata su Google Meet:";
+const URL_CLIENT = "https://meet.google.com/kqz-mdvr-hdp";
+const URL_SESSION = "https://meet.google.com/abc-defg-hij";
+
+describe("resolveMeetingUrl", () => {
+  it("usa il link della sessione se c'è", () => {
+    expect(
+      resolveMeetingUrl(
+        { meetingUrl: URL_SESSION },
+        { meetingUrl: URL_CLIENT },
+      ),
+    ).toBe(URL_SESSION);
+  });
+  it("altrimenti quello del cliente", () => {
+    expect(
+      resolveMeetingUrl({ meetingUrl: null }, { meetingUrl: URL_CLIENT }),
+    ).toBe(URL_CLIENT);
+    expect(resolveMeetingUrl(null, { meetingUrl: URL_CLIENT })).toBe(
+      URL_CLIENT,
+    );
+  });
+  it("altrimenti nessun link", () => {
+    expect(resolveMeetingUrl({ meetingUrl: null }, { meetingUrl: null })).toBe(
+      null,
+    );
+    expect(resolveMeetingUrl(null, null)).toBe(null);
+  });
+  it("testo del link senza https", () => {
+    expect(meetingLinkText(URL_CLIENT)).toBe("meet.google.com/kqz-mdvr-hdp");
+  });
+});
+
+describe("link del calendario", () => {
+  const event = {
+    uid: "s1@nutrify",
+    title: "Check 8 · G. Bianchi",
+    description: "Sessione del percorso di Giulia Bianchi.",
+    date: "2027-01-11",
+    time: "10:30",
+    meetingUrl: URL_CLIENT,
+    attendeeEmail: "giulia@example.test",
+  };
+
+  it("Google Calendar: ora di Roma, 30 minuti, link e invito", () => {
+    const url = new URL(googleCalendarUrl(event, MEET));
+    expect(url.origin).toBe("https://calendar.google.com");
+    expect(url.searchParams.get("action")).toBe("TEMPLATE");
+    expect(url.searchParams.get("text")).toBe("Check 8 · G. Bianchi");
+    expect(url.searchParams.get("dates")).toBe(
+      "20270111T103000/20270111T110000",
+    );
+    expect(url.searchParams.get("ctz")).toBe("Europe/Rome");
+    expect(url.searchParams.get("location")).toBe(URL_CLIENT);
+    expect(url.searchParams.get("details")).toContain(URL_CLIENT);
+    expect(url.searchParams.get("add")).toBe("giulia@example.test");
+  });
+
+  it("Google Calendar senza ora né invito: giornata intera", () => {
+    const url = new URL(
+      googleCalendarUrl(
+        { ...event, time: null, meetingUrl: null, attendeeEmail: null },
+        MEET,
+      ),
+    );
+    expect(url.searchParams.get("dates")).toBe("20270111/20270112");
+    expect(url.searchParams.has("location")).toBe(false);
+    expect(url.searchParams.has("add")).toBe(false);
+  });
+
+  it("Outlook: orari con lo scarto di Roma, ora solare e legale", () => {
+    const winter = new URL(outlookCalendarUrl(event, MEET));
+    expect(winter.searchParams.get("startdt")).toBe(
+      "2027-01-11T10:30:00+01:00",
+    );
+    expect(winter.searchParams.get("enddt")).toBe("2027-01-11T11:00:00+01:00");
+    expect(winter.searchParams.get("to")).toBe("giulia@example.test");
+    const summer = new URL(
+      outlookCalendarUrl({ ...event, date: "2026-07-01" }, MEET),
+    );
+    expect(summer.searchParams.get("startdt")).toBe(
+      "2026-07-01T10:30:00+02:00",
+    );
+  });
+
+  it("Outlook senza ora: giornata intera", () => {
+    const url = new URL(outlookCalendarUrl({ ...event, time: null }, MEET));
+    expect(url.searchParams.get("allday")).toBe("true");
+    expect(url.searchParams.get("startdt")).toBe("2027-01-11");
+    expect(url.searchParams.get("enddt")).toBe("2027-01-12");
+  });
+
+  it("scarto di Roma nei giorni del cambio d'ora", () => {
+    expect(romeOffset("2026-03-29", "01:30")).toBe("+01:00");
+    expect(romeOffset("2026-03-29", "03:30")).toBe("+02:00");
+    expect(romeOffset("2026-10-25", "04:00")).toBe("+01:00");
+  });
+
+  it("fine dell'evento oltre la mezzanotte", () => {
+    expect(eventEnd("2026-12-31", "23:45")).toEqual({
+      date: "2027-01-01",
+      time: "00:15",
+    });
   });
 });

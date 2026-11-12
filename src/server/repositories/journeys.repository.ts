@@ -18,7 +18,7 @@ import { createClient } from "@/lib/supabase/server";
 const JOURNEY_COLUMNS =
   "id, client_id, previous_journey_id, kind, duration_months, start_date, end_date, include_onboarding, gift_mode, status, concluded_at, created_at";
 const SESSION_COLUMNS =
-  "id, journey_id, position, type, calculated_date, custom_date, session_time, status, note";
+  "id, journey_id, position, type, calculated_date, custom_date, session_time, status, note, meeting_url, meeting_source";
 
 /** Percorsi del cliente con le sessioni, dal più vecchio. */
 export async function listJourneysOfClient(clientId: string) {
@@ -189,6 +189,52 @@ export async function clearCustomDate(sessionId: string) {
   const { error } = await supabase
     .from("journey_sessions")
     .update({ custom_date: null })
+    .eq("id", sessionId);
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------
+// Link Google Meet (A17)
+// ---------------------------------------------------------------------
+
+/** Link del cliente; null se il cliente non esiste o è di un altro studio. */
+export async function getClientMeetingUrl(
+  clientId: string,
+): Promise<{ meetingUrl: string | null } | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("clients")
+    .select("meeting_url")
+    .eq("id", clientId)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? { meetingUrl: data.meeting_url } : null;
+}
+
+export async function setClientMeetingUrl(
+  clientId: string,
+  meetingUrl: string | null,
+) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("clients")
+    .update({ meeting_url: meetingUrl })
+    .eq("id", clientId);
+  if (error) throw error;
+}
+
+/** Link solo per una sessione (origine "manual"); null = quello del cliente. */
+export async function setSessionMeetingUrl(
+  sessionId: string,
+  meetingUrl: string | null,
+) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("journey_sessions")
+    .update({
+      meeting_url: meetingUrl,
+      meeting_source: meetingUrl ? "manual" : null,
+    })
     .eq("id", sessionId);
   if (error) throw error;
 }

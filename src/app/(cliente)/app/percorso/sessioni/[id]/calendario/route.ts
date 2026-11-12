@@ -9,7 +9,8 @@ import { getSession } from "@/server/services/session.service";
 const NO_STORE = { "Cache-Control": "private, no-store" };
 
 /**
- * "Aggiungi al calendario" (C19): file .ics di una sessione del cliente
+ * "Aggiungi al calendario" (C19, C22: Apple Calendar e "Altro calendario"):
+ * file .ics di una sessione del cliente
  * della sessione. Le sessioni si leggono solo da my_journey_sessions, quindi
  * un id di un altro cliente (o di un altro studio) dà 404 come uno inesistente.
  */
@@ -31,13 +32,18 @@ export async function GET(
   }
 
   const name = sessionLabel(journeySession.name);
-  const ics = buildIcs({
-    uid: `${journeySession.id}@nutrify`,
-    title: copy.journeys.ics.title(name, session.studio.name),
-    description: copy.journeys.ics.description,
-    date: journeySession.date,
-    time: journeySession.time,
-  });
+  const ics = buildIcs(
+    {
+      uid: `${journeySession.id}@nutrify`,
+      title: copy.journeys.ics.title(name, session.studio.name),
+      description: copy.journeys.ics.description,
+      date: journeySession.date,
+      time: journeySession.time,
+      // già scelto da resolveMeetingUrl, solo per il prossimo check
+      meetingUrl: journeySession.meetingUrl,
+    },
+    copy.journeys.ics.meetLine,
+  );
   return new Response(ics, {
     headers: {
       ...NO_STORE,

@@ -16,10 +16,14 @@ import { getStaffSession } from "@/server/services/session.service";
 import {
   createJourneySchema,
   sessionIdSchema,
+  setClientMeetingSchema,
+  setSessionMeetingSchema,
   updateJourneySchema,
   updateSessionSchema,
   type CreateJourneyInput,
   type SessionIdInput,
+  type SetClientMeetingInput,
+  type SetSessionMeetingInput,
   type UpdateJourneyInput,
   type UpdateSessionInput,
 } from "@/server/validation/journeys.schema";
@@ -129,6 +133,42 @@ export async function restoreSessionDateAction(
   const result = await journeysService.restoreSessionDate(
     session.studio.id,
     parsed.data.sessionId,
+  );
+  if (!result.ok) return fail(FAILURES[result.reason]);
+  revalidateJourney(result.data.clientId);
+  return ok();
+}
+
+/** Link Google Meet del cliente (A17): vuoto lo toglie. */
+export async function setClientMeetingAction(
+  input: SetClientMeetingInput,
+): Promise<ActionResult> {
+  const session = await getStaffSession();
+  if (!session) return authFailure();
+  const parsed = setClientMeetingSchema.safeParse(input);
+  if (!parsed.success) return invalid(parsed.error);
+
+  const result = await journeysService.setClientMeetingUrl(
+    session.studio.id,
+    parsed.data,
+  );
+  if (!result.ok) return fail(FAILURES[result.reason]);
+  revalidateJourney(result.data.clientId);
+  return ok();
+}
+
+/** "Usa un link solo per questo check" (A17); null torna al link del cliente. */
+export async function setSessionMeetingAction(
+  input: SetSessionMeetingInput,
+): Promise<ActionResult> {
+  const session = await getStaffSession();
+  if (!session) return authFailure();
+  const parsed = setSessionMeetingSchema.safeParse(input);
+  if (!parsed.success) return invalid(parsed.error);
+
+  const result = await journeysService.setSessionMeetingUrl(
+    session.studio.id,
+    parsed.data,
   );
   if (!result.ok) return fail(FAILURES[result.reason]);
   revalidateJourney(result.data.clientId);

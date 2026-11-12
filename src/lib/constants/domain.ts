@@ -613,6 +613,19 @@ export const JOURNEY_CLIENT_PATH = "/app/percorso";
 /** Parametro del percorso mostrato (storico admin e percorsi precedenti del cliente). */
 export const JOURNEY_PARAM = "percorso";
 export const JOURNEY_CRON_PATH = `${INTERNAL_API_PATH}/notifications/journeys`;
+/** Ogni sessione (call) dura 30 minuti: eventi del calendario e .ics. */
+export const JOURNEY_SESSION_MINUTES = 30;
+/** Fuso degli eventi del calendario (come "oggi" nell'interfaccia). */
+export const JOURNEY_CALENDAR_TIMEZONE = "Europe/Rome";
+/**
+ * Link della videochiamata: solo una stanza Google Meet nel formato standard
+ * (abc-defg-hij), senza parametri. Lo stesso controllo è nel database.
+ */
+export const MEET_URL_PATTERN =
+  /^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/;
+/** Origine del link di una sessione: dallo staff o, dalla v2.0, da Google Calendar. */
+export const MEETING_SOURCES = ["manual", "google"] as const;
+export type MeetingSource = (typeof MEETING_SOURCES)[number];
 
 export function journeyIcsPath(sessionId: string): string {
   return `${JOURNEY_CLIENT_PATH}/sessioni/${sessionId}/calendario`;

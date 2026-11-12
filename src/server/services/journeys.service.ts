@@ -9,9 +9,11 @@ import {
   type JourneySessionType,
   type JourneyStatus,
   type JourneyStage,
+  type MeetingSource,
 } from "@/lib/constants/domain";
 import { planJourney } from "@/lib/domain/journeys/composition";
 import { journeyEndDate } from "@/lib/domain/journeys/dates";
+import { resolveMeetingUrl } from "@/lib/domain/journeys/meeting";
 import {
   completedCount,
   deriveSessionState,
@@ -52,6 +54,9 @@ export type StaffSessionView = {
   status: JourneySessionStatus;
   state: SessionState;
   note: string | null;
+  /** Link solo per questa sessione; quello usato lo sceglie resolveMeetingUrl. */
+  meetingUrl: string | null;
+  meetingSource: MeetingSource | null;
 };
 
 export type StaffJourneyView = {
@@ -79,6 +84,11 @@ export type StaffJourneys = {
   client: {
     id: string;
     firstName: string;
+    lastName: string;
+    /** Invitata dall'evento del calendario dello staff (A17). */
+    email: string | null;
+    /** Link Google Meet del cliente, ripiego di ogni sessione. */
+    meetingUrl: string | null;
     stage: JourneyStage;
     pushEnabled: boolean;
   };
@@ -116,6 +126,8 @@ function toStaffJourney(
       time: shortTime(session.session_time),
       status: session.status as JourneySessionStatus,
       note: session.note,
+      meetingUrl: session.meeting_url,
+      meetingSource: session.meeting_source as MeetingSource | null,
     })),
   );
   const names = sessionNames(dated, "staff");
@@ -162,9 +174,10 @@ export async function getStaffJourneys(
 ): Promise<StaffJourneys | null> {
   const client = await loadOwnedClient(studioId, clientId);
   if (!client) return null;
-  const [rows, history] = await Promise.all([
+  const [rows, history, meeting] = await Promise.all([
     journeysRepository.listJourneysOfClient(clientId),
     clientsRepository.listStageHistory(clientId),
+    journeysRepository.getClientMeetingUrl(clientId),
   ]);
   const automaticResumes = history
     .filter(
@@ -180,6 +193,9 @@ export async function getStaffJourneys(
     client: {
       id: client.id!,
       firstName: client.first_name!,
+      lastName: client.last_name ?? "",
+      email: client.email,
+      meetingUrl: meeting?.meetingUrl ?? null,
       stage: client.journey_stage as JourneyStage,
       pushEnabled: Boolean(client.push_enabled),
     },
@@ -421,6 +437,37 @@ export async function restoreSessionDate(
   return { ok: true, data: { clientId: session.client_id } };
 }
 
+/**
+ * Link Google Meet del cliente (A17), usato da tutte le sue sessioni senza
+ * un link proprio; null lo toglie. Vale anche con il percorso concluso.
+ */
+export async function setClientMeetingUrl(
+  studioId: string,
+  input: { clientId: string; meetingUrl: string | null },
+): Promise<Result<{ clientId: string }>> {
+  const client = await loadOwnedClient(studioId, input.clientId);
+  if (!client) return { ok: false, reason: "not_found" };
+  await journeysRepository.setClientMeetingUrl(
+    input.clientId,
+    input.meetingUrl,
+  );
+  return { ok: true, data: { clientId: input.clientId } };
+}
+
+/** "Usa un link solo per questo check"; null torna al link del cliente. */
+export async function setSessionMeetingUrl(
+  studioId: string,
+  input: { sessionId: string; meetingUrl: string | null },
+): Promise<Result<{ clientId: string }>> {
+  const loaded = await loadOwnedSession(studioId, input.sessionId);
+  if (!loaded.ok) return loaded;
+  await journeysRepository.setSessionMeetingUrl(
+    input.sessionId,
+    input.meetingUrl,
+  );
+  return { ok: true, data: { clientId: loaded.session.client_id } };
+}
+
 // ---------------------------------------------------------------------
 // Cliente (C5, C19, C20)
 // ---------------------------------------------------------------------
@@ -434,6 +481,11 @@ export type ClientSessionView = {
   time: string | null;
   status: JourneySessionStatus;
   state: SessionState;
+  /**
+   * Link della videochiamata, solo sul prossimo check (C19): le altre
+   * sessioni non lo mostrano. Mai l'origine né l'id dell'evento Google.
+   */
+  meetingUrl: string | null;
 };
 
 export type ClientJourneyView = {
@@ -480,6 +532,10 @@ async function loadOwnJourneys(): Promise<{
           customDate: null,
           time: shortTime(session.session_time),
           status: session.status as JourneySessionStatus,
+          meetingUrl: resolveMeetingUrl(
+            { meetingUrl: session.meeting_url },
+            { meetingUrl: session.client_meeting_url },
+          ),
         })),
     );
     const names = sessionNames(dated, "client");
@@ -494,6 +550,7 @@ async function loadOwnJourneys(): Promise<{
       time: session.time,
       status: session.status,
       state: deriveSessionState(session, today, nextId),
+      meetingUrl: session.id === nextId ? session.meetingUrl : null,
     }));
     const durationMonths = journey.duration_months as JourneyDuration;
     return {

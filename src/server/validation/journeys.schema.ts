@@ -9,6 +9,7 @@ import {
   JOURNEY_GIFT_MODES,
   JOURNEY_NOTE_MAX,
   JOURNEY_SESSION_STATUSES,
+  MEET_URL_PATTERN,
   type JourneyDuration,
 } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
@@ -78,6 +79,44 @@ export type UpdateSessionInput = z.input<typeof updateSessionSchema>;
 
 export const sessionIdSchema = z.object({ sessionId: z.uuid() });
 export type SessionIdInput = z.input<typeof sessionIdSchema>;
+
+/**
+ * Link Google Meet (A17): solo https://meet.google.com/abc-defg-hij, senza
+ * parametri né altri host. Spazi ai lati tolti; nient'altro viene corretto.
+ */
+export const meetingUrlSchema = z
+  .string()
+  .trim()
+  .regex(MEET_URL_PATTERN, e.meetingUrlInvalid);
+
+/** Link del cliente: vuoto = nessun link. */
+export const clientMeetingFormSchema = z.object({
+  meetingUrl: z
+    .string()
+    .trim()
+    .refine((value) => value === "" || MEET_URL_PATTERN.test(value), {
+      message: e.meetingUrlInvalid,
+    })
+    .transform((value) => value || null),
+});
+export type ClientMeetingFormValues = z.input<typeof clientMeetingFormSchema>;
+
+export const setClientMeetingSchema = clientMeetingFormSchema.extend({
+  clientId: z.uuid(),
+});
+export type SetClientMeetingInput = z.input<typeof setClientMeetingSchema>;
+
+/** Link solo per una sessione; null = torna al link del cliente. */
+export const setSessionMeetingSchema = z.object({
+  sessionId: z.uuid(),
+  meetingUrl: z
+    .string()
+    .trim()
+    .min(1, e.meetingUrlRequired)
+    .pipe(meetingUrlSchema)
+    .nullable(),
+});
+export type SetSessionMeetingInput = z.input<typeof setSessionMeetingSchema>;
 
 /** `?percorso=` dello storico: un uuid, altrimenti il percorso corrente. */
 export const journeyParamSchema = z.uuid().optional().catch(undefined);
