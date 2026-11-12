@@ -26,7 +26,7 @@ select results_eq(
 select results_eq(
   $$ select key, default_goal, goal_unit from public.metrics
       where studio_id = tests.id('studio1') and default_goal is not null order by sort_order $$,
-  $$ values ('steps'::text, 10000::numeric, 'passi'::text), ('sleep', 8, 'ore'), ('water', 2, 'L') $$,
+  $$ values ('steps'::text, 10000::numeric, 'passi'::text), ('sleep', 8, 'ore'), ('water', 3, 'L') $$,
   'obiettivi predefiniti per passi, sonno e acqua'
 );
 

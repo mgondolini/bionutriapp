@@ -87,18 +87,18 @@ test("check-in di oggi, correzione, check-in di ieri; il titolare vede giorni e 
   const yesterday = addDays(today, -1);
   const trackingPage = `/admin/clienti/${clientId}/tracking`;
 
-  // Il titolare imposta l'obiettivo personale dell'acqua: 3 L
+  // Il titolare imposta l'obiettivo personale dell'acqua: 2 L
   await login(page, OWNER.email, OWNER.password);
   await expect(page).toHaveURL(/\/admin/);
   await page.goto(trackingPage);
   await expect(
     page.getByText("Nessun voto questa settimana").first(),
   ).toBeVisible();
-  await changeWaterGoal(page, "3");
+  await changeWaterGoal(page, "2");
   const goals = page.getByRole("region", { name: "Obiettivi personali" });
-  await expect(goals.getByText("3 L", { exact: true })).toBeVisible();
+  await expect(goals.getByText("2 L", { exact: true })).toBeVisible();
 
-  // La cliente vede l'obiettivo e le descrizioni ancorate a 3 L
+  // La cliente vede l'obiettivo e le descrizioni ancorate a 2 L
   const giulia = await newDevice(browser);
   const client = giulia.page;
   await login(client, email, PASSWORD);
@@ -111,10 +111,10 @@ test("check-in di oggi, correzione, check-in di ieri; il titolare vede giorni e 
   await client.goto("/app/tracking");
   await client.getByRole("link", { name: "Compila il check-in" }).click();
   await expect(client).toHaveURL(/\/app\/tracking\/check-in$/);
-  await expect(client.getByText("Il tuo obiettivo: 3 L")).toBeVisible();
+  await expect(client.getByText("Il tuo obiettivo: 2 L")).toBeVisible();
   await choose(client, { water: 4 });
   await expect(
-    client.getByText("4 · Quasi raggiunto · circa 2,5 L"),
+    client.getByText("4 · Quasi raggiunto · circa 1,5 L"),
   ).toBeVisible();
 
   // Check-in di oggi: un solo salvataggio per i tre voti
@@ -181,7 +181,7 @@ test("check-in di oggi, correzione, check-in di ieri; il titolare vede giorni e 
   await expect(stepsCard).toContainText(averageText(steps.average!));
   await expect(stepsCard).toContainText("Voto di oggi: 2");
 
-  // "Ripristina predefinito": la cliente torna all'obiettivo dello studio (2 L)
+  // "Ripristina predefinito": la cliente torna all'obiettivo dello studio (3 L)
   await page.getByRole("button", { name: "Modifica obiettivi" }).click();
   await page
     .getByRole("dialog")
@@ -191,9 +191,9 @@ test("check-in di oggi, correzione, check-in di ieri; il titolare vede giorni e 
     page.getByText("Obiettivo predefinito ripristinato."),
   ).toBeVisible();
   await client.goto("/app/tracking/check-in");
-  await expect(client.getByText("Il tuo obiettivo: 2 L")).toBeVisible();
+  await expect(client.getByText("Il tuo obiettivo: 3 L")).toBeVisible();
   await expect(
-    client.getByText("4 · Quasi raggiunto · circa 1,5 L"),
+    client.getByText("4 · Quasi raggiunto · circa 2,5 L"),
   ).toBeVisible();
 
   await giulia.context.close();
