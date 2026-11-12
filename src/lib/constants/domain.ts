@@ -236,7 +236,13 @@ export const CSV_FILE_ERRORS = [
 export type CsvFileError = (typeof CSV_FILE_ERRORS)[number];
 
 /** Schede della scheda cliente (A4), rotte figlie di /admin/clienti/[id]. */
-export const CLIENT_TABS = ["profilo", "percorso", "file", "tracking"] as const;
+export const CLIENT_TABS = [
+  "profilo",
+  "percorso",
+  "file",
+  "tracking",
+  "note",
+] as const;
 export type ClientTab = (typeof CLIENT_TABS)[number];
 
 export function clientDetailPath(
@@ -642,3 +648,36 @@ export function adminJourneyUrl(clientId: string, journeyId?: string): string {
   const path = clientDetailPath(clientId, "percorso");
   return journeyId ? `${path}?${JOURNEY_PARAM}=${journeyId}` : path;
 }
+
+// ---------------------------------------------------------------------
+// Note cliniche (scheda cliente dell'admin, solo staff)
+// ---------------------------------------------------------------------
+
+/** Una sola anamnesi per cliente, poi le note di visita, una per data. */
+export const CLIENT_NOTE_KINDS = ["anamnesis", "visit"] as const;
+export type ClientNoteKind = (typeof CLIENT_NOTE_KINDS)[number];
+export const CLIENT_NOTE_TITLE_MAX = 120;
+/** Titoli salvati alla creazione (poi modificabili). */
+export const ANAMNESIS_TITLE = "Anamnesi";
+export const VISIT_NOTE_DEFAULT_TITLE = "Visita di controllo";
+/** Dimensione massima del documento (JSON), 200 KB; nel database 256 KB. */
+export const CLIENT_NOTE_CONTENT_MAX_BYTES = 200 * 1024;
+/** Titoli della "traccia" dell'anamnesi, aggiunti in fondo al testo. */
+export const ANAMNESIS_TEMPLATE_HEADINGS = [
+  "Obiettivo",
+  "Patologie e familiarità",
+  "Allergie e intolleranze",
+  "Abitudini",
+  "Farmaci e integratori",
+  "Sonno e stress",
+] as const;
+
+export function clientNotesPath(clientId: string, noteId?: string): string {
+  const path = clientDetailPath(clientId, "note");
+  return noteId ? `${path}/${noteId}` : path;
+}
+/**
+ * Errore del salvataggio quando la nota è cambiata dopo il caricamento
+ * (altro dispositivo): l'editor mostra "Ricarica" e "Sovrascrivi comunque".
+ */
+export const NOTE_SAVE_CONFLICT = "conflict";

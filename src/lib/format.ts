@@ -89,6 +89,17 @@ export function dayInRome(value: Date | string = new Date()): string {
   return isoDay.format(typeof value === "string" ? new Date(value) : value);
 }
 
+const timeOfDay = new Intl.DateTimeFormat("it-IT", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: TIME_ZONE,
+});
+
+/** Ora a Roma di un istante: "18:42". */
+export function formatTimeInRome(value: Date | string): string {
+  return timeOfDay.format(typeof value === "string" ? new Date(value) : value);
+}
+
 const sizeFormat = new Intl.NumberFormat("it-IT", {
   maximumFractionDigits: 1,
 });

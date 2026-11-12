@@ -704,6 +704,7 @@ export const copy = {
           percorso: "Percorso",
           file: "File",
           tracking: "Tracking",
+          note: "Note cliniche",
         } satisfies Record<ClientTab, string>,
         notFoundTitle: "Cliente non trovato",
         notFoundDescription:
@@ -2089,6 +2090,84 @@ export const copy = {
         range ? `${date}, ${range}` : date,
       fileName: (name: string) =>
         `${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.ics`,
+    },
+  },
+  clientNotes: {
+    listTitle: "Documenti",
+    listLabel: "Documenti del cliente",
+    newNote: "Nuova nota",
+    visitsHeading: "Note di visita",
+    emptyVisits: "Nessuna nota di visita. Aggiungi la prima dopo l'incontro.",
+    updated: (day: "today" | "yesterday" | "other", time: string, date: string) =>
+      day === "today"
+        ? `Aggiornata oggi, ${time}`
+        : day === "yesterday"
+          ? `Aggiornata ieri, ${time}`
+          : `Aggiornata il ${date}`,
+    privateBadge: "Solo tu, il cliente non la vede",
+    privateShort: "Solo tu",
+    privateList: "Solo tu vedi questi documenti, il cliente no.",
+    editorLabel: "Editor di testo",
+    titleLabel: "Titolo del documento",
+    dateLabel: "Data della visita",
+    contentLabel: (title: string) => `Testo di ${title}`,
+    insertTemplate: "Inserisci traccia",
+    templateInserted: "Traccia aggiunta in fondo al testo",
+    save: "Salva",
+    status: {
+      clean: (day: "today" | "yesterday" | "other", time: string, date: string) =>
+        day === "today"
+          ? `Salvato, oggi alle ${time}`
+          : day === "yesterday"
+            ? `Salvato, ieri alle ${time}`
+            : `Salvato il ${date}`,
+      dirty: "Modifiche non salvate",
+      saving: "Salvataggio…",
+      failed: "Non salvato, riprova",
+    },
+    shortcuts:
+      "Scorciatoie: Ctrl+B grassetto, Ctrl+I corsivo, Ctrl+Z annulla, Ctrl+S salva",
+    leaveWarning: "Hai modifiche non salvate. Vuoi uscire senza salvarle?",
+    back: "Torna all'elenco dei documenti",
+    moreActions: "Altre azioni",
+    delete: "Elimina nota",
+    deleteTitle: "Eliminare questa nota?",
+    deleteDescription: (title: string, date: string) =>
+      `La nota "${title}" del ${date} verrà eliminata definitivamente e non potrai recuperarla.`,
+    deleteConfirm: "Elimina",
+    cancel: "Annulla",
+    deleted: "Nota eliminata",
+    conflict: {
+      title: "Questa nota è stata modificata da un altro dispositivo",
+      description:
+        "Ricarica per vedere l'ultima versione, perdendo le modifiche fatte qui, oppure sovrascrivila con la tua.",
+      reload: "Ricarica",
+      overwrite: "Sovrascrivi comunque",
+    },
+    toolbar: {
+      label: "Formattazione del testo",
+      quickLabel: "Formattazione rapida",
+      paragraphStyle: (current: string) => `Stile del paragrafo: ${current}`,
+      styles: { h2: "Titolo", h3: "Sottotitolo", paragraph: "Testo" },
+      bold: "Grassetto",
+      italic: "Corsivo",
+      highlight: "Evidenzia",
+      bulletList: "Elenco puntato",
+      orderedList: "Elenco numerato",
+      undo: "Annulla",
+      redo: "Ripeti",
+    },
+    errors: {
+      titleRequired: "Scrivi un titolo.",
+      titleTooLong: "Il titolo può avere al massimo 120 caratteri.",
+      dateRequired: "Scegli la data della visita.",
+      dateFuture: "La data della visita non può essere nel futuro.",
+      contentInvalid:
+        "Il testo contiene elementi non supportati. Ricarica la pagina e riprova.",
+      contentTooLarge:
+        "Il testo è troppo lungo per essere salvato. Dividilo in più note.",
+      notFound: "Questa nota non esiste più.",
+      anamnesis: "L'anamnesi non si può eliminare.",
     },
   },
 } as const;
