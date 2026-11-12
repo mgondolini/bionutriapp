@@ -388,6 +388,7 @@ export type Database = {
           last_name: string | null;
           measure_check_on: string | null;
           measure_check_set_at: string | null;
+          meeting_url: string | null;
           origin: string;
           phone: string;
           privacy_consent_at: string | null;
@@ -410,6 +411,7 @@ export type Database = {
           last_name?: string | null;
           measure_check_on?: string | null;
           measure_check_set_at?: string | null;
+          meeting_url?: string | null;
           origin: string;
           phone: string;
           privacy_consent_at?: string | null;
@@ -431,6 +433,7 @@ export type Database = {
           last_name?: string | null;
           measure_check_on?: string | null;
           measure_check_set_at?: string | null;
+          meeting_url?: string | null;
           origin?: string;
           phone?: string;
           privacy_consent_at?: string | null;
@@ -534,8 +537,11 @@ export type Database = {
           client_id: string;
           created_at: string;
           custom_date: string | null;
+          google_event_id: string | null;
           id: string;
           journey_id: string;
+          meeting_source: string | null;
+          meeting_url: string | null;
           note: string | null;
           position: number;
           session_time: string | null;
@@ -551,8 +557,11 @@ export type Database = {
           client_id: string;
           created_at?: string;
           custom_date?: string | null;
+          google_event_id?: string | null;
           id?: string;
           journey_id: string;
+          meeting_source?: string | null;
+          meeting_url?: string | null;
           note?: string | null;
           position: number;
           session_time?: string | null;
@@ -567,8 +576,11 @@ export type Database = {
           client_id?: string;
           created_at?: string;
           custom_date?: string | null;
+          google_event_id?: string | null;
           id?: string;
           journey_id?: string;
+          meeting_source?: string | null;
+          meeting_url?: string | null;
           note?: string | null;
           position?: number;
           session_time?: string | null;
@@ -1415,8 +1427,10 @@ export type Database = {
       my_journey_sessions: {
         Args: Record<PropertyKey, never>;
         Returns: {
+          client_meeting_url: string;
           id: string;
           journey_id: string;
+          meeting_url: string;
           seq: number;
           session_date: string;
           session_time: string;
