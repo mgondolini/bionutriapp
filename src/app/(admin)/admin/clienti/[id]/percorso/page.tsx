@@ -5,6 +5,7 @@ import { PageLoading } from "@/components/shared/page-states";
 import { JourneyTab } from "@/features/admin/journeys/journey-tab";
 import { JOURNEY_PARAM } from "@/lib/constants/domain";
 import { getStaffJourneys } from "@/server/services/journeys.service";
+import { getStaffPhotoMarks } from "@/server/services/photos.service";
 import { requireStaff } from "@/server/services/session.service";
 import { clientIdSchema } from "@/server/validation/clients.schema";
 import { journeyParamSchema } from "@/server/validation/journeys.schema";
@@ -17,14 +18,24 @@ async function JourneyContent({
   const session = await requireStaff();
   const parsed = clientIdSchema.safeParse((await params).id);
   if (!parsed.success || !session.studio.id) notFound();
-  const data = await getStaffJourneys(session.studio.id, parsed.data);
+  const [data, photoMarks] = await Promise.all([
+    getStaffJourneys(session.studio.id, parsed.data),
+    getStaffPhotoMarks(parsed.data),
+  ]);
   if (!data) notFound();
+  // segno "Foto" sui check con le foto (A17)
+  const journeys = data.journeys.map((journey) => ({
+    ...journey,
+    sessions: journey.sessions.map((s) =>
+      photoMarks[s.id] ? { ...s, photo: photoMarks[s.id] } : s,
+    ),
+  }));
   const selectedId = journeyParamSchema.parse(
     (await searchParams)[JOURNEY_PARAM],
   );
   return (
     <JourneyTab
-      data={data}
+      data={{ ...data, journeys }}
       selectedId={selectedId}
       clientName={data.client.firstName}
     />

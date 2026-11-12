@@ -1,5 +1,7 @@
 import { Check, Clock, Gift, Minus, TriangleAlert } from "lucide-react";
 
+import { PhotoMark } from "@/components/shared/photos/photo-mark";
+
 import { copy } from "@/lib/copy/it";
 import type { SessionState } from "@/lib/domain/journeys/sessions";
 import { daysBetween } from "@/lib/domain/tracking/dates";
@@ -88,6 +90,9 @@ export function SessionSquareContent({
       <span className="order-1 flex items-start justify-between gap-2">
         <StateIcon session={session} />
         <span className="flex flex-wrap justify-end gap-1">
+          {session.photo && session.photo !== "skipped" ? (
+            <PhotoMark state={session.photo} />
+          ) : null}
           {session.type === "gift" ? (
             <span className="rounded-full bg-warm px-2 py-0.5 text-[11px] font-bold text-foreground">
               {t.admin.gift}

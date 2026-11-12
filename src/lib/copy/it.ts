@@ -2192,6 +2192,10 @@ export const copy = {
       back: "dietro",
     } satisfies Record<PhotoView, string>,
     checkName: (n: number) => `Check ${n}`,
+    today: "oggi",
+    yesterday: "ieri",
+    /** "30 ott alle 08:41" */
+    at: (day: string, time: string) => `${day} alle ${time}`,
     /** Alt delle immagini: "Foto fronte, Check 3, 23 luglio 2026". */
     alt: (view: string, check: string, date: string) =>
       `Foto ${view}, ${check}, ${date}`,
@@ -2355,7 +2359,7 @@ export const copy = {
         "Le foto si caricano ai check 3, 6 e 9 del percorso. Crea il percorso del cliente per vederle qui.",
       emptyAction: "Vai al percorso",
       journeySign: "Foto",
-      journeySignAria: (state: string) => `Foto: ${state}`,
+      journeySignState: (state: string) => ` · ${state}`,
     },
     client: {
       title: "Le tue foto",

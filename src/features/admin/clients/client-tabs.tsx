@@ -4,14 +4,25 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
-import { CLIENT_TABS, clientDetailPath } from "@/lib/constants/domain";
+import {
+  CLIENT_TABS,
+  clientDetailPath,
+  type ClientTab,
+} from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { cn } from "@/lib/utils";
 
 const t = copy.admin.clients.detail;
 
 /** Schede della scheda cliente (CLIENT_TABS) come rotte figlie. */
-export function ClientTabs({ clientId }: { clientId: string }) {
+export function ClientTabs({
+  clientId,
+  badges = {},
+}: {
+  clientId: string;
+  /** Contatore accanto alla scheda (pesca: richiede attenzione, es. Foto). */
+  badges?: Partial<Record<ClientTab, string>>;
+}) {
   const pathname = usePathname();
   const listRef = useRef<HTMLUListElement>(null);
   // sul telefono le schede scorrono: quella attiva resta in vista (es. Note cliniche)
@@ -37,13 +48,18 @@ export function ClientTabs({ clientId }: { clientId: string }) {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "inline-flex min-h-12 items-center border-b-3 px-[18px] text-[15px] outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                  "inline-flex min-h-12 items-center border-b-3 px-[18px] text-[15px] whitespace-nowrap outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                   active
                     ? "border-primary font-bold text-primary-ink"
                     : "border-transparent font-medium text-muted-foreground hover:text-foreground",
                 )}
               >
                 {t.tabs[tab]}
+                {badges[tab] ? (
+                  <span className="ml-2 rounded-full bg-warm px-2 py-0.5 text-[12px] leading-[18px] font-semibold whitespace-nowrap text-foreground">
+                    {badges[tab]}
+                  </span>
+                ) : null}
               </Link>
             </li>
           );

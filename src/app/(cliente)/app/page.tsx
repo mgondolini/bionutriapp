@@ -3,6 +3,7 @@ import { LatestFile } from "@/features/cliente/files/latest-file";
 import { JourneyHomeRow } from "@/features/cliente/journeys/journey-home-row";
 import { OtherCurrentFiles } from "@/features/cliente/files/other-current-files";
 import { OnboardingHome } from "@/features/cliente/onboarding-home";
+import { PhotoHomeCard } from "@/features/cliente/photos/photos-page";
 import { InstallGuideAutoOpen } from "@/features/cliente/pwa/install-guide";
 import { PushBanner } from "@/features/cliente/pwa/push-banner";
 import { ToRecord } from "@/features/cliente/tracking/to-record";
@@ -12,6 +13,7 @@ import {
 } from "@/features/cliente/videos/home-videos";
 import { getClientHomeFiles } from "@/server/services/files.service";
 import { getClientJourneyHome } from "@/server/services/journeys.service";
+import { getClientOpenPhotoSets } from "@/server/services/photos.service";
 import { listOwnEndpoints } from "@/server/services/push.service";
 import { requireClient } from "@/server/services/session.service";
 import {
@@ -54,17 +56,19 @@ export default async function ClientHomePage() {
     );
   }
   const actor = clientTrackingActor(session);
-  const [files, toRecord, videos, journey] = await Promise.all([
+  const [files, toRecord, videos, journey, openPhotoSets] = await Promise.all([
     getClientHomeFiles(client.id),
     actor?.canWrite ? getHomeToRecord(actor) : null,
     getClientVideoHome(),
     getClientJourneyHome(),
+    actor?.canWrite ? getClientOpenPhotoSets(client.id) : [],
   ]);
   return (
     <div className="flex flex-col gap-4">
       <ClientHomeHeader />
       {pwa}
       {journey ? <JourneyHomeRow journey={journey} /> : null}
+      {openPhotoSets[0] ? <PhotoHomeCard set={openPhotoSets[0]} /> : null}
       <LatestFile file={files.latest} />
       <OtherCurrentFiles files={files.others} />
       <HomeVideos home={videos} />

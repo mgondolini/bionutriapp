@@ -2,7 +2,9 @@ import { ClientPageHeader } from "@/features/cliente/client-header";
 import { JourneyPage } from "@/features/cliente/journeys/journey-page";
 import { JOURNEY_PARAM } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import type { PhotoSetState } from "@/lib/photos/status";
 import { getClientJourneys } from "@/server/services/journeys.service";
+import { getClientPhotoMarks } from "@/server/services/photos.service";
 import { requireClient } from "@/server/services/session.service";
 import { journeyParamSchema } from "@/server/validation/journeys.schema";
 
@@ -17,11 +19,28 @@ export default async function ClientJourneyPage({
   const journeyId = journeyParamSchema.parse(
     (await searchParams)[JOURNEY_PARAM],
   );
-  const data = await getClientJourneys(journeyId);
+  const [data, photoMarks] = await Promise.all([
+    getClientJourneys(journeyId),
+    session.client.unlocked
+      ? getClientPhotoMarks(session.client.id)
+      : Promise.resolve<Record<string, PhotoSetState>>({}),
+  ]);
+  // segno "Foto" sui check con le foto (C19)
+  const marked = data.shown
+    ? {
+        ...data,
+        shown: {
+          ...data.shown,
+          sessions: data.shown.sessions.map((s) =>
+            photoMarks[s.id] ? { ...s, photo: photoMarks[s.id] } : s,
+          ),
+        },
+      }
+    : data;
   return (
     <div className="flex flex-col gap-4">
       <ClientPageHeader title={copy.journeys.client.title} />
-      <JourneyPage data={data} studioName={session.studio.name} />
+      <JourneyPage data={marked} studioName={session.studio.name} />
     </div>
   );
 }

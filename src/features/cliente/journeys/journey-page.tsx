@@ -13,6 +13,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { clientJourneyUrl } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { eventEnd, sessionMinutes } from "@/lib/domain/journeys/calendar";
+import { PhotoMark } from "@/components/shared/photos/photo-mark";
 import { dateRange, sessionLabel } from "@/lib/domain/journeys/labels";
 import { groupClosedSessions } from "@/lib/domain/journeys/sessions";
 import { formatLongDate, formatShortDate } from "@/lib/format";
@@ -146,8 +147,11 @@ function SessionRow({
       <div className="flex items-center gap-3">
         <SessionMarker session={session} />
         <div className="flex min-w-0 flex-1 flex-col">
-          <span className="text-[15px] font-bold">
+          <span className="flex flex-wrap items-center gap-2 text-[15px] font-bold">
             {sessionLabel(session.name)}
+            {session.photo && session.photo !== "skipped" ? (
+              <PhotoMark state={session.photo} />
+            ) : null}
           </span>
           <span className="text-[13px] text-muted-foreground">{details}</span>
         </div>

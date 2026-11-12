@@ -1,5 +1,7 @@
 import "server-only";
 
+import type { PhotoSetState } from "@/lib/photos/status";
+
 import {
   JOURNEY_EXTENSION_THRESHOLD_DAYS,
   type JourneyDuration,
@@ -56,6 +58,8 @@ export type StaffSessionView = {
   note: string | null;
   /** Link solo per questa sessione; quello usato lo sceglie resolveMeetingUrl. */
   meetingUrl: string | null;
+  /** Check con le foto: stato del set per il segno "Foto" (A17); aggiunto dalla pagina. */
+  photo?: PhotoSetState;
   meetingSource: MeetingSource | null;
 };
 
@@ -486,6 +490,8 @@ export type ClientSessionView = {
    * sessioni non lo mostrano. Mai l'origine né l'id dell'evento Google.
    */
   meetingUrl: string | null;
+  /** Check con le foto: stato del set per il segno "Foto" (C19); aggiunto dalla pagina. */
+  photo?: PhotoSetState;
 };
 
 export type ClientJourneyView = {

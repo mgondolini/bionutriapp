@@ -44,6 +44,7 @@ const ADMIN_PAGES = [
   `/admin/clienti/${ANNA_ID}/file`,
   `/admin/clienti/${ANNA_ID}/tracking`,
   `/admin/clienti/${ANNA_ID}/tracking/water`,
+  `/admin/clienti/${ANNA_ID}/foto`,
   `/admin/clienti/${ANNA_ID}/note`,
   "/admin/impostazioni",
   "/admin/profilo",
@@ -57,6 +58,7 @@ const CLIENT_PAGES = [
   "/app/tracking/check-in",
   "/app/tracking/water",
   "/app/tracking/circ_waist",
+  "/app/foto",
   "/app/profilo",
   "/app/installa",
 ];
