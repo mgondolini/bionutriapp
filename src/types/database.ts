@@ -311,6 +311,81 @@ export type Database = {
           },
         ];
       };
+      client_notes: {
+        Row: {
+          client_id: string;
+          content: NonNullable<Json>;
+          content_text: string;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          kind: string;
+          studio_id: string;
+          title: string;
+          updated_at: string;
+          updated_by: string | null;
+          visit_date: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          client_id: string;
+          content?: NonNullable<Json>;
+          content_text?: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          kind: string;
+          studio_id: string;
+          title: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          visit_date?: string | null;
+        };
+        Update: {
+          client_id?: string;
+          content?: NonNullable<Json>;
+          content_text?: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          kind?: string;
+          studio_id?: string;
+          title?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          visit_date?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "client_notes_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "client_list";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_notes_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_notes_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients_with_status";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_notes_studio_id_fkey";
+            columns: ["studio_id"];
+            isOneToOne: false;
+            referencedRelation: "studios";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       client_stage_events: {
         Row: {
           changed_at: string;
