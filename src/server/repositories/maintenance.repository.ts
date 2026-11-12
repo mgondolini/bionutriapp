@@ -1,6 +1,9 @@
 import "server-only";
 
-import { CLIENT_FILES_BUCKET } from "@/lib/constants/domain";
+import {
+  CLIENT_FILES_BUCKET,
+  CLIENT_PHOTOS_BUCKET,
+} from "@/lib/constants/domain";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /*
@@ -34,6 +37,31 @@ export async function removeClientFileObjects(
   const supabase = createAdminClient();
   const { data, error } = await supabase.storage
     .from(CLIENT_FILES_BUCKET)
+    .remove(paths);
+  if (error) throw error;
+  return data.length;
+}
+
+/**
+ * Oggetti di client-photos senza riga in photos (caricamenti mai
+ * confermati, foto sostituite il cui oggetto non si è potuto eliminare).
+ */
+export async function listOrphanPhotos(hours: number): Promise<string[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase.rpc("list_orphan_client_photos", {
+    p_older_than_hours: hours,
+  });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function removeClientPhotoObjects(
+  paths: string[],
+): Promise<number> {
+  if (paths.length === 0) return 0;
+  const supabase = createAdminClient();
+  const { data, error } = await supabase.storage
+    .from(CLIENT_PHOTOS_BUCKET)
     .remove(paths);
   if (error) throw error;
   return data.length;

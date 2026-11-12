@@ -20,6 +20,7 @@ import { parseArgs } from "node:util";
 import {
   adminFromEnv,
   CLIENT_FILES_BUCKET,
+  CLIENT_PHOTOS_BUCKET,
   fail,
   findClient,
 } from "./lib/admin";
@@ -154,6 +155,42 @@ async function main() {
     downloaded++;
   }
 
+  // Foto di avanzamento: un JPEG per vista, chiamato con la data del check
+  const photos = await rows(
+    "foto",
+    supabase
+      .from("photos")
+      .select(
+        "view, storage_path, uploaded_at, uploaded_by_role, photo_sets(status, saved_at, saved_by_role, journey_sessions(calculated_date, custom_date))",
+      )
+      .eq("client_id", id),
+  );
+  mkdirSync(join(outDir, "foto"), { recursive: true });
+  const exportedPhotos = [];
+  for (const photo of photos) {
+    const session = photo.photo_sets.journey_sessions;
+    const checkDate = session.custom_date ?? session.calculated_date;
+    const name = `foto/${checkDate}-${photo.view}.jpg`;
+    const { data, error } = await supabase.storage
+      .from(CLIENT_PHOTOS_BUCKET)
+      .download(photo.storage_path);
+    if (error || !data) {
+      console.error(`Foto ${checkDate} ${photo.view}: download non riuscito`);
+      continue;
+    }
+    writeFileSync(join(outDir, name), Buffer.from(await data.arrayBuffer()));
+    exportedPhotos.push({
+      data_del_check: checkDate,
+      vista: photo.view,
+      caricata_il: photo.uploaded_at,
+      caricata_da: photo.uploaded_by_role,
+      stato_del_set: photo.photo_sets.status,
+      salvata_il: photo.photo_sets.saved_at,
+      salvata_da: photo.photo_sets.saved_by_role,
+      immagine: name,
+    });
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- id interni esclusi dall'esportazione
   const { user_id: _userId, studio_id: _studioId, ...personal } = client;
   const exported = {
@@ -171,13 +208,14 @@ async function main() {
     })),
     registrazioni: entries,
     obiettivi_personali: goals,
+    foto_di_avanzamento: exportedPhotos,
     dispositivi_notifiche: devices,
   };
   writeFileSync(join(outDir, "dati.json"), JSON.stringify(exported, null, 2));
 
   console.log(`Cliente ${id} esportato in ${outDir}`);
   console.log(
-    `File: ${downloaded}/${files.length}, registrazioni: ${entries.length}, consensi: ${consents.length}`,
+    `File: ${downloaded}/${files.length}, foto: ${exportedPhotos.length}/${photos.length}, registrazioni: ${entries.length}, consensi: ${consents.length}`,
   );
   console.log(
     "ATTENZIONE: la cartella contiene dati sanitari. Consegnala con un canale sicuro ed eliminala subito dopo.",

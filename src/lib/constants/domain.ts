@@ -61,6 +61,7 @@ export const ROUTES = {
     reports: "/app/report",
     videos: "/app/video",
     tracking: "/app/tracking",
+    photos: "/app/foto",
     profile: "/app/profilo",
     install: "/app/installa",
   },
@@ -81,6 +82,7 @@ export const CLIENT_NAV = [
   // in Onboarding si vedono solo le cartelle "anche in Onboarding" (RLS)
   { key: "videos", href: ROUTES.client.videos, locked: false },
   { key: "tracking", href: ROUTES.client.tracking, locked: true },
+  { key: "photos", href: ROUTES.client.photos, locked: true },
 ] as const;
 export type ClientNavKey = (typeof CLIENT_NAV)[number]["key"];
 
@@ -241,6 +243,7 @@ export const CLIENT_TABS = [
   "percorso",
   "file",
   "tracking",
+  "foto",
   "note",
 ] as const;
 export type ClientTab = (typeof CLIENT_TABS)[number];
@@ -681,3 +684,56 @@ export function clientNotesPath(clientId: string, noteId?: string): string {
  * (altro dispositivo): l'editor mostra "Ricarica" e "Sovrascrivi comunque".
  */
 export const NOTE_SAVE_CONFLICT = "conflict";
+
+// ---------------------------------------------------------------------
+// Foto di avanzamento (mockup v1.0.10: A20–A23, C22–C27)
+// ---------------------------------------------------------------------
+
+/** Tre viste per set; il lato è sempre il destro, per poter confrontare. */
+export const PHOTO_VIEWS = ["front", "side", "back"] as const;
+export type PhotoView = (typeof PHOTO_VIEWS)[number];
+/** Un set ogni 3 check (numerazione del cliente): 3, 6, 9. */
+export const PHOTO_CHECK_INTERVAL = 3;
+/** Stato salvato del set; gli altri stati si calcolano (getPhotoSetStatus). */
+export const PHOTO_SET_STATUSES = ["draft", "saved"] as const;
+export type PhotoSetStatus = (typeof PHOTO_SET_STATUSES)[number];
+/** Chi ha caricato o salvato. */
+export const PHOTO_ROLES = ["client", "studio"] as const;
+export type PhotoRole = (typeof PHOTO_ROLES)[number];
+
+export const CLIENT_PHOTOS_BUCKET = "client-photos";
+/** Formati accettati in ingresso; si carica sempre un JPEG. */
+export const PHOTO_INPUT_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/heic",
+  "image/heif",
+] as const;
+export const PHOTO_INPUT_ACCEPT = "image/jpeg,image/png,image/heic";
+export const PHOTO_UPLOAD_TYPE = "image/jpeg";
+/** Limite del file scelto, prima della conversione (DA CONFERMARE). */
+export const PHOTO_MAX_INPUT_BYTES = 10 * 1024 * 1024;
+/** Limite del JPEG caricato (anche del bucket). */
+export const PHOTO_MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+/** Lato lungo massimo dopo il ridimensionamento e qualità JPEG. */
+export const PHOTO_MAX_SIDE = 2000;
+export const PHOTO_JPEG_QUALITY = 0.85;
+/** Byte letti dal server per controllare firma e metadati del JPEG. */
+export const PHOTO_HEAD_BYTES = 64 * 1024;
+/**
+ * URL firmati delle immagini: le miniature si caricano dopo la pagina (e
+ * lo schermo intero più tardi ancora), quindi qualche minuto (NF-02).
+ */
+export const PHOTO_SIGNED_URL_TTL_SECONDS = 5 * 60;
+/** Promemoria dopo il giorno del check se il set non è salvato (C27), alle 18. */
+export const PHOTO_REMINDER_DAYS = [3, 7] as const;
+export const PHOTO_NOTIFICATION_KINDS = [
+  "photos_same_day",
+  "photos_day_3",
+  "photos_day_7",
+] as const;
+export type PhotoNotificationKind = (typeof PHOTO_NOTIFICATION_KINDS)[number];
+
+export function photoSetClientPath(sessionId: string): string {
+  return `${ROUTES.client.photos}/${sessionId}`;
+}

@@ -12,16 +12,21 @@ import { CLIENT_NAV, ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { initialsOf } from "@/lib/studio/branding";
 import { requireClient } from "@/server/services/session.service";
+import { getClientOpenPhotoSets } from "@/server/services/photos.service";
 import { getClientVideoHome } from "@/server/services/videos.service";
 
 /**
  * Secondo livello di controllo (DEV-03b): solo clienti attivi. In Onboarding
  * le voci bloccate non compaiono (C-09); le pagine lo verificano a loro volta.
- * La voce Video porta il numero dei video nuovi (mockup v4, C6).
+ * La voce Video porta il numero dei video nuovi (mockup v4, C6), la voce
+ * Foto i set da caricare (v1.0.9).
  */
 async function ClientShell({ children }: { children: React.ReactNode }) {
   const { studio, client } = await requireClient();
-  const videos = await getClientVideoHome();
+  const [videos, openPhotoSets] = await Promise.all([
+    getClientVideoHome(),
+    client.unlocked ? getClientOpenPhotoSets(client.id) : Promise.resolve([]),
+  ]);
   const sections: ClientMenuItem[] = CLIENT_NAV.filter(
     (item) =>
       client.unlocked ||
@@ -34,7 +39,10 @@ async function ClientShell({ children }: { children: React.ReactNode }) {
     badge:
       item.key === "videos" && videos.newCount > 0
         ? copy.client.videos.newCount(videos.newCount)
-        : undefined,
+        : item.key === "photos" && openPhotoSets.length > 0
+          ? copy.photos.client.menuBadge(openPhotoSets.length)
+          : undefined,
+    badgeAttention: item.key === "photos",
   }));
 
   return (

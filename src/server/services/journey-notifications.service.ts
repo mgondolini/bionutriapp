@@ -7,7 +7,9 @@ import {
   JOURNEY_CLIENT_PATH,
   NOTIFICATION_ICON_URL,
   PUSH_TTL_JOURNEY_SECONDS,
+  ROUTES,
   type JourneySessionType,
+  type PhotoView,
 } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import {
@@ -19,14 +21,17 @@ import { sessionNames, type SessionName } from "@/lib/domain/journeys/sessions";
 import { todayInRome } from "@/lib/domain/tracking/dates";
 import { formatLongDate } from "@/lib/format";
 import type { NotificationPayload } from "@/lib/notifications/catalog";
+import { photoReminderSlots } from "@/lib/photos/reminders";
 import { isValidTimeZone, localDateTime } from "@/lib/notifications/schedule";
 import * as journeysRepository from "@/server/repositories/journeys.repository";
 import * as notificationsRepository from "@/server/repositories/notifications.repository";
+import * as photosRepository from "@/server/repositories/photos.repository";
 import * as pushService from "@/server/services/push.service";
 
 /*
  * Push del percorso (C21): cambio di data o ora subito, promemoria la sera
- * prima e la mattina stessa. Solo Web Push (N-08). Ogni notifica passa da
+ * prima e la mattina stessa. Nei check con le foto la push del mattino
+ * diventa quella delle foto, seguita da due promemoria (C27). Solo Web Push (N-08). Ogni notifica passa da
  * journey_notifications con un vincolo unico (sessione, tipo, data, ora):
  * la riga si crea prima dell'invio e chi non la crea non invia, quindi due
  * esecuzioni del cron o due salvataggi uguali non mandano due push.
@@ -215,6 +220,94 @@ function reminderPayload(
     : payload(sessionId, t.push.sameDayTitle(name), t.push.sameDay(time));
 }
 
+// ---------------------------------------------------------------------
+// Promemoria delle foto (C27)
+// ---------------------------------------------------------------------
+
+function photoPayload(
+  sessionId: string,
+  title: string,
+  body: string,
+): NotificationPayload {
+  return {
+    type: "daily_checkin",
+    title,
+    body,
+    icon: NOTIFICATION_ICON_URL,
+    url: ROUTES.client.photos,
+    tag: `photos-${sessionId}`,
+  };
+}
+
+/**
+ * Promemoria delle foto di un turno: il giorno del check alle 8, poi 3 e 7
+ * giorni dopo alle 18, solo con il set non salvato. Stesso registro (e
+ * stessa deduplicazione) dei promemoria del percorso. Restituisce anche le
+ * sessioni del giorno con le foto, che non ricevono il promemoria normale.
+ */
+async function preparePhotoReminders(
+  studioId: string,
+  local: { day: string; hour: number },
+  report: JourneyReminderReport,
+): Promise<{ jobs: Job[]; sameDaySessions: Set<string> }> {
+  const jobs: Job[] = [];
+  const sameDaySessions = new Set<string>();
+  const p = copy.photos;
+  for (const slot of photoReminderSlots(local)) {
+    const candidates = await photosRepository.listReminderCandidates(
+      studioId,
+      slot.sessionDay,
+    );
+    if (slot.kind === "photos_same_day") {
+      for (const c of candidates) sameDaySessions.add(c.session_id);
+    }
+    const inserted = new Map(
+      (
+        await journeysRepository.insertNotifications(
+          candidates.map((candidate) => ({
+            sessionId: candidate.session_id,
+            studioId,
+            clientId: candidate.client_id,
+            kind: slot.kind,
+            referenceDate: candidate.session_date,
+            referenceTime: null,
+          })),
+        )
+      ).map((row) => [row.sessionId, row.id]),
+    );
+    for (const candidate of candidates) {
+      const logId = inserted.get(candidate.session_id);
+      if (!logId) {
+        report.duplicates += 1;
+        continue;
+      }
+      report.queued += 1;
+      const check = p.checkName(candidate.check_number);
+      const missing = (candidate.missing_views as PhotoView[]).map(
+        (view) => p.views[view],
+      );
+      const [title, body] =
+        slot.kind === "photos_same_day"
+          ? [
+              p.push.sameDayTitle(check),
+              p.push.sameDay(shortTime(candidate.session_time)),
+            ]
+          : slot.kind === "photos_day_3"
+            ? [
+                p.push.day3Title(check),
+                p.push.day3(candidate.photo_count, missing),
+              ]
+            : [p.push.day7Title, p.push.day7(check)];
+      jobs.push({
+        logId,
+        userId: candidate.user_id,
+        payload: photoPayload(candidate.session_id, title, body),
+      });
+    }
+  }
+  return { jobs, sameDaySessions };
+}
+
 /**
  * Prima parte, veloce: studi all'ora di un promemoria nel proprio fuso,
  * sessioni da fare del giorno giusto, righe del registro. Restituisce solo
@@ -232,24 +325,37 @@ export async function prepareJourneyReminders(
   const studios = await notificationsRepository.listStudios();
   for (const studio of studios) {
     if (!isValidTimeZone(studio.timezone)) continue;
-    const slot = reminderSlot(localDateTime(now, studio.timezone));
+    const local = localDateTime(now, studio.timezone);
+    const slot = reminderSlot(local);
     if (!slot) continue;
     report.studios += 1;
+
+    // Foto (C27): il giorno del check la loro push sostituisce quella del mattino
+    const photos = await preparePhotoReminders(studio.id, local, report);
+    jobs.push(...photos.jobs);
 
     const candidates = (
       await journeysRepository.listReminderCandidates(
         studio.id,
         slot.sessionDay,
       )
-    ).filter((candidate) =>
-      isReminderDue(
-        {
-          date: candidate.session_date,
-          time: shortTime(candidate.session_time),
-        },
-        slot,
-      ),
-    );
+    )
+      .filter(
+        (candidate) =>
+          !(
+            slot.kind === "reminder_same_day" &&
+            photos.sameDaySessions.has(candidate.session_id)
+          ),
+      )
+      .filter((candidate) =>
+        isReminderDue(
+          {
+            date: candidate.session_date,
+            time: shortTime(candidate.session_time),
+          },
+          slot,
+        ),
+      );
     const inserted = new Map(
       (
         await journeysRepository.insertNotifications(

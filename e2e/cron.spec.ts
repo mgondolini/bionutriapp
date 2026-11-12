@@ -60,6 +60,7 @@ test("con il segreto: completa la manutenzione e non tocca i caricamenti recenti
       "failed",
       "notificationLogDeleted",
       "ok",
+      "orphanPhotosRemoved",
       "orphanUploadsRemoved",
       "videosChecked",
       "videosUnavailable",

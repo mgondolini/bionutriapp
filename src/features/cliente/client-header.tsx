@@ -4,6 +4,7 @@ import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import { cva } from "class-variance-authority";
 import {
   Activity,
+  Camera,
   ChartColumn,
   ChevronLeft,
   ChevronRight,
@@ -47,6 +48,8 @@ export type ClientMenuItem = {
   description: string;
   /** Contatore accanto alla voce (mockup v4, C6: "2 nuovi" sulla voce Video). */
   badge?: string;
+  /** Pesca = richiede attenzione (C6: "1 da caricare" sulla voce Foto). */
+  badgeAttention?: boolean;
 };
 
 type ClientShell = {
@@ -81,9 +84,7 @@ function useClientShell(): ClientShell {
   return shell;
 }
 
-
 type TileTone = "primary" | "info" | "report" | "neutral" | "warning" | "video";
-
 
 const tileVariants = cva(
   "flex size-10 shrink-0 items-center justify-center rounded-xl",
@@ -113,6 +114,7 @@ const ICONS: Record<
   tracking: { icon: Activity, tone: "warning" },
   profile: { icon: UserRound, tone: "neutral" },
   videos: { icon: Clapperboard, tone: "video" },
+  photos: { icon: Camera, tone: "neutral" },
 };
 
 const itemClassName =
@@ -148,7 +150,14 @@ function MenuLink({ item, active }: { item: ClientMenuItem; active: boolean }) {
       </span>
       <ItemText label={item.label} description={item.description} />
       {item.badge ? (
-        <span className="shrink-0 rounded-full bg-mint px-2.5 py-1 text-[12px] leading-none font-bold text-mint-foreground">
+        <span
+          className={cn(
+            "shrink-0 rounded-full px-2.5 py-1 text-[12px] leading-none font-bold",
+            item.badgeAttention
+              ? "bg-warm text-foreground"
+              : "bg-mint text-mint-foreground",
+          )}
+        >
           {item.badge}
         </span>
       ) : null}

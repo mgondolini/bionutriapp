@@ -24,7 +24,7 @@ import { parseArgs } from "node:util";
 
 import { adminFromEnv, fail, type AdminClient } from "./lib/admin";
 
-const BUCKETS = ["client-files", "studio-assets"] as const;
+const BUCKETS = ["client-files", "client-photos", "studio-assets"] as const;
 const CONTENT_TYPES: Record<string, string> = {
   pdf: "application/pdf",
   png: "image/png",

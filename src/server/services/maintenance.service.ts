@@ -14,6 +14,7 @@ import * as youtubeRepository from "@/server/repositories/youtube.repository";
 export type MaintenanceStep =
   | "keepAlive"
   | "orphanUploads"
+  | "orphanPhotos"
   | "expiredInvites"
   | "notificationLog"
   | "videoAvailability";
@@ -22,6 +23,7 @@ export type MaintenanceReport = {
   ok: boolean;
   durationMs: number;
   orphanUploadsRemoved: number;
+  orphanPhotosRemoved: number;
   expiredInvitesDeleted: number;
   notificationLogDeleted: number;
   videosChecked: number;
@@ -110,6 +112,16 @@ export async function runMaintenance(): Promise<MaintenanceReport> {
       ),
     0,
   );
+  const orphanPhotosRemoved = await step(
+    "orphanPhotos",
+    async () =>
+      maintenanceRepository.removeClientPhotoObjects(
+        await maintenanceRepository.listOrphanPhotos(
+          ORPHAN_UPLOAD_MAX_AGE_HOURS,
+        ),
+      ),
+    0,
+  );
   const expiredInvitesDeleted = await step(
     "expiredInvites",
     () =>
@@ -135,6 +147,7 @@ export async function runMaintenance(): Promise<MaintenanceReport> {
     ok: failed.length === 0,
     durationMs: Date.now() - started,
     orphanUploadsRemoved,
+    orphanPhotosRemoved,
     expiredInvitesDeleted,
     notificationLogDeleted,
     videosChecked: videos.checked,
@@ -145,6 +158,7 @@ export async function runMaintenance(): Promise<MaintenanceReport> {
   console.info(
     `[manutenzione] ${report.ok ? "completata" : "completata con errori"}: ` +
       `oggetti orfani eliminati ${orphanUploadsRemoved}, ` +
+      `foto orfane eliminate ${orphanPhotosRemoved}, ` +
       `inviti scaduti eliminati ${expiredInvitesDeleted}, ` +
       `notifiche eliminate dal registro ${notificationLogDeleted}, ` +
       `video controllati ${videos.checked} (non disponibili ${videos.unavailable}), ` +

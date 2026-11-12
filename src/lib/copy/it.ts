@@ -10,6 +10,7 @@ import type {
   ClientNavKey,
   ClientOrigin,
   ClientTab,
+  PhotoView,
   CsvDiscardReason,
   CsvFileError,
   CsvRowWarning,
@@ -75,6 +76,7 @@ const clientNav: Record<ClientNavKey, { label: string; description: string }> =
       label: "Tracking",
       description: "Misure, check-in, allenamenti",
     },
+    photos: { label: "Foto", description: "Fronte, lato e dietro" },
   };
 
 const VIDEO_COUNT = (count: number) =>
@@ -704,6 +706,7 @@ export const copy = {
           percorso: "Percorso",
           file: "File",
           tracking: "Tracking",
+          foto: "Foto",
           note: "Note cliniche",
         } satisfies Record<ClientTab, string>,
         notFoundTitle: "Cliente non trovato",
@@ -2098,7 +2101,11 @@ export const copy = {
     newNote: "Nuova nota",
     visitsHeading: "Note di visita",
     emptyVisits: "Nessuna nota di visita. Aggiungi la prima dopo l'incontro.",
-    updated: (day: "today" | "yesterday" | "other", time: string, date: string) =>
+    updated: (
+      day: "today" | "yesterday" | "other",
+      time: string,
+      date: string,
+    ) =>
       day === "today"
         ? `Aggiornata oggi, ${time}`
         : day === "yesterday"
@@ -2114,7 +2121,11 @@ export const copy = {
     templateInserted: "Traccia aggiunta in fondo al testo",
     save: "Salva",
     status: {
-      clean: (day: "today" | "yesterday" | "other", time: string, date: string) =>
+      clean: (
+        day: "today" | "yesterday" | "other",
+        time: string,
+        date: string,
+      ) =>
         day === "today"
           ? `Salvato, oggi alle ${time}`
           : day === "yesterday"
@@ -2167,6 +2178,262 @@ export const copy = {
         "Il testo è troppo lungo per essere salvato. Dividilo in più note.",
       notFound: "Questa nota non esiste più.",
       anamnesis: "L'anamnesi non si può eliminare.",
+    },
+  },
+  photos: {
+    views: {
+      front: "Fronte",
+      side: "Lato",
+      back: "Dietro",
+    } satisfies Record<PhotoView, string>,
+    viewsLower: {
+      front: "fronte",
+      side: "lato",
+      back: "dietro",
+    } satisfies Record<PhotoView, string>,
+    checkName: (n: number) => `Check ${n}`,
+    /** Alt delle immagini: "Foto fronte, Check 3, 23 luglio 2026". */
+    alt: (view: string, check: string, date: string) =>
+      `Foto ${view}, ${check}, ${date}`,
+    emptySlotAlt: (view: string) => `Spazio vuoto per la foto ${view}`,
+    dropAlt: (view: string) => `Area di rilascio per la foto ${view}`,
+    lockedLabel: "Salvata, non modificabile",
+    state: {
+      future: "Prossima",
+      to_upload: "Da caricare",
+      draft: (count: number) => `Bozza · ${count} di 3`,
+      draftShort: "Bozza",
+      ready: "Pronte da salvare",
+      saved: "Salvate",
+    },
+    countOf: (count: number) => `${count} di 3 foto`,
+    countUploaded: (count: number) => `${count} di 3 foto caricate`,
+    notYetUploaded: "Non ancora caricata",
+    missing: "Manca",
+    poses: {
+      front: "Di fronte, braccia lungo i fianchi.",
+      side: "Di profilo, con il lato destro verso il telefono.",
+      back: "Di spalle, nella stessa posizione della foto frontale.",
+    } satisfies Record<PhotoView, string>,
+    tips: {
+      title: "Per foto che si possono confrontare",
+      items: [
+        "Stessa luce e stesso punto della stanza di ogni volta.",
+        "Abbigliamento aderente, sempre simile.",
+        "Telefono all’altezza della vita, a circa 2 metri.",
+      ],
+    },
+    actions: {
+      add: "Aggiungi foto",
+      addAria: (view: string) => `Aggiungi foto ${view}`,
+      replace: "Sostituisci",
+      replaceAria: (view: string) => `Sostituisci la foto ${view}`,
+      delete: "Elimina",
+      deleteAria: (view: string) => `Elimina la foto ${view}`,
+      chooseFile: "Scegli un file",
+      chooseFileAria: (view: string) => `Scegli un file per la foto ${view}`,
+      save: "Salva le foto",
+      openFull: "Apri a schermo intero",
+      openPhoto: (view: string) => `Apri la foto ${view} a schermo intero`,
+      cancel: "Annulla",
+      retry: "Riprova",
+    },
+    saveHint: {
+      missingOne: "Aggiungi la foto mancante per poter salvare.",
+      missingMany: "Aggiungi le foto mancanti per poter salvare.",
+      ready: "Dopo il salvataggio non potrai più modificarle.",
+      staff: "Per salvare servono tutte e tre le foto.",
+    },
+    savedToast: "Foto salvate",
+    deletedToast: (view: string) => `Foto ${view} eliminata`,
+    confirm: {
+      title: (check: string) => `Salvare le foto del ${check}?`,
+      descriptionClient:
+        "Dopo il salvataggio non potrai più sostituirle né eliminarle.",
+      descriptionStaff: (name: string) =>
+        `Dopo il salvataggio né tu né ${name} potrete più sostituirle o eliminarle.`,
+      checkClient:
+        "Controlla che siano nitide e nella posizione giusta. Se una è sbagliata, torna indietro e sostituiscila adesso.",
+      checkStaff:
+        "Controlla che le tre foto siano nitide e nella posizione giusta. Se una è sbagliata, torna indietro e sostituiscila adesso.",
+      confirm: "Salva definitivamente",
+      back: "Torna alle foto",
+      saving: "Salvataggio…",
+    },
+    upload: {
+      preparing: "Preparazione della foto…",
+      progress: (percent: number) => `Caricamento ${percent}%`,
+      progressAria: (view: string, percent: number) =>
+        `Caricamento della foto ${view}: ${percent}%`,
+      confirming: "Verifica della foto…",
+      done: (view: string) => `Foto ${view} caricata`,
+      drop: "Rilascia qui la foto",
+      formats: "JPG, PNG o HEIC · massimo 10 MB",
+      errors: {
+        too_large:
+          "La foto supera 10 MB. Scattala di nuovo o scegline una più leggera.",
+        unsupported: "Formato non supportato. Scegli una foto JPG, PNG o HEIC.",
+        decode_failed:
+          "Non riusciamo ad aprire questa foto. Scegline un’altra o scattala di nuovo.",
+        network:
+          "Caricamento non riuscito. Controlla la connessione e riprova.",
+        rejected: "La foto non è stata accettata. Riprova a caricarla.",
+      },
+    },
+    source: {
+      titleAdd: (view: string) => `Aggiungi la foto ${view}`,
+      titleReplace: (view: string) => `Sostituisci la foto ${view}`,
+      description: "Appoggia il telefono o chiedi a qualcuno di scattarla.",
+      camera: "Scatta una foto",
+      cameraHint: "Apre la fotocamera",
+      library: "Scegli dalla libreria",
+      libraryHint: "Una foto già scattata",
+    },
+    viewer: {
+      title: (check: string, view: string) => `${check} · ${view}`,
+      check: "Check",
+      date: "Data del check",
+      view: "Vista",
+      uploadedBy: "Caricata da",
+      savedAt: "Salvate",
+      savedBy: "Salvate da",
+      lockNote:
+        "Foto salvata: non si può modificare né eliminare. Qui puoi solo guardarla.",
+      previous: "Foto precedente",
+      next: "Foto successiva",
+      close: "Chiudi",
+      viewsLabel: "Vista",
+    },
+    admin: {
+      title: "Foto di avanzamento",
+      intro: (name: string) =>
+        `Fronte, lato e dietro ogni 3 mesi, ai check 3, 6 e 9 del percorso. Le vedono solo ${name} e lo studio. Dopo il salvataggio non si possono più modificare.`,
+      savedCount: (saved: number, total: number) =>
+        `${saved} di ${total} set salvati`,
+      tabBadge: (count: number) => `${count} da completare`,
+      ordinal: (n: number) =>
+        `${["Primo", "Secondo", "Terzo", "Quarto", "Quinto", "Sesto"][n - 1] ?? `${n}°`} set di foto del percorso`,
+      uploadedBy: (who: string, when: string) => `Caricata da ${who} · ${when}`,
+      uploadedByStudio: (when: string) => `Caricata dallo studio · ${when}`,
+      byLine: (who: string, when: string) => `${who}, ${when}`,
+      studio: "Studio",
+      savedBy: (who: string, date: string, time: string) =>
+        `Salvate da ${who} il ${date}, alle ${time}`,
+      savedByStudio: (date: string, time: string) =>
+        `Salvate dallo studio il ${date}, alle ${time}`,
+      start: "Carica le foto",
+      addMissingOne: "Aggiungi la foto mancante",
+      addMissingMany: "Aggiungi le foto mancanti",
+      review: "Rivedi e salva le foto",
+      infoDraft: (name: string) =>
+        `Finché il set non viene salvato, tu e ${name} potete aggiungere, sostituire o eliminare le foto. Dopo il salvataggio si blocca per tutti.`,
+      infoReady: (name: string) =>
+        `Il set è completo. Salvandolo diventa definitivo: né tu né ${name} potrete più sostituire o eliminare le foto.`,
+      infoSaved:
+        "Foto bloccate. Dopo il salvataggio nessuno può sostituirle o eliminarle, nemmeno lo studio.",
+      pushActive: "Notifiche push attive",
+      pushInactive: "Notifiche push non attive",
+      remindersSent: (dates: string) =>
+        `Promemoria inviati: ${dates}. Si fermano al salvataggio.`,
+      remindersNone:
+        "Nessun promemoria ancora inviato. Si fermano al salvataggio.",
+      remindersOff:
+        "Il cliente non riceve promemoria: puoi caricare tu le foto.",
+      future: (date: string, name: string) =>
+        `${date} · Il set si apre il giorno del check e ${name} riceve una notifica al mattino.`,
+      futureHint:
+        "Puoi caricare tu le foto dal giorno del check, per esempio durante una visita in studio.",
+      dialogTitle: (check: string, name: string) =>
+        `Foto del ${check} · ${name}`,
+      dialogDescription:
+        "Ogni foto si conserva come bozza appena la carichi. Puoi chiudere e riprendere quando vuoi.",
+      warnTitle: "Dopo il salvataggio le foto sono definitive.",
+      warn: "Finché non salvi puoi sostituirle o eliminarle; dopo, nessuno potrà farlo.",
+      closeDraft: "Chiudi, la bozza resta",
+      emptyTitle: "Nessun check con le foto",
+      emptyDescription:
+        "Le foto si caricano ai check 3, 6 e 9 del percorso. Crea il percorso del cliente per vederle qui.",
+      emptyAction: "Vai al percorso",
+      journeySign: "Foto",
+      journeySignAria: (state: string) => `Foto: ${state}`,
+    },
+    client: {
+      title: "Le tue foto",
+      heroTag: "Da caricare",
+      heroTitle: (check: string) => `Carica le foto del ${check}`,
+      heroNote: "Fronte, lato e dietro. Ci vogliono due minuti.",
+      heroNoteAfter: (previous: string) =>
+        `Fronte, lato e dietro, come hai fatto al ${previous}. Ci vogliono due minuti.`,
+      heroProgress: (count: number) =>
+        count === 0
+          ? "Nessuna foto caricata"
+          : count === 3
+            ? "3 di 3 caricate · da salvare"
+            : `${count} di 3 caricate · bozza non ancora salvata`,
+      start: "Carica le foto",
+      continue: "Continua a caricare",
+      review: "Rivedi e salva",
+      savedSection: "Foto salvate",
+      setCount: (count: number) => (count === 1 ? "1 set" : `${count} set`),
+      savedByYou: (date: string) => `${date} · Salvate da te`,
+      savedByStudio: (date: string) => `${date} · Salvate dallo studio`,
+      nextSection: "Prossime",
+      nextLine: (date: string) => `${date} · si apre il giorno del check`,
+      privacy:
+        "Le foto le vedi solo tu e il tuo nutrizionista. Ogni set si salva una volta sola e poi non si modifica più.",
+      emptyTitle: "Ancora nessuna foto",
+      emptyDescription:
+        "Le foto di avanzamento si caricano ai check 3, 6 e 9 del percorso. Quando arriva il giorno, le trovi qui.",
+      setTitle: (check: string) => `Foto · ${check}`,
+      autosave:
+        "Si conservano da sole come bozza: puoi chiudere e tornare quando vuoi.",
+      uploadedYou: (when: string) => `Caricata ${when}`,
+      uploadedStudio: (when: string) => `Caricata dallo studio ${when}`,
+      readOnly:
+        "Il tuo percorso è in pausa o concluso: puoi guardare le foto, ma non caricarne di nuove.",
+      savedBanner: (date: string) => `Foto salvate il ${date}.`,
+      savedBannerRest: "Non si possono più modificare né eliminare.",
+      savedByLineYou: (date: string, time: string) =>
+        `Te, il ${date} alle ${time}`,
+      savedByLineStudio: (date: string, time: string) =>
+        `Lo studio, il ${date} alle ${time}`,
+      homeTitle: (check: string) => `Carica le foto del ${check}`,
+      homeProgress: (count: number, missing: string) =>
+        count === 0
+          ? "Fronte, lato e dietro"
+          : count === 3
+            ? "3 di 3 · da salvare"
+            : `${count} di 3 · manca ${missing}`,
+      homeStart: "Inizia",
+      homeContinue: "Continua",
+      menuBadge: (count: number) => `${count} da caricare`,
+    },
+    push: {
+      sameDayTitle: (check: string) => `Oggi hai il ${check}: carica le foto`,
+      sameDay: (time: string | null) =>
+        `${time ? `Alle ${time}. ` : ""}Servono fronte, lato e dietro: ci vogliono due minuti.`,
+      day3Title: (check: string) => `Foto del ${check} da completare`,
+      day3: (count: number, missing: string[]) =>
+        count === 0
+          ? "Non hai ancora caricato le foto: servono fronte, lato e dietro."
+          : count >= 3
+            ? "Le foto ci sono tutte: rivedile e salvale."
+            : missing.length === 1
+              ? `Hai caricato ${count} foto su 3. Manca ${missing[0]}: aggiungila e poi salva.`
+              : `Hai caricato ${count} foto su 3. Mancano ${missing.join(" e ")}: aggiungile e poi salva.`,
+      day7Title: "Ultimo promemoria per le foto",
+      day7: (check: string) => `Le foto del ${check} non sono ancora salvate.`,
+    },
+    errors: {
+      notFound: "Questo check non esiste più.",
+      notOpen: "Il set si apre il giorno del check.",
+      saved:
+        "Le foto di questo check sono già state salvate: non si possono più modificare.",
+      incomplete: "Per salvare servono tutte e tre le foto.",
+      readOnly: "Il percorso è in pausa o concluso: non puoi caricare foto.",
+      uploadFailed:
+        "Caricamento non riuscito. Controlla la connessione e riprova.",
+      rejected: "La foto non è stata accettata. Riprova a caricarla.",
     },
   },
 } as const;

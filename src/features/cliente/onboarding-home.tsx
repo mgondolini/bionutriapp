@@ -1,5 +1,6 @@
 import {
   Activity,
+  Camera,
   ChartColumn,
   Check,
   Clapperboard,
@@ -23,6 +24,7 @@ const ICONS: Record<ClientNavKey, LucideIcon> = {
   reports: ChartColumn,
   videos: Clapperboard,
   tracking: Activity,
+  photos: Camera,
 };
 
 /**

@@ -12,6 +12,10 @@ const outcomes: { id: string; outcome: string }[] = [];
 const keyOf = (row: JourneyNotificationRow) =>
   [row.sessionId, row.kind, row.referenceDate, row.referenceTime].join("|");
 
+vi.mock("@/server/repositories/photos.repository", () => ({
+  listReminderCandidates: vi.fn(async () => []),
+}));
+
 vi.mock("next/server", () => ({
   after: vi.fn((callback: () => Promise<void>) => scheduled.push(callback)),
 }));
@@ -46,6 +50,7 @@ vi.mock("@/server/services/push.service", () => ({
 
 const scheduled: (() => Promise<void>)[] = [];
 const repo = await import("@/server/repositories/journeys.repository");
+const photosRepo = await import("@/server/repositories/photos.repository");
 const push = await import("@/server/services/push.service");
 const service = await import("./journey-notifications.service");
 
@@ -66,11 +71,72 @@ const candidate = (over: Partial<Candidate> = {}): Candidate => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(photosRepo.listReminderCandidates).mockResolvedValue([]);
   log.clear();
   outcomes.length = 0;
   scheduled.length = 0;
   vi.spyOn(console, "info").mockImplementation(() => {});
   vi.spyOn(console, "error").mockImplementation(() => {});
+});
+
+describe("promemoria delle foto (C27)", () => {
+  type PhotoCandidate = Awaited<
+    ReturnType<typeof photosRepo.listReminderCandidates>
+  >[number];
+  const photo = (over: Partial<PhotoCandidate> = {}): PhotoCandidate => ({
+    session_id: "s6",
+    client_id: "c1",
+    user_id: "u1",
+    check_number: 6,
+    session_date: "2026-11-05",
+    session_time: "10:30:00",
+    photo_count: 0,
+    missing_views: ["front", "side", "back"],
+    ...over,
+  });
+
+  it("il giorno del check la push delle foto sostituisce quella del mattino", async () => {
+    vi.mocked(repo.listReminderCandidates).mockResolvedValue([candidate()]);
+    vi.mocked(photosRepo.listReminderCandidates).mockResolvedValue([photo()]);
+    const { jobs } = await service.prepareJourneyReminders(
+      new Date("2026-11-05T07:00:00Z"),
+    );
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0]!.payload).toMatchObject({
+      title: "Oggi hai il Check 6: carica le foto",
+      body: "Alle 10:30. Servono fronte, lato e dietro: ci vogliono due minuti.",
+      url: "/app/foto",
+    });
+    expect([...log.values()][0]!.kind).toBe("photos_same_day");
+  });
+
+  it("3 giorni dopo dice quante foto mancano; 7 giorni dopo l'ultimo", async () => {
+    vi.mocked(repo.listReminderCandidates).mockResolvedValue([]);
+    vi.mocked(photosRepo.listReminderCandidates).mockImplementation(
+      async (_studio, day) =>
+        day === "2026-11-02"
+          ? [
+              photo({
+                session_id: "a",
+                session_date: day,
+                photo_count: 2,
+                missing_views: ["back"],
+              }),
+            ]
+          : [photo({ session_id: "b", session_date: day })],
+    );
+    // 17:00 UTC = 18:00 a Roma del 5 novembre
+    const { jobs } = await service.prepareJourneyReminders(
+      new Date("2026-11-05T17:00:00Z"),
+    );
+    expect(jobs.map((job) => job.payload.title)).toEqual([
+      "Foto del Check 6 da completare",
+      "Ultimo promemoria per le foto",
+    ]);
+    expect(jobs[0]!.payload.body).toBe(
+      "Hai caricato 2 foto su 3. Manca Dietro: aggiungila e poi salva.",
+    );
+  });
 });
 
 describe("promemoria del percorso", () => {

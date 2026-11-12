@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { PhotoNotificationKind } from "@/lib/constants/domain";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -282,7 +283,11 @@ export type JourneyNotificationRow = {
   sessionId: string;
   studioId: string;
   clientId: string;
-  kind: "date_changed" | "reminder_day_before" | "reminder_same_day";
+  kind:
+    | "date_changed"
+    | "reminder_day_before"
+    | "reminder_same_day"
+    | PhotoNotificationKind;
   referenceDate: string;
   referenceTime: string | null;
 };

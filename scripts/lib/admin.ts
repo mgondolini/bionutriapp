@@ -10,6 +10,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../../src/types/database";
 
 export const CLIENT_FILES_BUCKET = "client-files";
+export const CLIENT_PHOTOS_BUCKET = "client-photos";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type AdminClient = SupabaseClient<Database>;
@@ -94,6 +95,40 @@ export async function clientStoragePaths(
       fail(`elenco dello Storage non riuscito: ${listError.message}`);
     for (const object of objects) paths.add(`${folder}/${object.name}`);
     if (objects.length < 100) break;
+  }
+  return [...paths];
+}
+
+/**
+ * Oggetti delle foto di avanzamento del cliente: quelli delle righe e quelli
+ * senza riga nelle cartelle dei suoi set ({studio}/{cliente}/{set}/…).
+ */
+export async function clientPhotoPaths(
+  supabase: AdminClient,
+  client: ClientRow,
+): Promise<string[]> {
+  const paths = new Set<string>();
+  const { data: photos, error } = await supabase
+    .from("photos")
+    .select("storage_path")
+    .eq("client_id", client.id);
+  if (error) fail(`lettura delle foto non riuscita: ${error.message}`);
+  for (const photo of photos) paths.add(photo.storage_path);
+
+  const { data: sets, error: setsError } = await supabase
+    .from("photo_sets")
+    .select("id")
+    .eq("client_id", client.id);
+  if (setsError)
+    fail(`lettura dei set di foto non riuscita: ${setsError.message}`);
+  for (const set of sets) {
+    const folder = `${client.studio_id}/${client.id}/${set.id}`;
+    const { data: objects, error: listError } = await supabase.storage
+      .from(CLIENT_PHOTOS_BUCKET)
+      .list(folder, { limit: 100 });
+    if (listError)
+      fail(`elenco dello Storage non riuscito: ${listError.message}`);
+    for (const object of objects) paths.add(`${folder}/${object.name}`);
   }
   return [...paths];
 }

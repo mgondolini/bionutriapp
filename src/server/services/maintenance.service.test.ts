@@ -6,11 +6,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
  */
 
 const ORPHAN = "studio/cliente/00000000-0000-4000-a000-000000000001.pdf";
+const ORPHAN_PHOTO =
+  "studio/cliente/set/front-00000000-0000-4000-a000-000000000002.jpg";
 
 vi.mock("@/server/repositories/maintenance.repository", () => ({
   ping: vi.fn(async () => {}),
   listOrphanUploads: vi.fn(async () => [ORPHAN]),
   removeClientFileObjects: vi.fn(async (paths: string[]) => paths.length),
+  listOrphanPhotos: vi.fn(async () => [ORPHAN_PHOTO]),
+  removeClientPhotoObjects: vi.fn(async (paths: string[]) => paths.length),
   purgeExpiredInvites: vi.fn(async () => 3),
   purgeNotificationLog: vi.fn(async () => 7),
   listVideosToRecheck: vi.fn(async () => [
@@ -60,12 +64,17 @@ describe("runMaintenance", () => {
     expect(report).toMatchObject({
       ok: true,
       orphanUploadsRemoved: 1,
+      orphanPhotosRemoved: 1,
       expiredInvitesDeleted: 3,
       failed: [],
     });
     expect(repository.ping).toHaveBeenCalled();
     expect(repository.listOrphanUploads).toHaveBeenCalledWith(24);
     expect(repository.removeClientFileObjects).toHaveBeenCalledWith([ORPHAN]);
+    expect(repository.listOrphanPhotos).toHaveBeenCalledWith(24);
+    expect(repository.removeClientPhotoObjects).toHaveBeenCalledWith([
+      ORPHAN_PHOTO,
+    ]);
     expect(repository.purgeExpiredInvites).toHaveBeenCalledWith(90);
     expect(repository.purgeNotificationLog).toHaveBeenCalledWith(90);
   });

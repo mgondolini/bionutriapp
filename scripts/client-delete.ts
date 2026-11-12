@@ -25,6 +25,8 @@ import { parseArgs } from "node:util";
 import {
   adminFromEnv,
   CLIENT_FILES_BUCKET,
+  CLIENT_PHOTOS_BUCKET,
+  clientPhotoPaths,
   clientStoragePaths,
   fail,
   findClient,
@@ -58,6 +60,7 @@ async function count(
 async function main() {
   const client = await findClient(supabase, values);
   const paths = await clientStoragePaths(supabase, client);
+  const photoPaths = await clientPhotoPaths(supabase, client);
   let devices = 0;
   if (client.user_id) {
     const { count: total } = await supabase
@@ -70,6 +73,7 @@ async function main() {
   console.log(`Progetto: ${host}`);
   console.log(`Cliente: ${client.id} (studio ${client.studio_id})`);
   console.log(`  oggetti nello Storage: ${paths.length}`);
+  console.log(`  foto di avanzamento: ${photoPaths.length}`);
   console.log(`  righe dei file: ${await count("client_files", client.id)}`);
   console.log(`  registrazioni: ${await count("tracking_entries", client.id)}`);
   console.log(`  inviti: ${await count("client_invites", client.id)}`);
@@ -97,7 +101,16 @@ async function main() {
     if (error)
       fail(`eliminazione dallo Storage non riuscita: ${error.message}`);
   }
-  console.log(`Storage: ${paths.length} oggetti eliminati`);
+  // le foto salvate sono immutabili per l'app, non per la secret key
+  for (let i = 0; i < photoPaths.length; i += 500) {
+    const { error } = await supabase.storage
+      .from(CLIENT_PHOTOS_BUCKET)
+      .remove(photoPaths.slice(i, i + 500));
+    if (error) fail(`eliminazione delle foto non riuscita: ${error.message}`);
+  }
+  console.log(
+    `Storage: ${paths.length} oggetti e ${photoPaths.length} foto eliminati`,
+  );
 
   // 2. Sottoscrizioni push
   if (client.user_id) {
