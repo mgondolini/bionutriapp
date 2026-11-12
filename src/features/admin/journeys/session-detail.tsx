@@ -16,7 +16,10 @@ import {
   JOURNEY_SESSION_STATUSES,
 } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
-import type { CalendarEvent } from "@/lib/domain/journeys/calendar";
+import {
+  sessionMinutes,
+  type CalendarEvent,
+} from "@/lib/domain/journeys/calendar";
 import { sessionLabel } from "@/lib/domain/journeys/labels";
 import { resolveMeetingUrl } from "@/lib/domain/journeys/meeting";
 import { formatLongDate, formatShortDate } from "@/lib/format";
@@ -59,6 +62,7 @@ function staffEvent(
     ),
     date: session.date,
     time: session.time,
+    durationMinutes: sessionMinutes(session.type),
     meetingUrl,
     attendeeEmail: client.email,
   };
@@ -217,7 +221,7 @@ export function SessionDetail({
         ) : null}
         <p className="flex flex-col text-sm">
           <span className="font-semibold">{t.admin.sessionDuration}</span>
-          <span>{t.admin.sessionDurationValue}</span>
+          <span>{t.admin.durationValue(event.durationMinutes)}</span>
         </p>
         <MeetingLink
           url={meetingUrl}
@@ -295,6 +299,7 @@ export function SessionDetail({
           event={event}
           summary={t.admin.calendarSummary(
             when,
+            t.admin.durationValue(event.durationMinutes),
             client.email ? client.firstName : null,
           )}
           fileName={t.ics.fileName(name)}

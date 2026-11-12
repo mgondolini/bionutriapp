@@ -1,6 +1,6 @@
 /**
  * File .ics di una sessione (A17, C22: Apple Calendar e "Altro calendario").
- * Con l'ora: evento di JOURNEY_SESSION_MINUTES nel fuso Europe/Rome; senza:
+ * Con l'ora: evento lungo quanto la sessione nel fuso Europe/Rome; senza:
  * evento di una giornata. Il link Meet va in LOCATION, URL e descrizione;
  * l'evento dello staff invita l'email del cliente (ATTENDEE).
  */
@@ -87,7 +87,7 @@ export function buildIcs(
     `DTSTAMP:${stamp(event.now ?? new Date())}`,
   );
   if (event.time) {
-    const end = eventEnd(event.date, event.time);
+    const end = eventEnd(event.date, event.time, event.durationMinutes);
     lines.push(
       `DTSTART;TZID=Europe/Rome:${compactDay(event.date)}T${event.time.replace(":", "")}00`,
       `DTEND;TZID=Europe/Rome:${compactDay(end.date)}T${end.time.replace(":", "")}00`,

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { copy } from "@/lib/copy/it";
+import { sessionMinutes } from "@/lib/domain/journeys/calendar";
 import { buildIcs } from "@/lib/domain/journeys/ics";
 import { sessionLabel } from "@/lib/domain/journeys/labels";
 import { getOwnSession } from "@/server/services/journeys.service";
@@ -39,6 +40,7 @@ export async function GET(
       description: copy.journeys.ics.description,
       date: journeySession.date,
       time: journeySession.time,
+      durationMinutes: sessionMinutes(journeySession.type),
       // già scelto da resolveMeetingUrl, solo per il prossimo check
       meetingUrl: journeySession.meetingUrl,
     },

@@ -49,7 +49,6 @@ export async function purgeExpiredInvites(days: number): Promise<number> {
   return data;
 }
 
-
 /** Elimina le righe del registro delle notifiche più vecchie di `days` giorni. */
 export async function purgeNotificationLog(days: number): Promise<number> {
   const supabase = createAdminClient();
@@ -108,4 +107,3 @@ export async function saveVideoAvailability(
     .eq("id", video.id);
   if (error) throw error;
 }
-

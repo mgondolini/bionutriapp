@@ -11,14 +11,12 @@ import { oembedOutcome } from "@/lib/videos/youtube";
 import * as maintenanceRepository from "@/server/repositories/maintenance.repository";
 import * as youtubeRepository from "@/server/repositories/youtube.repository";
 
-
 export type MaintenanceStep =
   | "keepAlive"
   | "orphanUploads"
   | "expiredInvites"
   | "notificationLog"
   | "videoAvailability";
-
 
 export type MaintenanceReport = {
   ok: boolean;
@@ -119,7 +117,6 @@ export async function runMaintenance(): Promise<MaintenanceReport> {
     0,
   );
 
-
   const notificationLogDeleted = await step(
     "notificationLog",
     () =>
@@ -139,7 +136,7 @@ export async function runMaintenance(): Promise<MaintenanceReport> {
     durationMs: Date.now() - started,
     orphanUploadsRemoved,
     expiredInvitesDeleted,
-        notificationLogDeleted,
+    notificationLogDeleted,
     videosChecked: videos.checked,
     videosUnavailable: videos.unavailable,
 
@@ -149,10 +146,8 @@ export async function runMaintenance(): Promise<MaintenanceReport> {
     `[manutenzione] ${report.ok ? "completata" : "completata con errori"}: ` +
       `oggetti orfani eliminati ${orphanUploadsRemoved}, ` +
       `inviti scaduti eliminati ${expiredInvitesDeleted}, ` +
-
       `notifiche eliminate dal registro ${notificationLogDeleted}, ` +
       `video controllati ${videos.checked} (non disponibili ${videos.unavailable}), ` +
-
       `durata ${report.durationMs} ms`,
   );
   return report;

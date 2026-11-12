@@ -1891,10 +1891,11 @@ export const copy = {
       save: "Salva modifiche",
       saved: "Sessione salvata",
       sessionDuration: "Durata",
-      sessionDurationValue: "30 minuti",
+      durationValue: (minutes: number) =>
+        minutes === 60 ? "1 ora" : `${minutes} minuti`,
       calendar: "Aggiungi al calendario",
-      calendarSummary: (when: string, name: string | null) =>
-        `${when} · 30 minuti${name ? ` · invito a ${name}` : ""}`,
+      calendarSummary: (when: string, duration: string, name: string | null) =>
+        `${when} · ${duration}${name ? ` · invito a ${name}` : ""}`,
       meeting: {
         title: "Videochiamata",
         none: "Nessun link Meet per questa sessione.",

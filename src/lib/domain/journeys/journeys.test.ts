@@ -17,6 +17,7 @@ import {
   googleCalendarUrl,
   outlookCalendarUrl,
   romeOffset,
+  sessionMinutes,
 } from "./calendar";
 import { buildIcs } from "./ics";
 import { meetingLinkText, resolveMeetingUrl } from "./meeting";
@@ -374,6 +375,7 @@ describe("file .ics", () => {
     title: "Check 6, Studio Verde",
     description: "Sessione del tuo percorso.",
     meetingUrl: null,
+    durationMinutes: 30,
     now,
   };
 
@@ -385,6 +387,19 @@ describe("file .ics", () => {
     expect(ics).toContain("BEGIN:VTIMEZONE");
     expect(ics).not.toContain("LOCATION");
     expect(ics).not.toContain("ATTENDEE");
+  });
+
+  it("l'onboarding dura un'ora", () => {
+    const ics = buildIcs(
+      {
+        ...base,
+        date: "2026-11-05",
+        time: "10:30",
+        durationMinutes: sessionMinutes("onboarding"),
+      },
+      MEET,
+    );
+    expect(ics).toContain("DTEND;TZID=Europe/Rome:20261105T113000");
   });
 
   it("alle 23:45 finisce il giorno dopo", () => {
@@ -463,6 +478,7 @@ describe("link del calendario", () => {
     description: "Sessione del percorso di Giulia Bianchi.",
     date: "2027-01-11",
     time: "10:30",
+    durationMinutes: 30,
     meetingUrl: URL_CLIENT,
     attendeeEmail: "giulia@example.test",
   };
@@ -521,8 +537,28 @@ describe("link del calendario", () => {
     expect(romeOffset("2026-10-25", "04:00")).toBe("+01:00");
   });
 
+  it("durata: onboarding un'ora, check e omaggio 30 minuti", () => {
+    expect(sessionMinutes("onboarding")).toBe(60);
+    expect(sessionMinutes("check")).toBe(30);
+    expect(sessionMinutes("gift")).toBe(30);
+  });
+
+  it("onboarding nei link: un'ora", () => {
+    const onboarding = {
+      ...event,
+      title: "Onboarding · G. Bianchi",
+      durationMinutes: 60,
+    };
+    expect(
+      new URL(googleCalendarUrl(onboarding, MEET)).searchParams.get("dates"),
+    ).toBe("20270111T103000/20270111T113000");
+    expect(
+      new URL(outlookCalendarUrl(onboarding, MEET)).searchParams.get("enddt"),
+    ).toBe("2027-01-11T11:30:00+01:00");
+  });
+
   it("fine dell'evento oltre la mezzanotte", () => {
-    expect(eventEnd("2026-12-31", "23:45")).toEqual({
+    expect(eventEnd("2026-12-31", "23:45", 30)).toEqual({
       date: "2027-01-01",
       time: "00:15",
     });

@@ -12,7 +12,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { buttonVariants } from "@/components/ui/button";
 import { clientJourneyUrl } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
-import { eventEnd } from "@/lib/domain/journeys/calendar";
+import { eventEnd, sessionMinutes } from "@/lib/domain/journeys/calendar";
 import { dateRange, sessionLabel } from "@/lib/domain/journeys/labels";
 import { groupClosedSessions } from "@/lib/domain/journeys/sessions";
 import { formatLongDate, formatShortDate } from "@/lib/format";
@@ -116,7 +116,11 @@ function SessionRow({
   const details = [
     formatLongDate(session.date),
     session.time
-      ? t.timeRange(session.time, eventEnd(session.date, session.time).time)
+      ? t.timeRange(
+          session.time,
+          eventEnd(session.date, session.time, sessionMinutes(session.type))
+            .time,
+        )
       : null,
     // il link arriva solo per il prossimo check
     session.meetingUrl ? t.meet : null,

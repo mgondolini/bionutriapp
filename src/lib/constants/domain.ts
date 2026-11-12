@@ -613,8 +613,11 @@ export const JOURNEY_CLIENT_PATH = "/app/percorso";
 /** Parametro del percorso mostrato (storico admin e percorsi precedenti del cliente). */
 export const JOURNEY_PARAM = "percorso";
 export const JOURNEY_CRON_PATH = `${INTERNAL_API_PATH}/notifications/journeys`;
-/** Ogni sessione (call) dura 30 minuti: eventi del calendario e .ics. */
-export const JOURNEY_SESSION_MINUTES = 30;
+/**
+ * Durata delle call: l'onboarding un'ora, ogni check (anche l'omaggio) 30
+ * minuti. Vale per orari mostrati, eventi del calendario e .ics.
+ */
+export const JOURNEY_SESSION_MINUTES = { onboarding: 60, check: 30 } as const;
 /** Fuso degli eventi del calendario (come "oggi" nell'interfaccia). */
 export const JOURNEY_CALENDAR_TIMEZONE = "Europe/Rome";
 /**

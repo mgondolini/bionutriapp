@@ -10,6 +10,7 @@ import { copy } from "@/lib/copy/it";
 import {
   eventEnd,
   googleCalendarUrl,
+  sessionMinutes,
   outlookCalendarUrl,
   type CalendarEvent,
 } from "@/lib/domain/journeys/calendar";
@@ -28,7 +29,8 @@ const rowClassName =
 /**
  * "Aggiungi al calendario" del cliente (C22): foglio dal basso sul telefono.
  * Su iPhone la prima voce è Apple Calendar, altrove Google Calendar. Evento di
- * 30 minuti con il nome dello studio e il link Meet del prossimo check,
+ * un'ora (onboarding) o 30 minuti (check) con il nome dello studio e il link
+ * Meet del prossimo check,
  * senza invitati. Apple e "Altro calendario" scaricano il file .ics.
  */
 export function CalendarSheet({
@@ -47,12 +49,16 @@ export function CalendarSheet({
     description: t.ics.description,
     date: session.date,
     time: session.time,
+    durationMinutes: sessionMinutes(session.type),
     meetingUrl: session.meetingUrl,
   };
   const when = t.ics.when(
     formatLongDate(session.date),
     session.time
-      ? t.timeRange(session.time, eventEnd(session.date, session.time).time)
+      ? t.timeRange(
+          session.time,
+          eventEnd(session.date, session.time, event.durationMinutes).time,
+        )
       : null,
   );
   const order: OptionKey[] = appleFirst

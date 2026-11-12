@@ -3,14 +3,21 @@
  * aprirlo in Google Calendar e Outlook sul web. Il file .ics (Apple e altri
  * calendari) lo costruisce ics.ts dallo stesso evento.
  *
- * Con l'ora l'evento dura JOURNEY_SESSION_MINUTES nel fuso di Roma; senza,
- * occupa la giornata. Il link Meet arriva già scelto da resolveMeetingUrl.
+ * Con l'ora l'evento dura quanto la sessione (sessionMinutes: onboarding
+ * un'ora, check 30 minuti) nel fuso di Roma; senza, occupa la giornata. Il link Meet arriva già scelto da resolveMeetingUrl.
  */
 import {
   JOURNEY_CALENDAR_TIMEZONE,
   JOURNEY_SESSION_MINUTES,
 } from "@/lib/constants/domain";
 import { addDays } from "@/lib/domain/tracking/dates";
+
+/** Minuti della call: l'onboarding dura un'ora, i check (omaggio compreso) 30. */
+export function sessionMinutes(type: "onboarding" | "check" | "gift"): number {
+  return type === "onboarding"
+    ? JOURNEY_SESSION_MINUTES.onboarding
+    : JOURNEY_SESSION_MINUTES.check;
+}
 
 export type CalendarEvent = {
   uid: string;
@@ -20,6 +27,8 @@ export type CalendarEvent = {
   date: string;
   /** "HH:MM" o null (evento di una giornata). */
   time: string | null;
+  /** Durata con l'ora, da sessionMinutes. */
+  durationMinutes: number;
   meetingUrl: string | null;
   /** Solo l'evento dello staff invita il cliente. */
   attendeeEmail?: string | null;
@@ -29,7 +38,7 @@ export type CalendarEvent = {
 export function eventEnd(
   date: string,
   time: string,
-  minutes = JOURNEY_SESSION_MINUTES,
+  minutes: number,
 ): { date: string; time: string } {
   const [h, m] = time.split(":").map(Number) as [number, number];
   const total = h * 60 + m + minutes;
@@ -84,7 +93,7 @@ export function googleCalendarUrl(
 ): string {
   const params = new URLSearchParams({ action: "TEMPLATE", text: event.title });
   if (event.time) {
-    const end = eventEnd(event.date, event.time);
+    const end = eventEnd(event.date, event.time, event.durationMinutes);
     params.set(
       "dates",
       `${compact(event.date, event.time)}/${compact(end.date, end.time)}`,
@@ -113,7 +122,7 @@ export function outlookCalendarUrl(
     subject: event.title,
   });
   if (event.time) {
-    const end = eventEnd(event.date, event.time);
+    const end = eventEnd(event.date, event.time, event.durationMinutes);
     params.set(
       "startdt",
       `${event.date}T${event.time}:00${romeOffset(event.date, event.time)}`,
