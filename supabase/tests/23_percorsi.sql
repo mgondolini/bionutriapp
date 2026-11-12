@@ -2,7 +2,7 @@
 -- fra studi, letture del cliente senza nota né omaggio, conclusione con la
 -- fase Concluso, sola lettura dei conclusi, registro delle notifiche.
 begin;
-select plan(22);
+select plan(24);
 select tests.create_fixtures();
 
 create function pg_temp.sessions() returns jsonb language sql immutable as $$
@@ -119,6 +119,18 @@ select results_eq(
   $$ select type, check_number from public.journey_reminder_candidates(tests.id('studio1'), '2026-11-12') $$,
   $$ values ('check'::text, 1) $$,
   'il promemoria vede l''omaggio come Check 1'
+);
+
+update public.journey_sessions set status = 'done'
+ where client_id = tests.id('c1') and position = 0
+   and journey_id = (select id from public.client_journeys where client_id = tests.id('c1') and status = 'active');
+select is_empty(
+  $$ select 1 from public.journey_reminder_candidates(tests.id('studio1'), '2026-11-12') $$,
+  'nessun promemoria per una sessione completata'
+);
+select is_empty(
+  $$ select 1 from public.journey_reminder_candidates(tests.id('studio1'), '2026-11-13') $$,
+  'nessun promemoria per un giorno senza sessioni'
 );
 
 select * from finish();

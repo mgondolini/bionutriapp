@@ -1794,4 +1794,236 @@ export const copy = {
     later: "Più tardi",
     back: "Torna alla home",
   },
+  /** Percorso del cliente (mockup v5: A17–A19, C5, C19–C21). */
+  journeys: {
+    sessionName: {
+      onboarding: "Onboarding",
+      gift: "Check omaggio",
+      check: (n: number) => `Check ${n}`,
+    },
+    state: {
+      done: "Completata",
+      skipped: "Saltata",
+      next: "Prossima",
+      overdue: "In ritardo",
+      todo: "Da fare",
+    },
+    status: {
+      todo: "Da fare",
+      done: "Completata",
+      skipped: "Saltata",
+    },
+    duration: { 6: "6 mesi", 12: "1 anno" },
+    kind: {
+      first: "Primo percorso",
+      extension: "Estensione",
+      resume: "Ripresa",
+    },
+    journeyNumber: (n: number) => `Percorso ${n}`,
+    completedOf: (done: number, total: number) =>
+      `${done} di ${total} completate`,
+    month: (current: number, total: number) => `Mese ${current} di ${total}`,
+    timeAt: (time: string) => `ore ${time}`,
+    admin: {
+      empty: {
+        title: "Nessun percorso impostato",
+        description:
+          "Imposta durata e data di inizio: le date delle sessioni si calcolano da sole.",
+        action: "Imposta percorso",
+      },
+      setupTitle: "Imposta il percorso",
+      setupDescription:
+        "Scegli durata, data di inizio e composizione. Potrai cambiare le date di ogni sessione.",
+      durationTitle: "Durata del percorso",
+      durationDescription:
+        "Scegli la durata e la data di inizio: le date delle sessioni si calcolano da sole.",
+      durationLabel: "Durata",
+      startLabel: "Data di inizio",
+      endLabel: "Data di fine",
+      endCalculated: "(calcolata)",
+      durationHint:
+        "Con 6 mesi: onboarding + 5 check. Con 1 anno: onboarding + 11 check. I check sono a distanza regolare (circa uno al mese) e l’ultimo cade sulla data di fine.",
+      recalcSummary: (recalculated: number, fixed: number) =>
+        `${recalculated === 1 ? "1 sessione si ricalcola" : `${recalculated} sessioni si ricalcolano`}${fixed > 0 ? `, ${fixed === 1 ? "1 resta ferma" : `${fixed} restano ferme`} perché ${fixed === 1 ? "l’hai modificata" : "le hai modificate"} a mano` : ""}.`,
+      recalcAdded: (n: number) =>
+        n === 1 ? "Si aggiunge 1 sessione." : `Si aggiungono ${n} sessioni.`,
+      recalcRemoved: (n: number) =>
+        n === 1 ? "Si toglie 1 sessione." : `Si tolgono ${n} sessioni.`,
+      recalcBlocked:
+        "Non puoi accorciare il percorso: tra le sessioni da togliere ce ne sono già completate o saltate.",
+      applyDuration: "Aggiorna le date",
+      durationSaved: "Percorso aggiornato",
+      recalcNote:
+        "Se cambi durata o data di inizio, le sessioni che non hai toccato si ricalcolano. Quelle con data modificata a mano restano dove le hai messe.",
+      sessionsTitle: "Sessioni",
+      sessionsDescription:
+        "Tocca un quadrato per vedere la sessione, cambiarne la data o segnarla come completata.",
+      sessionsGroup: "Sessioni del percorso",
+      modified: "Modificata",
+      gift: "Omaggio",
+      nextIn: (days: number) =>
+        days === 0
+          ? "Oggi · Prossima"
+          : days === 1
+            ? "Prossima · domani"
+            : `Prossima · tra ${days} giorni`,
+      sessionDate: "Data della sessione",
+      sessionTime: "Ora",
+      timeOptional: "(facoltativa)",
+      calculatedOn: (date: string) => `Calcolata dall’app: ${date}`,
+      restore: "Ripristina la data calcolata",
+      restored: "Data calcolata ripristinata",
+      statusLabel: "Stato",
+      noteLabel: "Nota per te",
+      noteOptional: "(facoltativa)",
+      notePlaceholder: "Per esempio: portare le misure aggiornate",
+      save: "Salva modifiche",
+      saved: "Sessione salvata",
+      calendar: "Fissa nel calendario dello studio",
+      calendarSoon: "Disponibile con il calendario",
+      notifyNote:
+        "Salvando, il cliente riceve una notifica push con la nuova data e ora. Promemoria automatici il giorno prima e la mattina stessa.",
+      pushActive: "Notifiche push attive",
+      pushInactive: "Notifiche push non attive",
+      readOnly: "Percorso concluso, in sola lettura.",
+      concludedHeader: (start: string, end: string, days: number) =>
+        `Dal ${start} al ${end}. Concluso ${days === 0 ? "oggi" : days === 1 ? "da 1 giorno" : `da ${days} giorni`}, in sola lettura.`,
+      extend: "Estendi o riprendi",
+      historyTitle: "Percorsi del cliente",
+      historyDescription:
+        "File, diete e tracking restano del cliente: valgono per tutti i percorsi.",
+      historyRange: (duration: string, range: string) =>
+        `${duration} · ${range}`,
+      active: "Attivo",
+      concluded: "Concluso",
+      autoStageNotice: (
+        previous: number,
+        concludedOn: string,
+        createdOn: string,
+        current: number,
+        name: string,
+      ) =>
+        `Percorso ${previous} concluso il ${concludedOn}. Il ${createdOn} hai creato il Percorso ${current}: ${name} è tornato In percorso in automatico.`,
+      compositionSummary: (onboarding: boolean, gift: string, checks: number) =>
+        `${onboarding ? "Con onboarding" : "Senza onboarding"}${gift === "added" ? `, con 1 check omaggio aggiunto ai ${checks} check del percorso` : gift === "included" ? `, con 1 check omaggio incluso nei ${checks} check del percorso` : ""}.${gift === "none" ? "" : " Il cliente vede solo “Check”, senza l’etichetta omaggio."}`,
+      dialog: {
+        title: "Estendi o riprendi il percorso",
+        description:
+          "Il percorso concluso resta nello storico. Ne parte uno nuovo, collegato a quello.",
+        stageNotice: (name: string) =>
+          `Creando il nuovo percorso, ${name} torna In percorso in automatico. Il cambio di fase resta nello storico, con data e autore.`,
+        compositionLabel: "Come è composto il nuovo percorso",
+        onboarding: "Aggiungi l’onboarding",
+        onboardingHint:
+          "Il primo quadrato è la chiamata di onboarding. Di solito serve a chi riprende dopo molto tempo.",
+        giftLabel: "Check omaggio",
+        giftModes: {
+          none: {
+            label: "Nessun check omaggio",
+            hint: "Solo i check del percorso.",
+          },
+          added: {
+            label: "Check omaggio aggiunto ai check",
+            hint: "Il primo check è gratuito e si somma a quelli del percorso (5 con 6 mesi, 11 con 1 anno).",
+          },
+          included: {
+            label: "Check omaggio incluso nei check",
+            hint: "Il check gratuito è uno di quelli del percorso: il cliente ne ha uno a pagamento in meno.",
+          },
+        },
+        endPreview: "Fine:",
+        previewTitle: "Anteprima delle date",
+        sessionsCount: (n: number) => `${n} sessioni:`,
+        summary: (onboarding: boolean, gift: string, checks: number) =>
+          `${gift === "added" ? `1 check omaggio + ${checks} check` : gift === "included" ? `${checks} check, di cui 1 omaggio` : `${checks} check`}, ${onboarding ? "con onboarding" : "senza onboarding"}.`,
+        suggested: (days: number, threshold: number, within: boolean) =>
+          `Suggerito perché il percorso è concluso da ${days} ${days === 1 ? "giorno" : "giorni"} (${within ? "entro" : "oltre"} i ${threshold}). Puoi cambiare tutto.`,
+        cancel: "Annulla",
+        create: "Crea nuovo percorso",
+        createFirst: "Crea percorso",
+        confirm: "Confermi la creazione del nuovo percorso?",
+        created: "Percorso creato",
+      },
+      errors: {
+        notFound: "Il percorso non esiste o non appartiene al tuo studio.",
+        alreadyActive: "Il cliente ha già un percorso attivo.",
+        concluded: "Il percorso è concluso: è in sola lettura.",
+        previousNotConcluded:
+          "Puoi estendere o riprendere solo un percorso concluso.",
+        dateRequired: "Inserisci una data valida.",
+        dateRange: "Scegli una data entro due anni da oggi.",
+        timeInvalid: "Inserisci un’ora valida, per esempio 10:30.",
+        noteTooLong: `Massimo ${500} caratteri.`,
+      },
+    },
+    client: {
+      title: "Il tuo percorso",
+      homeAria: (month: string, next: string | null) =>
+        `Il tuo percorso: ${month}${next ? `, prossimo check ${next}` : ""}`,
+      nextCheck: "Prossimo check:",
+      completedSummary: (done: number, total: number) =>
+        `${done} ${done === 1 ? "sessione" : "sessioni"} su ${total} completate`,
+      journeyMonth: (n: number, month: string) => `Percorso ${n} · ${month}`,
+      start: "Inizio",
+      end: "Fine",
+      sessionsTitle: "Le tue sessioni",
+      sessionsCount: (done: number, total: number) =>
+        `${done} su ${total} completate`,
+      groupedName: (first: string, last: string) =>
+        first === last ? first : `${first} e ${last}`,
+      checkRange: (from: number, to: number) =>
+        from === to ? `Check ${from}` : `Check ${from}–${to}`,
+      lastCheck: "ultimo check",
+      addToCalendar: "Aggiungi al calendario",
+      managedNote:
+        "Le date le gestisce il tuo nutrizionista: se cambiano, le trovi aggiornate qui.",
+      previousTitle: "Percorsi precedenti",
+      previousRange: (range: string, duration: string) =>
+        `${range} · ${duration}`,
+      viewingPrevious: "Percorso concluso, in sola lettura.",
+      backToCurrent: "Torna al percorso attuale",
+      empty: {
+        title: "Nessun percorso impostato",
+        description:
+          "Quando il tuo nutrizionista imposta il percorso, qui trovi le date dei check.",
+      },
+      sessionDone: "Completata",
+      sessionSkipped: "Saltata",
+    },
+    /** Push (C21): mai dati sanitari, solo sessione, data e ora. */
+    push: {
+      dateChangedTitle: "Data del check cambiata",
+      dateChangedOnboardingTitle: "Data dell’onboarding cambiata",
+      dateChanged: (name: string, date: string, time: string | null) =>
+        `${name === "Onboarding" ? "L’onboarding" : `Il ${name}`} si sposta al ${date}${time ? `, alle ${time}` : ""}.`,
+      dayBeforeTitle: (name: string) =>
+        name === "Onboarding"
+          ? "Domani hai l’onboarding"
+          : `Domani hai il ${name}`,
+      /** "con il Dott. …", "con la Dott.ssa …", "con Elena Verdi". */
+      withStaff: (staff: string) =>
+        /^(dott|prof|dr)\.?ssa\b/i.test(staff)
+          ? `con la ${staff}`
+          : /^(dott|prof|dr)\b/i.test(staff)
+            ? `con il ${staff}`
+            : `con ${staff}`,
+      dayBefore: (time: string | null, withStaff: string | null) =>
+        time
+          ? `Alle ${time}${withStaff ? ` ${withStaff}` : ""}.`
+          : withStaff
+            ? `${withStaff.charAt(0).toUpperCase()}${withStaff.slice(1)}.`
+            : "Lo trovi nella pagina del percorso.",
+      sameDayTitle: (name: string) =>
+        name === "Onboarding" ? "Oggi hai l’onboarding" : `Oggi hai il ${name}`,
+      sameDay: (time: string | null) =>
+        `${time ? `Alle ${time}. ` : ""}Puoi aggiungerlo al calendario dalla pagina del percorso.`,
+    },
+    ics: {
+      title: (name: string, studio: string) => `${name} – ${studio}`,
+      description:
+        "Sessione del tuo percorso. La data la gestisce il tuo nutrizionista.",
+      fileName: (name: string) =>
+        `${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.ics`,
+    },
+  },
 } as const;

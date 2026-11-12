@@ -1,0 +1,302 @@
+import "server-only";
+
+import { after } from "next/server";
+
+import {
+  DAILY_REMINDER_CONCURRENCY,
+  JOURNEY_CLIENT_PATH,
+  NOTIFICATION_ICON_URL,
+  PUSH_TTL_JOURNEY_SECONDS,
+  type JourneySessionType,
+} from "@/lib/constants/domain";
+import { copy } from "@/lib/copy/it";
+import {
+  reminderSlot,
+  isReminderDue,
+  type ReminderKind,
+} from "@/lib/domain/journeys/reminders";
+import { sessionNames, type SessionName } from "@/lib/domain/journeys/sessions";
+import { todayInRome } from "@/lib/domain/tracking/dates";
+import { formatLongDate } from "@/lib/format";
+import type { NotificationPayload } from "@/lib/notifications/catalog";
+import { isValidTimeZone, localDateTime } from "@/lib/notifications/schedule";
+import * as journeysRepository from "@/server/repositories/journeys.repository";
+import * as notificationsRepository from "@/server/repositories/notifications.repository";
+import * as pushService from "@/server/services/push.service";
+
+/*
+ * Push del percorso (C21): cambio di data o ora subito, promemoria la sera
+ * prima e la mattina stessa. Solo Web Push (N-08). Ogni notifica passa da
+ * journey_notifications con un vincolo unico (sessione, tipo, data, ora):
+ * la riga si crea prima dell'invio e chi non la crea non invia, quindi due
+ * esecuzioni del cron o due salvataggi uguali non mandano due push.
+ * Senza account o dispositivi l'esito è "not_delivered" e non si fallisce.
+ * Testi senza dati sanitari: solo nome della sessione, data e ora (N-05).
+ */
+
+const t = copy.journeys;
+
+function sessionLabel(name: SessionName): string {
+  if (name.kind === "onboarding") return t.sessionName.onboarding;
+  if (name.kind === "gift") return t.sessionName.gift;
+  return t.sessionName.check(name.number);
+}
+
+function shortTime(time: string | null): string | null {
+  return time ? time.slice(0, 5) : null;
+}
+
+/**
+ * Il service worker usa `type` solo per il badge di Android: quello del
+ * check-in (ClipboardCheck) va bene anche per i check del percorso, senza
+ * toccare il catalogo delle notifiche.
+ */
+function payload(
+  sessionId: string,
+  title: string,
+  body: string,
+): NotificationPayload {
+  return {
+    type: "daily_checkin",
+    title,
+    body,
+    icon: NOTIFICATION_ICON_URL,
+    url: JOURNEY_CLIENT_PATH,
+    tag: `journey-${sessionId}`,
+  };
+}
+
+type Job = {
+  logId: string;
+  userId: string | null;
+  payload: NotificationPayload;
+};
+
+async function deliver(job: Job): Promise<void> {
+  try {
+    if (!job.userId) {
+      await journeysRepository.completeNotification(job.logId, "not_delivered");
+      return;
+    }
+    const outcome = await pushService.sendToUser(
+      job.userId,
+      job.payload,
+      PUSH_TTL_JOURNEY_SECONDS,
+    );
+    if (outcome.status === "skipped") {
+      await journeysRepository.completeNotification(
+        job.logId,
+        outcome.reason === "no_devices" ? "not_delivered" : "failed",
+        outcome.reason,
+      );
+      return;
+    }
+    await journeysRepository.completeNotification(
+      job.logId,
+      outcome.status,
+      outcome.status === "failed" ? `devices:${outcome.failed}` : null,
+    );
+  } catch (error) {
+    console.error("[percorso] invio non riuscito", {
+      logId: job.logId,
+      error: error instanceof Error ? error.name : "unknown",
+    });
+  }
+}
+
+async function deliverAll(jobs: Job[]): Promise<void> {
+  let next = 0;
+  const worker = async () => {
+    while (next < jobs.length) {
+      const job = jobs[next]!;
+      next += 1;
+      await deliver(job);
+    }
+  };
+  await Promise.all(
+    Array.from(
+      { length: Math.min(DAILY_REMINDER_CONCURRENCY, jobs.length) },
+      worker,
+    ),
+  );
+}
+
+// ---------------------------------------------------------------------
+// Cambio di data o ora
+// ---------------------------------------------------------------------
+
+/** Dopo la risposta (`after`): il salvataggio non aspetta il servizio push. */
+export function notifySessionsChanged(sessionIds: readonly string[]) {
+  if (sessionIds.length === 0) return;
+  const ids = [...sessionIds];
+  after(() => deliverDateChanges(ids));
+}
+
+/** Avvisi di cambio data; non lancia mai. */
+export async function deliverDateChanges(
+  sessionIds: readonly string[],
+): Promise<void> {
+  const today = todayInRome();
+  const jobs: Job[] = [];
+  for (const sessionId of sessionIds) {
+    try {
+      const target =
+        await journeysRepository.getSessionNotificationTarget(sessionId);
+      if (!target || target.client_journeys.status !== "active") continue;
+      if (target.status !== "todo") continue;
+      const date = target.custom_date ?? target.calculated_date;
+      if (date < today) continue;
+      const time = shortTime(target.session_time);
+      const names = sessionNames(
+        target.client_journeys.journey_sessions.map((session) => ({
+          id: session.id,
+          position: session.position,
+          type: session.type as JourneySessionType,
+        })),
+        "client",
+      );
+      const name = sessionLabel(names.get(sessionId)!);
+      const [entry] = await journeysRepository.insertNotifications([
+        {
+          sessionId,
+          studioId: target.studio_id,
+          clientId: target.client_id,
+          kind: "date_changed",
+          referenceDate: date,
+          referenceTime: time,
+        },
+      ]);
+      if (!entry) continue;
+      const active = target.clients.account_status === "active";
+      jobs.push({
+        logId: entry.id,
+        userId: active ? target.clients.user_id : null,
+        payload: payload(
+          sessionId,
+          name === t.sessionName.onboarding
+            ? t.push.dateChangedOnboardingTitle
+            : t.push.dateChangedTitle,
+          t.push.dateChanged(name, formatLongDate(date), time),
+        ),
+      });
+    } catch (error) {
+      console.error("[percorso] avviso del cambio di data non riuscito", {
+        sessionId,
+        error: error instanceof Error ? error.name : "unknown",
+      });
+    }
+  }
+  await deliverAll(jobs);
+}
+
+// ---------------------------------------------------------------------
+// Promemoria (cron orario)
+// ---------------------------------------------------------------------
+
+export type JourneyReminderReport = {
+  studios: number;
+  queued: number;
+  duplicates: number;
+};
+
+function reminderPayload(
+  sessionId: string,
+  kind: ReminderKind,
+  name: string,
+  time: string | null,
+  staff: string | null,
+): NotificationPayload {
+  return kind === "reminder_day_before"
+    ? payload(
+        sessionId,
+        t.push.dayBeforeTitle(name),
+        t.push.dayBefore(time, staff ? t.push.withStaff(staff) : null),
+      )
+    : payload(sessionId, t.push.sameDayTitle(name), t.push.sameDay(time));
+}
+
+/**
+ * Prima parte, veloce: studi all'ora di un promemoria nel proprio fuso,
+ * sessioni da fare del giorno giusto, righe del registro. Restituisce solo
+ * gli invii con una riga nuova.
+ */
+export async function prepareJourneyReminders(
+  now: Date,
+): Promise<{ report: JourneyReminderReport; jobs: Job[] }> {
+  const report: JourneyReminderReport = {
+    studios: 0,
+    queued: 0,
+    duplicates: 0,
+  };
+  const jobs: Job[] = [];
+  const studios = await notificationsRepository.listStudios();
+  for (const studio of studios) {
+    if (!isValidTimeZone(studio.timezone)) continue;
+    const slot = reminderSlot(localDateTime(now, studio.timezone));
+    if (!slot) continue;
+    report.studios += 1;
+
+    const candidates = (
+      await journeysRepository.listReminderCandidates(
+        studio.id,
+        slot.sessionDay,
+      )
+    ).filter((candidate) =>
+      isReminderDue(
+        {
+          date: candidate.session_date,
+          time: shortTime(candidate.session_time),
+        },
+        slot,
+      ),
+    );
+    const inserted = new Map(
+      (
+        await journeysRepository.insertNotifications(
+          candidates.map((candidate) => ({
+            sessionId: candidate.session_id,
+            studioId: studio.id,
+            clientId: candidate.client_id,
+            kind: slot.kind,
+            referenceDate: candidate.session_date,
+            referenceTime: shortTime(candidate.session_time),
+          })),
+        )
+      ).map((row) => [row.sessionId, row.id]),
+    );
+    for (const candidate of candidates) {
+      const logId = inserted.get(candidate.session_id);
+      if (!logId) {
+        report.duplicates += 1;
+        continue;
+      }
+      report.queued += 1;
+      const name =
+        candidate.type === "onboarding"
+          ? t.sessionName.onboarding
+          : t.sessionName.check(candidate.check_number ?? 1);
+      jobs.push({
+        logId,
+        userId: candidate.user_id,
+        payload: reminderPayload(
+          candidate.session_id,
+          slot.kind,
+          name,
+          shortTime(candidate.session_time),
+          candidate.staff_name,
+        ),
+      });
+    }
+  }
+  return { report, jobs };
+}
+
+/** Promemoria (cron): conteggi subito, invii dopo la risposta. */
+export async function sendJourneyReminders(
+  now: Date = new Date(),
+): Promise<JourneyReminderReport> {
+  const { report, jobs } = await prepareJourneyReminders(now);
+  if (jobs.length > 0) after(() => deliverAll(jobs));
+  console.info("[promemoria-percorso]", report);
+  return report;
+}
