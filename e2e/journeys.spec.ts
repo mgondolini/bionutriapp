@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { createClient } from "@supabase/supabase-js";
 
 import { journeyEndDate } from "../src/lib/domain/journeys/dates";
 import { todayInRome } from "../src/lib/domain/tracking/dates";
@@ -18,10 +19,16 @@ import {
  * registrata, estensione con omaggio da un percorso concluso con ritorno
  * automatico In percorso, area cliente (home, pagina, .ics) e isolamento:
  * il cliente non vede l'omaggio né le sessioni di un altro cliente.
+ * Link Google Meet: del cliente (cliccabile e copiabile), solo per un check,
+ * visibile al cliente solo sul prossimo check e mai quello di un altro.
  */
 
 const STUDIO_ID = "aaaaaaaa-1111-4000-8000-000000000000";
 const PASSWORD = "Percorso-2026!";
+const CLIENT_MEET = "https://meet.google.com/kqz-mdvr-hdp";
+const SESSION_MEET = "https://meet.google.com/abc-defg-hij";
+const OTHER_MEET = "https://meet.google.com/xyz-abcd-efg";
+const OTHER_SESSION_MEET = "https://meet.google.com/ooo-oooo-ooo";
 const phones: string[] = [];
 let client: { clientId: string; email: string };
 let other: { clientId: string };
@@ -221,7 +228,7 @@ test("dal percorso concluso si estende con l'omaggio e il cliente torna In perco
   ]);
 });
 
-test("il cliente vede la riga in home sopra la dieta, la pagina e scarica l'.ics", async ({
+test("senza link il cliente vede solo Aggiungi al calendario, nella riga in home e nella pagina", async ({
   browser,
 }) => {
   const device = await newDevice(browser);
@@ -239,17 +246,176 @@ test("il cliente vede la riga in home sopra la dieta, la pagina e scarica l'.ics
 
   await row.click();
   await expect(page).toHaveURL(/\/app\/percorso$/);
+  await page.waitForLoadState("networkidle");
   await expect(page.getByText(/Percorso 2 · Mese 1 di 6/)).toBeVisible();
   // l'omaggio compare come un normale check
   await expect(page.getByText("Check 1", { exact: true })).toBeVisible();
   await expect(page.getByText(/omaggio/i)).toHaveCount(0);
   await expect(page.getByText("Percorsi precedenti")).toBeVisible();
 
+  await expect(
+    page.getByRole("link", { name: "Partecipa su Google Meet" }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "Aggiungi al calendario" }).click();
+  const sheet = page.getByRole("dialog", { name: "Aggiungi al calendario" });
+  await expect(
+    sheet.getByText(
+      "Se hai già ricevuto l’invito da Google Calendar, non serve aggiungerlo.",
+    ),
+  ).toBeVisible();
+  // fuori da iPhone la prima voce è Google Calendar
+  const options = sheet.getByRole("listitem");
+  await expect(options.first()).toContainText("Google Calendar");
+  const google = sheet.getByRole("link", { name: /^Google Calendar/ });
+  await expect(google).toHaveAttribute("target", "_blank");
+  expect(
+    new URL((await google.getAttribute("href"))!).searchParams.has("location"),
+  ).toBe(false);
+
   const [download] = await Promise.all([
     page.waitForEvent("download"),
-    page.getByRole("link", { name: "Aggiungi al calendario" }).click(),
+    sheet.getByRole("link", { name: /^Apple Calendar/ }).click(),
   ]);
   expect(download.suggestedFilename()).toBe("check-1.ics");
+  const { readFile } = await import("node:fs/promises");
+  const ics = await readFile((await download.path())!, "utf8");
+  expect(ics).not.toContain("meet.google.com");
+  await device.context.close();
+});
+
+test("lo staff salva il link del cliente e lo vede cliccabile e copiabile nella sessione", async ({
+  page,
+}) => {
+  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  await login(page, OWNER.email, OWNER.password);
+  await expect(page).toHaveURL(/\/admin/);
+  await openJourneyTab(page, client.clientId);
+
+  // la sessione mostrata è il prossimo check (l'omaggio)
+  await expect(
+    page.getByText("Nessun link Meet per questa sessione."),
+  ).toBeVisible();
+  await expect(
+    page.getByText(
+      "Aggiungi il link Meet di Sara per inserirlo negli eventi del calendario.",
+    ),
+  ).toBeVisible();
+
+  const field = page.getByLabel("Link Google Meet di Sara");
+  await field.fill(`${CLIENT_MEET}?authuser=1`);
+  await page.getByRole("button", { name: "Salva link" }).click();
+  await expect(
+    page.getByText(
+      "Inserisci un link Google Meet come https://meet.google.com/abc-defg-hij, senza altro dopo.",
+    ),
+  ).toBeVisible();
+
+  await field.fill(CLIENT_MEET);
+  await page.getByRole("button", { name: "Salva link" }).click();
+  await expect(page.getByText("Link salvato")).toBeVisible();
+
+  const link = page.getByRole("link", { name: "meet.google.com/kqz-mdvr-hdp" });
+  await expect(link).toHaveAttribute("href", CLIENT_MEET);
+  await expect(link).toHaveAttribute("target", "_blank");
+  await expect(link).toHaveAttribute("rel", "noopener noreferrer");
+  await expect(
+    page.getByText(/Riusare lo stesso link per più check è meno sicuro/),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Copia link" }).click();
+  await expect(page.getByText("Link copiato")).toBeVisible();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
+    CLIENT_MEET,
+  );
+
+  // l'evento dello staff ha il link e invita la cliente
+  await page.getByRole("button", { name: "Aggiungi al calendario" }).click();
+  const google = page.getByRole("menuitem", { name: /^Google Calendar/ });
+  const href = new URL((await google.getAttribute("href"))!);
+  expect(href.searchParams.get("location")).toBe(CLIENT_MEET);
+  expect(href.searchParams.get("add")).toBe(client.email);
+  expect(href.searchParams.get("text")).toMatch(
+    /^Check omaggio · S\. Percorso/,
+  );
+
+  const { data } = await adminClient()
+    .from("clients")
+    .select("meeting_url")
+    .eq("id", client.clientId)
+    .single();
+  expect(data?.meeting_url).toBe(CLIENT_MEET);
+});
+
+test("con un link solo per il prossimo check il cliente vede quello, e solo su quel check", async ({
+  page,
+  browser,
+}) => {
+  await login(page, OWNER.email, OWNER.password);
+  await expect(page).toHaveURL(/\/admin/);
+  await openJourneyTab(page, client.clientId);
+
+  const field = page.getByLabel("Link Google Meet di Sara");
+  await expect(field).toHaveValue(CLIENT_MEET);
+  await field.fill(SESSION_MEET);
+  await page
+    .getByRole("button", { name: "Usa un link solo per questo check" })
+    .click();
+  await expect(page.getByText("Link salvato per questo check")).toBeVisible();
+  await expect(
+    page.getByText("Link solo per questo check", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "meet.google.com/abc-defg-hij" }),
+  ).toHaveAttribute("href", SESSION_MEET);
+  // il link del cliente resta quello di prima
+  await expect(page.getByLabel("Link Google Meet di Sara")).toHaveValue(
+    CLIENT_MEET,
+  );
+
+  // un altro check usa ancora il link del cliente
+  await square(page, /^Check 1 /).click();
+  await expect(
+    page.getByRole("link", { name: "meet.google.com/kqz-mdvr-hdp" }),
+  ).toBeVisible();
+
+  const device = await newDevice(browser);
+  const clientPage = device.page;
+  await login(clientPage, client.email, PASSWORD);
+  await expect(clientPage).toHaveURL(/\/app$/);
+  await clientPage.goto("/app/percorso");
+  await clientPage.waitForLoadState("networkidle");
+
+  const join = clientPage.getByRole("link", {
+    name: "Partecipa su Google Meet",
+  });
+  await expect(join).toHaveCount(1);
+  await expect(join).toHaveAttribute("href", SESSION_MEET);
+  await expect(join).toHaveAttribute("target", "_blank");
+  await expect(join).toHaveAttribute("rel", "noopener noreferrer");
+  // solo il prossimo check porta il link: nessuna traccia di quello del cliente
+  await expect(clientPage.getByText(/ · Google Meet/)).toHaveCount(1);
+  expect(await clientPage.content()).not.toContain("kqz-mdvr-hdp");
+
+  await clientPage
+    .getByRole("button", { name: "Aggiungi al calendario" })
+    .click();
+  const sheet = clientPage.getByRole("dialog", {
+    name: "Aggiungi al calendario",
+  });
+  await expect(
+    sheet.getByText(/con il link alla videochiamata su Google Meet/),
+  ).toBeVisible();
+  const [download] = await Promise.all([
+    clientPage.waitForEvent("download"),
+    sheet.getByRole("link", { name: /^Altro calendario/ }).click(),
+  ]);
+  const { readFile } = await import("node:fs/promises");
+  const ics = (await readFile((await download.path())!, "utf8")).replace(
+    /\r\n /g,
+    "",
+  );
+  expect(ics).toContain(`URL:${SESSION_MEET}`);
+  expect(ics).not.toContain("ATTENDEE");
   await device.context.close();
 });
 
@@ -275,6 +441,37 @@ test("il cliente non legge le sessioni di altri clienti né la nota e l'omaggio"
     .select("id")
     .eq("client_id", other.clientId);
   expect(otherSessions?.length).toBe(1);
+  await admin
+    .from("clients")
+    .update({ meeting_url: OTHER_MEET })
+    .eq("id", other.clientId);
+  await admin
+    .from("journey_sessions")
+    .update({ meeting_url: OTHER_SESSION_MEET, meeting_source: "manual" })
+    .eq("client_id", other.clientId);
+
+  // con la sessione della cliente: solo i propri link, mai quelli di Luca
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    { auth: { persistSession: false, autoRefreshToken: false } },
+  );
+  const { error: loginError } = await supabase.auth.signInWithPassword({
+    email: client.email,
+    password: PASSWORD,
+  });
+  expect(loginError).toBeNull();
+  const { data: own } = await supabase.rpc("my_journey_sessions");
+  expect(own?.length).toBeGreaterThan(0);
+  const links = JSON.stringify(own);
+  expect(links).not.toContain(OTHER_MEET);
+  expect(links).not.toContain(OTHER_SESSION_MEET);
+  const { data: otherRows } = await supabase
+    .from("clients")
+    .select("meeting_url")
+    .eq("id", other.clientId);
+  expect(otherRows).toEqual([]);
+  await supabase.auth.signOut();
 
   const device = await newDevice(browser);
   const page = device.page;
@@ -293,5 +490,8 @@ test("il cliente non legge le sessioni di altri clienti né la nota e l'omaggio"
   await page.goto("/app/percorso");
   await expect(page.getByText("Nota riservata allo studio")).toHaveCount(0);
   await expect(page.getByText(/omaggio/i)).toHaveCount(0);
+  const html = await page.content();
+  expect(html).not.toContain(OTHER_MEET);
+  expect(html).not.toContain(OTHER_SESSION_MEET);
   await device.context.close();
 });
