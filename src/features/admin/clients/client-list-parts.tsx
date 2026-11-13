@@ -1,5 +1,6 @@
 import { CategoryTag } from "@/components/shared/category-tag";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { PrepChip } from "@/features/admin/onboarding-prep/prep-chip";
 import type { ClientListItem } from "@/lib/clients/list-filters";
 import { copy } from "@/lib/copy/it";
 import { formatShortDate } from "@/lib/format";
@@ -56,6 +57,7 @@ export function StatusAndStage({ item }: { item: ClientListItem }) {
     <div className="flex flex-col items-end gap-1.5">
       <StatusBadge status={item.accountStatus} />
       <StatusBadge status={item.journeyStage} />
+      {item.prep ? <PrepChip status={item.prep} /> : null}
     </div>
   );
 }

@@ -16,6 +16,10 @@ vi.mock("@/server/repositories/photos.repository", () => ({
   listReminderCandidates: vi.fn(async () => []),
 }));
 
+vi.mock("@/server/repositories/onboarding-prep.repository", () => ({
+  listReminderCandidates: vi.fn(async () => []),
+}));
+
 vi.mock("next/server", () => ({
   after: vi.fn((callback: () => Promise<void>) => scheduled.push(callback)),
 }));
@@ -51,6 +55,8 @@ vi.mock("@/server/services/push.service", () => ({
 const scheduled: (() => Promise<void>)[] = [];
 const repo = await import("@/server/repositories/journeys.repository");
 const photosRepo = await import("@/server/repositories/photos.repository");
+const prepRepo =
+  await import("@/server/repositories/onboarding-prep.repository");
 const push = await import("@/server/services/push.service");
 const service = await import("./journey-notifications.service");
 
@@ -72,6 +78,7 @@ const candidate = (over: Partial<Candidate> = {}): Candidate => ({
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(photosRepo.listReminderCandidates).mockResolvedValue([]);
+  vi.mocked(prepRepo.listReminderCandidates).mockResolvedValue([]);
   log.clear();
   outcomes.length = 0;
   scheduled.length = 0;
@@ -224,6 +231,67 @@ describe("promemoria del percorso", () => {
     await service.sendJourneyReminders(EVENING);
     await scheduled[0]!();
     expect(outcomes).toEqual([{ id: "log-1", outcome: "not_delivered" }]);
+  });
+});
+
+describe("preparazione della chiamata (C32)", () => {
+  // 17:00 UTC del 4 novembre = 18:00 a Roma
+  const EVENING = new Date("2026-11-04T17:00:00Z");
+  type Prep = Awaited<
+    ReturnType<typeof prepRepo.listReminderCandidates>
+  >[number];
+  const prep = (over: Partial<Prep> = {}): Prep => ({
+    session_id: "s0",
+    client_id: "c9",
+    user_id: "u9",
+    call_date: "2026-11-05",
+    call_time: "18:00:00",
+    measures_missing: true,
+    photos_missing: true,
+    ...over,
+  });
+
+  it("alle 18 cerca le chiamate fra 1 e 2 giorni", async () => {
+    await service.prepareJourneyReminders(EVENING);
+    expect(prepRepo.listReminderCandidates).toHaveBeenCalledWith(
+      "roma",
+      "2026-11-05",
+      "2026-11-06",
+    );
+  });
+
+  it("il giorno prima: ultimo promemoria con cosa manca, al posto di quello serale", async () => {
+    vi.mocked(prepRepo.listReminderCandidates).mockResolvedValue([prep()]);
+    vi.mocked(repo.listReminderCandidates).mockResolvedValue([
+      candidate({ session_id: "s0", type: "onboarding", check_number: 0 }),
+    ]);
+    const { jobs } = await service.prepareJourneyReminders(EVENING);
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0]!.payload).toMatchObject({
+      title: "Ultimo promemoria",
+      body: "Domani la chiamata: mancano misure e foto.",
+      url: "/app/prepara",
+    });
+    expect([...log.values()][0]).toMatchObject({
+      kind: "prep_1d",
+      referenceDate: "2026-11-05",
+    });
+  });
+
+  it("2 giorni prima: dice cosa manca e la scadenza", async () => {
+    vi.mocked(prepRepo.listReminderCandidates).mockResolvedValue([
+      prep({ call_date: "2026-11-06", measures_missing: false }),
+    ]);
+    const { jobs } = await service.prepareJourneyReminders(EVENING);
+    expect(jobs[0]!.payload).toMatchObject({
+      title: "Mancano ancora le tue foto",
+      body: "Il dottore ti chiama venerdì: mandale entro giovedì sera.",
+    });
+  });
+
+  it("alle 8 nessun promemoria della preparazione", async () => {
+    await service.prepareJourneyReminders(new Date("2026-11-05T07:00:00Z"));
+    expect(prepRepo.listReminderCandidates).not.toHaveBeenCalled();
   });
 });
 

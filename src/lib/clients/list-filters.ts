@@ -8,6 +8,7 @@ import {
   type FileCategory,
   type JourneyStage,
 } from "@/lib/constants/domain";
+import type { PrepStatus } from "@/lib/onboarding-prep/status";
 import { phoneMatchesQuery } from "@/lib/phone";
 
 export type ClientListItem = {
@@ -24,6 +25,8 @@ export type ClientListItem = {
     uploadedAt: string;
   } | null;
   lastEntryOn: string | null;
+  /** Preparazione della chiamata (v1.0.11): solo in Onboarding con l'account attivo. */
+  prep?: PrepStatus | null;
 };
 
 export type ClientListFilters = {

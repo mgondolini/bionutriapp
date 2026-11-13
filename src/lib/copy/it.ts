@@ -1151,6 +1151,8 @@ export const copy = {
           `Il tuo percorso con ${studioName} inizia con una chiamata`,
         description: (studioName: string) =>
           `${studioName} ti chiamerà per conoscerti e preparare il tuo piano. Prima della chiamata non serve fare nulla.`,
+        descriptionPrep: (studioName: string) =>
+          `${studioName} ti chiama per conoscerti e preparare il tuo piano. Prima della chiamata mandagli le tue misure e le tue foto: così ha già un quadro di te.`,
         stepsTitle: "I prossimi passi",
         steps: [
           {
@@ -2197,6 +2199,171 @@ export const copy = {
       anamnesis: "L'anamnesi non si può eliminare.",
     },
   },
+  /** Preparazione della chiamata di onboarding (mockup v1.0.11: C28–C32, A1, A5, A27). */
+  onboardingPrep: {
+    title: "Prepara la chiamata",
+    privacy: "Misure e foto le vede solo il tuo nutrizionista.",
+    tasksDone: (done: number, total: number) => `${done} di ${total}`,
+    tasksSent: (done: number, total: number) => `${done} di ${total} inviate`,
+    deadline: (day: string) => `Mandale entro ${day}`,
+    deadlineSentence: (day: string) => `Mandale entro ${day} sera.`,
+    noCallDate: "Il dottore ti dirà quando ti chiama.",
+    callLabel: "Chiamata",
+    callWhen: (date: string, time: string | null) =>
+      time ? `${date}, ore ${time}` : date,
+    callIntro: (staff: string) =>
+      `${staff} guarda le tue misure e le tue foto prima di chiamarti.`,
+    state: {
+      todo: "Da fare",
+      done: "Fatto",
+      draft: "Bozza",
+      saved: "Salvate",
+    },
+    measures: {
+      title: "Le tue misure",
+      summaryTodo: (count: number) =>
+        count === 1 ? "1 misura" : `${count} misure`,
+      summarySent: (count: number, date: string) =>
+        `${count === 1 ? "1 misura" : `${count} misure`} · inviate il ${date}`,
+      sentOn: (date: string, time: string) => `Inviate il ${date}, ${time}`,
+      start: "Manda le misure",
+      review: "Rivedi o correggi",
+      correct: "Correggi le misure",
+    },
+    photos: {
+      title: "Le tue foto",
+      summary: "Fronte, lato e dietro · 2 minuti",
+      draft: (count: number) => `Bozza · ${count} di 3`,
+      savedOn: (date: string, time: string) => `Salvate il ${date}, ${time}`,
+      why: "Servono come punto di partenza per vedere i tuoi progressi. Le vede solo il dottore.",
+      start: "Carica le foto",
+      continue: "Continua a caricare",
+      locked: "Salvate e bloccate: non si possono più modificare.",
+    },
+    home: {
+      continue: "Continua a prepararti",
+      review: "Rivedi cosa hai mandato",
+    },
+    ready: {
+      tag: "Tutto pronto",
+      title: "Il dottore ha le tue misure e le tue foto",
+      description: "Le guarda prima della chiamata. Non devi fare altro.",
+      nextTitle: "Cosa succede ora",
+      nextReview: "Il dottore guarda tutto",
+      nextReviewWhen: "Prima della chiamata",
+      nextCall: "Chiamata di onboarding",
+    },
+    measuresPage: {
+      title: "Le tue misure",
+      heading: "Misure di partenza",
+      intro:
+        "Misurati al mattino, meglio a digiuno, con un metro da sarta. Non stringere il metro.",
+      group: (count: number) =>
+        count === 1 ? "Una misura" : `${count} misure`,
+      dateLabel: "Data della misura",
+      dateHint: "La data non può essere futura.",
+      submit: "Invia le misure",
+      submitAgain: "Salva le correzioni",
+      footer:
+        "Puoi correggerle finché sei in onboarding. Le ritroverai nel Tracking, come prima rilevazione, quando il dottore ti avrà dato accesso.",
+      saved: "Misure inviate.",
+      failed: "Non è stato possibile inviare le misure. Riprova.",
+      notAllowed: "Le misure di partenza si mandano solo durante l'onboarding.",
+      /** Dove misurare; le misure senza suggerimento mostrano i valori ammessi. */
+      hints: {
+        weight: "Al mattino, dopo il bagno e prima di colazione.",
+        circ_shoulders:
+          "Nel punto più largo delle spalle, braccia lungo i fianchi.",
+        circ_waist: "Nel punto più stretto del busto, a fine espirazione.",
+        circ_navel: "All'altezza dell'ombelico.",
+        circ_glutes: "Nel punto più largo dei glutei.",
+        circ_right_leg: "A metà coscia, gamba destra rilassata.",
+        circ_right_arm: "A metà del braccio destro, rilassato.",
+      } as Record<string, string>,
+      range: (min: string, max: string, unit: string) =>
+        `Valori ammessi da ${min} a ${max} ${unit}`.trim(),
+    },
+    photosPage: {
+      title: "Foto di partenza",
+      subtitle: (date: string) => `Prima della chiamata del ${date}`,
+      introTitle: "Foto di partenza.",
+      intro:
+        "Servono per vedere i tuoi progressi nei prossimi mesi. Le vede solo il dottore, e dopo il salvataggio non si cambiano.",
+      noSession:
+        "Le foto si caricano quando il dottore ha fissato la chiamata. Torna qui più tardi.",
+    },
+    push: {
+      introTitle: "Prepara la chiamata con il dottore",
+      intro: (date: string) =>
+        `Manda le tue misure e le tue foto prima della chiamata di ${date}.`,
+      twoDaysTitle: (missing: string) => `Mancano ancora ${missing}`,
+      twoDays: (weekday: string, deadline: string) =>
+        `Il dottore ti chiama ${weekday}: mandale entro ${deadline} sera.`,
+      lastTitle: "Ultimo promemoria",
+      last: (missing: string) => `Domani la chiamata: mancano ${missing}.`,
+      missing: {
+        measures: "le tue misure",
+        photos: "le tue foto",
+        both: "le tue misure e le tue foto",
+      },
+      missingShort: {
+        measures: "misure",
+        photos: "foto",
+        both: "misure e foto",
+      },
+    },
+    admin: {
+      title: "Preparazione della chiamata",
+      ready: "Pronta",
+      callLabel: "Chiamata",
+      noCall: "Nessuna data",
+      noJourney:
+        "Crea il percorso per fissare la data della chiamata di onboarding.",
+      goToJourney: "Vai al percorso",
+      edit: "Modifica",
+      editTitle: "Data della chiamata",
+      editDescription:
+        "Il cliente riceve una notifica con la nuova data e i promemoria partono da qui.",
+      dateLabel: "Data",
+      timeLabel: "Ora",
+      timeOptional: "(facoltativa)",
+      save: "Salva",
+      cancel: "Annulla",
+      saved: "Data della chiamata salvata",
+      measuresLabel: "Misure",
+      measuresValue: (done: number, total: number, date: string | null) =>
+        date
+          ? `${done} di ${total} · ricevute il ${date}`
+          : `${done} di ${total}`,
+      photosLabel: "Foto",
+      photosValue: (count: number, date: string | null) =>
+        date ? `${count} di 3 · salvate il ${date}` : `${count} di 3`,
+      missing: (what: string) => `Manca: ${what}`,
+      missingWhat: { measures: "misure", photos: "foto" },
+      noValue: "—",
+      openPhotos: "Apri le foto",
+      openTracking: "Apri il tracking",
+      pushOff:
+        "Il cliente non ha attivato le notifiche: non riceve i promemoria. Ricordaglielo tu.",
+      chip: {
+        ready: "Pronti",
+        measures: "Mancano le misure",
+        photos: "Mancano le foto",
+        both: "Mancano misure e foto",
+      },
+      photosBannerTitle: "Foto di partenza ricevute.",
+      photosBanner: (name: string, date: string, time: string) =>
+        `${name} le ha salvate il ${date} alle ${time}.`,
+      photosBannerStudio: (date: string, time: string) =>
+        `Salvate dallo studio il ${date} alle ${time}.`,
+    },
+    errors: {
+      notFound: "Cliente non trovato.",
+      noCall: "Crea prima il percorso con la chiamata di onboarding.",
+      notOnboarding: "Il cliente non è più in onboarding.",
+    },
+  },
+
   photos: {
     views: {
       front: "Fronte",

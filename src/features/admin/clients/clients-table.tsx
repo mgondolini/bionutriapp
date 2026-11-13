@@ -12,6 +12,7 @@ import { copy } from "@/lib/copy/it";
 import { cn } from "@/lib/utils";
 
 import { StatusBadge } from "@/components/shared/status-badge";
+import { PrepChip } from "@/features/admin/onboarding-prep/prep-chip";
 
 import { ClientRowActions } from "./client-row-actions";
 import {
@@ -59,8 +60,11 @@ export function ClientsTable({ items }: { items: ClientListItem[] }) {
               <TableCell className={CELL}>
                 <StatusBadge status={item.accountStatus} />
               </TableCell>
-              <TableCell className={CELL}>
-                <StatusBadge status={item.journeyStage} />
+              <TableCell className={cn(CELL, "whitespace-normal")}>
+                <div className="flex flex-col items-start gap-1">
+                  <StatusBadge status={item.journeyStage} />
+                  {item.prep ? <PrepChip status={item.prep} /> : null}
+                </div>
               </TableCell>
               <TableCell className={cn(CELL, "whitespace-normal")}>
                 <LastFile item={item} />

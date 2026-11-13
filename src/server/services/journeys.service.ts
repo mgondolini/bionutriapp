@@ -448,6 +448,23 @@ export async function updateSession(
   return { ok: true, data: { clientId: session.client_id } };
 }
 
+/**
+ * Solo data e ora di una sessione, con stato e nota invariati: la chiamata
+ * di onboarding fissata dalla scheda Profilo (preparazione della chiamata).
+ */
+export async function rescheduleSession(
+  studioId: string,
+  input: { sessionId: string; date: string; time: string | null },
+): Promise<Result<{ clientId: string }>> {
+  const loaded = await loadOwnedSession(studioId, input.sessionId);
+  if (!loaded.ok) return loaded;
+  return updateSession(studioId, {
+    ...input,
+    status: loaded.session.status as JourneySessionStatus,
+    note: loaded.session.note,
+  });
+}
+
 /** "Ripristina la data calcolata": toglie la data modificata a mano. */
 export async function restoreSessionDate(
   studioId: string,

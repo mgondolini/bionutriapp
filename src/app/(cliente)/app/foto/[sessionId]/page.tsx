@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { ClientPageHeader } from "@/features/cliente/client-header";
 import { PhotoSetPage } from "@/features/cliente/photos/photo-set-page";
@@ -15,6 +15,8 @@ export default async function ClientPhotoSetPage({
   params,
 }: PageProps<"/app/foto/[sessionId]">) {
   const { client } = await requireClient();
+  // in Onboarding le foto di partenza stanno in "Prepara la chiamata" (C30)
+  if (client.journeyStage === "onboarding") redirect(ROUTES.client.prep);
   const parsed = photoSessionSchema.safeParse({
     sessionId: (await params).sessionId,
   });

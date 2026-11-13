@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { authFailure } from "@/server/actions/session-guard";
+import { introduceOwnPrep } from "@/server/services/onboarding-prep.service";
 import * as pushService from "@/server/services/push.service";
 import { getSession } from "@/server/services/session.service";
 import {
@@ -37,6 +38,21 @@ export async function savePushSubscriptionAction(
   if (!parsed.success) return fail(copy.push.errors.invalidSubscription);
 
   if (!(await pushService.subscribe(parsed.data))) return authFailure();
+  // In Onboarding: presentazione della preparazione della chiamata (C32),
+  // una volta per data; non blocca mai il salvataggio
+  if (session.client.journeyStage === "onboarding" && session.studio.id) {
+    try {
+      await introduceOwnPrep({
+        id: session.client.id,
+        studioId: session.studio.id,
+        userId: session.userId,
+      });
+    } catch (error) {
+      console.error("[preparazione] presentazione non programmata", {
+        error: error instanceof Error ? error.name : "unknown",
+      });
+    }
+  }
   revalidateClientPush();
   return ok();
 }

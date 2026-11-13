@@ -3,6 +3,7 @@ import { LatestFile } from "@/features/cliente/files/latest-file";
 import { JourneyHomeRow } from "@/features/cliente/journeys/journey-home-row";
 import { OtherCurrentFiles } from "@/features/cliente/files/other-current-files";
 import { OnboardingHome } from "@/features/cliente/onboarding-home";
+import { PrepHomeCard } from "@/features/cliente/onboarding-prep/prep-home-card";
 import { PhotoHomeCard } from "@/features/cliente/photos/photos-page";
 import { InstallGuideAutoOpen } from "@/features/cliente/pwa/install-guide";
 import { PushBanner } from "@/features/cliente/pwa/push-banner";
@@ -13,6 +14,8 @@ import {
 } from "@/features/cliente/videos/home-videos";
 import { getClientHomeFiles } from "@/server/services/files.service";
 import { getClientJourneyHome } from "@/server/services/journeys.service";
+import { callWhenText } from "@/lib/onboarding-prep/labels";
+import { getOwnPrep } from "@/server/services/onboarding-prep.service";
 import { getClientOpenPhotoSets } from "@/server/services/photos.service";
 import { listOwnEndpoints } from "@/server/services/push.service";
 import { requireClient } from "@/server/services/session.service";
@@ -44,15 +47,22 @@ export default async function ClientHomePage() {
     </>
   );
   if (!client.unlocked) {
-    const [startPhotos] = await getClientOpenPhotoSets(client.id);
+    // Preparazione della chiamata (v1.0.11, C4): card e data della chiamata
+    const [prep, onboardingVideos] = await Promise.all([
+      studio.id ? getOwnPrep(studio.id) : null,
+      getOnboardingVideos(),
+    ]);
     return (
       <div className="flex flex-col gap-4">
         <ClientHomeHeader />
         {pwa}
-        {startPhotos ? <PhotoHomeCard set={startPhotos} /> : null}
         <OnboardingHome
           studioName={studio.name}
-          videos={<OnboardingVideos videos={await getOnboardingVideos()} />}
+          prep={prep ? <PrepHomeCard prep={prep} /> : null}
+          callWhen={
+            prep?.call ? callWhenText(prep.call.date, prep.call.time) : null
+          }
+          videos={<OnboardingVideos videos={onboardingVideos} />}
         />
       </div>
     );

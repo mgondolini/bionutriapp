@@ -261,7 +261,10 @@ export type JourneyNotificationRow = {
     | "date_changed"
     | "reminder_day_before"
     | "reminder_same_day"
-    | PhotoNotificationKind;
+    | PhotoNotificationKind
+    | "prep_intro"
+    | "prep_2d"
+    | "prep_1d";
   referenceDate: string;
   referenceTime: string | null;
 };

@@ -55,6 +55,7 @@ async function photoActor(): Promise<PhotoActor | null> {
       kind: "client",
       clientId: session.client.id,
       canWrite: canClientUploadPhotos(session.client.journeyStage),
+      onboardingOnly: session.client.journeyStage === "onboarding",
     };
   }
   return null;
@@ -65,6 +66,7 @@ function revalidatePhotos(clientId: string) {
   revalidatePath(`${ROUTES.admin.clients}/${clientId}`, "layout");
   revalidatePath(clientDetailPath(clientId, "foto"));
   revalidatePath(ROUTES.client.home, "layout");
+  revalidatePath(ROUTES.admin.clients);
 }
 
 /** Primo passaggio: apre il set se serve e restituisce l'URL di caricamento. */

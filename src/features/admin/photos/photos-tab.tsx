@@ -21,6 +21,8 @@ import type {
   StaffPhotos,
 } from "@/server/services/photos.service";
 
+import { StartPhotosBanner } from "@/features/admin/onboarding-prep/start-photos-banner";
+
 import { altOf, captionOf, whoOf } from "./labels";
 import { UploadPhotosDialog } from "./upload-photos-dialog";
 
@@ -255,8 +257,18 @@ function SavedSet({ set, data }: { set: PhotoSetView; data: StaffPhotos }) {
 }
 
 /** Scheda Foto del cliente (A20): set da completare, salvati, prossimi. */
-export function PhotosTab({ data }: { data: StaffPhotos }) {
+export function PhotosTab({
+  data,
+  onboarding = false,
+}: {
+  data: StaffPhotos;
+  /** Cliente in Onboarding: banner delle foto di partenza ricevute (A27). */
+  onboarding?: boolean;
+}) {
   const total = data.sets.length;
+  const startSet = onboarding
+    ? data.sets.find((set) => set.checkNumber === null)
+    : undefined;
   return (
     <div className="flex flex-col gap-5">
       <section
@@ -278,6 +290,10 @@ export function PhotosTab({ data }: { data: StaffPhotos }) {
           </span>
         ) : null}
       </section>
+
+      {startSet ? (
+        <StartPhotosBanner set={startSet} firstName={data.firstName} />
+      ) : null}
 
       {total === 0 ? (
         <EmptyState

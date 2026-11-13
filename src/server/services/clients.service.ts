@@ -24,6 +24,7 @@ import { paginate, type Page } from "@/lib/pagination";
 import { parseClientsCsv } from "@/lib/csv/parse-clients-csv";
 import * as authAdminRepository from "@/server/repositories/auth-admin.repository";
 import * as clientsRepository from "@/server/repositories/clients.repository";
+import * as prepService from "@/server/services/onboarding-prep.service";
 import type {
   CreateClientInput,
   UpdateClientInput,
@@ -71,7 +72,14 @@ export async function getClientList(
   filters: ClientListFilters,
   page = 1,
 ): Promise<ClientList> {
-  const all = (await clientsRepository.listClients(studioId)).map(toListItem);
+  const [rows, prep] = await Promise.all([
+    clientsRepository.listClients(studioId),
+    prepService.listStudioPrep(studioId),
+  ]);
+  const all = rows.map((row) => ({
+    ...toListItem(row),
+    prep: prep.get(row.id!) ?? null,
+  }));
   const { items, ...pageInfo } = paginate(
     filterClients(all, filters),
     page,

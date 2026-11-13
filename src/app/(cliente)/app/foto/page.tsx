@@ -1,5 +1,8 @@
+import { redirect } from "next/navigation";
+
 import { ClientPageHeader } from "@/features/cliente/client-header";
 import { PhotosPage } from "@/features/cliente/photos/photos-page";
+import { ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { canClientUploadPhotos } from "@/lib/photos/status";
 import { getClientPhotos } from "@/server/services/photos.service";
@@ -12,6 +15,8 @@ import { requireClient } from "@/server/services/session.service";
  */
 export default async function ClientPhotosPage() {
   const { client } = await requireClient();
+  // in Onboarding le foto di partenza stanno in "Prepara la chiamata" (C30)
+  if (client.journeyStage === "onboarding") redirect(ROUTES.client.prep);
   const data = await getClientPhotos(
     client.id,
     canClientUploadPhotos(client.journeyStage),

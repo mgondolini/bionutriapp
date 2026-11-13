@@ -76,6 +76,13 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "client_files_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "onboarding_prep_status";
+            referencedColumns: ["client_id"];
+          },
+          {
             foreignKeyName: "client_files_studio_id_fkey";
             columns: ["studio_id"];
             isOneToOne: false;
@@ -143,6 +150,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "clients_with_status";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_invites_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "onboarding_prep_status";
+            referencedColumns: ["client_id"];
           },
           {
             foreignKeyName: "client_invites_studio_id_fkey";
@@ -229,6 +243,13 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "client_journeys_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "onboarding_prep_status";
+            referencedColumns: ["client_id"];
+          },
+          {
             foreignKeyName: "client_journeys_previous_journey_id_fkey";
             columns: ["previous_journey_id"];
             isOneToOne: false;
@@ -294,6 +315,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "clients_with_status";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_metric_goals_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "onboarding_prep_status";
+            referencedColumns: ["client_id"];
           },
           {
             foreignKeyName: "client_metric_goals_metric_id_fkey";
@@ -378,6 +406,13 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "client_notes_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "onboarding_prep_status";
+            referencedColumns: ["client_id"];
+          },
+          {
             foreignKeyName: "client_notes_studio_id_fkey";
             columns: ["studio_id"];
             isOneToOne: false;
@@ -439,6 +474,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "clients_with_status";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_stage_events_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "onboarding_prep_status";
+            referencedColumns: ["client_id"];
           },
           {
             foreignKeyName: "client_stage_events_studio_id_fkey";
@@ -591,11 +633,25 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "journey_notifications_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "onboarding_prep_status";
+            referencedColumns: ["client_id"];
+          },
+          {
             foreignKeyName: "journey_notifications_session_id_fkey";
             columns: ["session_id"];
             isOneToOne: false;
             referencedRelation: "journey_sessions";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "journey_notifications_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: false;
+            referencedRelation: "onboarding_prep_status";
+            referencedColumns: ["call_session_id"];
           },
           {
             foreignKeyName: "journey_notifications_studio_id_fkey";
@@ -686,6 +742,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "clients_with_status";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "journey_sessions_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "onboarding_prep_status";
+            referencedColumns: ["client_id"];
           },
           {
             foreignKeyName: "journey_sessions_journey_id_fkey";
@@ -839,6 +902,13 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "notification_log_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "onboarding_prep_status";
+            referencedColumns: ["client_id"];
+          },
+          {
             foreignKeyName: "notification_log_studio_id_fkey";
             columns: ["studio_id"];
             isOneToOne: false;
@@ -933,11 +1003,25 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "photo_sets_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "onboarding_prep_status";
+            referencedColumns: ["client_id"];
+          },
+          {
             foreignKeyName: "photo_sets_session_id_fkey";
             columns: ["session_id"];
             isOneToOne: true;
             referencedRelation: "journey_sessions";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "photo_sets_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: true;
+            referencedRelation: "onboarding_prep_status";
+            referencedColumns: ["call_session_id"];
           },
           {
             foreignKeyName: "photo_sets_studio_id_fkey";
@@ -1009,6 +1093,13 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "photos_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "onboarding_prep_status";
+            referencedColumns: ["client_id"];
+          },
+          {
             foreignKeyName: "photos_set_id_fkey";
             columns: ["set_id"];
             isOneToOne: false;
@@ -1071,6 +1162,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "clients_with_status";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "privacy_consents_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "onboarding_prep_status";
+            referencedColumns: ["client_id"];
           },
           {
             foreignKeyName: "privacy_consents_studio_id_fkey";
@@ -1273,6 +1371,13 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "tracking_entries_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "onboarding_prep_status";
+            referencedColumns: ["client_id"];
+          },
+          {
             foreignKeyName: "tracking_entries_metric_id_fkey";
             columns: ["metric_id"];
             isOneToOne: false;
@@ -1381,6 +1486,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "clients_with_status";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "video_views_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "onboarding_prep_status";
+            referencedColumns: ["client_id"];
           },
           {
             foreignKeyName: "video_views_studio_id_fkey";
@@ -1525,6 +1637,13 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "client_stage_events_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "onboarding_prep_status";
+            referencedColumns: ["client_id"];
+          },
+          {
             foreignKeyName: "client_stage_events_studio_id_fkey";
             columns: ["studio_id"];
             isOneToOne: false;
@@ -1557,6 +1676,36 @@ export type Database = {
           studio_id: string | null;
           updated_at: string | null;
           user_id: string | null;
+        };
+        ComputedFields: never;
+        Relationships: [
+          {
+            foreignKeyName: "clients_studio_id_fkey";
+            columns: ["studio_id"];
+            isOneToOne: false;
+            referencedRelation: "studios";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      onboarding_prep_status: {
+        Row: {
+          account_status: string | null;
+          call_date: string | null;
+          call_session_id: string | null;
+          call_time: string | null;
+          client_id: string | null;
+          journey_stage: string | null;
+          measures_done: number | null;
+          measures_recorded_on: string | null;
+          measures_sent_at: string | null;
+          measures_total: number | null;
+          photos_count: number | null;
+          photos_saved_at: string | null;
+          photos_saved_by_role: string | null;
+          photos_status: string | null;
+          push_enabled: boolean | null;
+          studio_id: string | null;
         };
         ComputedFields: never;
         Relationships: [
@@ -1679,6 +1828,45 @@ export type Database = {
           status: string;
         }[];
       };
+      my_onboarding_prep: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          account_status: string | null;
+          call_date: string | null;
+          call_session_id: string | null;
+          call_time: string | null;
+          client_id: string | null;
+          journey_stage: string | null;
+          measures_done: number | null;
+          measures_recorded_on: string | null;
+          measures_sent_at: string | null;
+          measures_total: number | null;
+          photos_count: number | null;
+          photos_saved_at: string | null;
+          photos_saved_by_role: string | null;
+          photos_status: string | null;
+          push_enabled: boolean | null;
+          studio_id: string | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "onboarding_prep_status";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      onboarding_prep_candidates: {
+        Args: { p_from: string; p_studio: string; p_to: string };
+        Returns: {
+          call_date: string;
+          call_time: string;
+          client_id: string;
+          measures_missing: boolean;
+          photos_missing: boolean;
+          session_id: string;
+          user_id: string;
+        }[];
+      };
       photo_reminder_candidates: {
         Args: { p_day: string; p_studio: string };
         Returns: {
@@ -1728,6 +1916,10 @@ export type Database = {
       };
       save_daily_checkin: {
         Args: { p_client_id: string; p_recorded_on: string; p_values: Json };
+        Returns: undefined;
+      };
+      save_onboarding_measures: {
+        Args: { p_recorded_on: string; p_values: Json };
         Returns: undefined;
       };
       set_journey_stage: {

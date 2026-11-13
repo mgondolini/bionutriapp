@@ -21,13 +21,16 @@ select results_eq($$ select id from public.studios $$, $$ values (tests.id('stud
 select is_empty($$ select 1 from public.client_files $$, 'in Onboarding il cliente non legge i propri file');
 select is_empty($$ select 1 from storage.objects where bucket_id = 'client-files' $$,
   'in Onboarding il cliente non legge i PDF nello Storage');
-select is_empty($$ select 1 from public.tracking_entries $$, 'in Onboarding il cliente non legge le proprie registrazioni');
+select is_empty(
+  $$ select 1 from public.tracking_entries t join public.metrics m on m.id = t.metric_id
+      where m.frequency <> 'monthly_30d' $$,
+  'in Onboarding il cliente legge solo le misure di partenza, non le altre registrazioni');
 select is_empty($$ select 1 from public.client_metric_goals $$, 'in Onboarding il cliente non legge i propri obiettivi');
 select is(public.mark_file_read(tests.id('f6')), null, 'in Onboarding mark_file_read non ha effetto');
 select throws_ok(
   $$ insert into public.tracking_entries (client_id, metric_id, value, recorded_on)
-     values (tests.id('c6'), tests.metric_id(tests.id('studio1'), 'circ_waist'), 80, current_date - 2) $$,
-  '42501', null, 'in Onboarding il cliente non registra misure'
+     values (tests.id('c6'), tests.metric_id(tests.id('studio1'), 'water'), 3, current_date - 2) $$,
+  '42501', null, 'in Onboarding il cliente non registra abitudini (solo le misure di partenza)'
 );
 
 -- Completato l'onboarding, file e tracking si sbloccano

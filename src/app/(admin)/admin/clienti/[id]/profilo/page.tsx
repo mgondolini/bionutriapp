@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { PageLoading } from "@/components/shared/page-states";
 import { ClientProfile } from "@/features/admin/clients/profile/client-profile";
 import { getClientProfile } from "@/server/services/clients.service";
+import { getStaffPrep } from "@/server/services/onboarding-prep.service";
 import { requireStaff } from "@/server/services/session.service";
 import { clientIdSchema } from "@/server/validation/clients.schema";
 
@@ -16,7 +17,17 @@ async function ProfileContent({
   if (!parsed.success || !session.studio.id) notFound();
   const client = await getClientProfile(session.studio.id, parsed.data);
   if (!client) notFound();
-  return <ClientProfile client={client} senderName={session.displayName} />;
+  const prep =
+    client.journeyStage === "onboarding" && client.accountStatus === "active"
+      ? await getStaffPrep(session.studio.id, client.id)
+      : null;
+  return (
+    <ClientProfile
+      client={client}
+      senderName={session.displayName}
+      prep={prep}
+    />
+  );
 }
 
 export default function ClientProfiloPage({

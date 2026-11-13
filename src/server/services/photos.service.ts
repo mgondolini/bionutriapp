@@ -41,7 +41,13 @@ import * as photosRepository from "@/server/repositories/photos.repository";
 
 export type PhotoActor =
   | { kind: "staff"; studioId: string }
-  | { kind: "client"; clientId: string; canWrite: boolean };
+  | {
+      kind: "client";
+      clientId: string;
+      canWrite: boolean;
+      /** In Onboarding il cliente scrive solo nel set di partenza. */
+      onboardingOnly: boolean;
+    };
 
 export type PhotoFailure =
   | "not_found"
@@ -192,6 +198,7 @@ function stateOf(check: PhotoCheck, set: SetRow | undefined, today: string) {
   return getPhotoSetStatus({
     sessionDate: check.date,
     today,
+    startSet: check.checkNumber === null,
     sessionStatus: check.sessionStatus,
     setStatus: (set?.status as PhotoSetStatus | undefined) ?? null,
     views: viewsOf(set),
@@ -209,6 +216,7 @@ function buildViews(
   sets: SetRow[],
   urls: Map<string, string>,
   canWrite: boolean,
+  onboardingOnly = false,
 ): PhotoSetView[] {
   const today = todayInRome();
   const setBySession = new Map(sets.map((set) => [set.session_id, set]));
@@ -244,7 +252,10 @@ function buildViews(
       missing: missingViews(photos.map((p) => p.view)),
       savedAt: set?.saved_at ?? null,
       savedByRole: (set?.saved_by_role as PhotoRole | null) ?? null,
-      canEdit: canWrite && isOpenState(state),
+      canEdit:
+        canWrite &&
+        isOpenState(state) &&
+        (!onboardingOnly || check.checkNumber === null),
     });
   }
   const group = (v: PhotoSetView) =>
@@ -352,10 +363,17 @@ export type ClientPhotos = { sets: PhotoSetView[]; canWrite: boolean };
 export async function getClientPhotos(
   clientId: string,
   canWrite: boolean,
+  onboardingOnly = false,
 ): Promise<ClientPhotos> {
   const { checks, sets } = await loadClientOverview(clientId);
   return {
-    sets: buildViews(checks, sets, await signedUrls(sets), canWrite),
+    sets: buildViews(
+      checks,
+      sets,
+      await signedUrls(sets),
+      canWrite,
+      onboardingOnly,
+    ),
     canWrite,
   };
 }
@@ -424,7 +442,14 @@ async function resolveWritable(
   }
   const check = checks.find((c) => c.sessionId === sessionId);
   if (!check) return { ok: false, reason: "not_found" };
-  if (!isPhotoSetOpen(check.date, todayInRome())) {
+  if (
+    actor.kind === "client" &&
+    actor.onboardingOnly &&
+    check.checkNumber !== null
+  ) {
+    return { ok: false, reason: "read_only" };
+  }
+  if (!isPhotoSetOpen(check.date, todayInRome(), check.checkNumber === null)) {
     return { ok: false, reason: "not_open" };
   }
   return { ok: true, clientId, check };

@@ -266,7 +266,7 @@ select tests.clear_authentication();
 select is(
   (select count(*)::int from public.photo_reminder_candidates(tests.id('studio1'), private.today_rome())
     where client_id = tests.id('c6') and check_number is null),
-  1, 'promemoria del set di partenza dal giorno dell''apertura'
+  0, 'il set di partenza non ha il promemoria quotidiano delle foto (lo sostituisce la preparazione della chiamata)'
 );
 select is(
   (select count(*)::int from public.photo_reminder_candidates(tests.id('studio1'), private.today_rome() - 2)

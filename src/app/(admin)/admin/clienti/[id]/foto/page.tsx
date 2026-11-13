@@ -3,6 +3,7 @@ import { Suspense } from "react";
 
 import { PhotosSkeleton } from "@/components/shared/photos/photos-skeleton";
 import { PhotosTab } from "@/features/admin/photos/photos-tab";
+import { getClientHeader } from "@/server/services/clients.service";
 import { getStaffPhotos } from "@/server/services/photos.service";
 import { requireStaff } from "@/server/services/session.service";
 import { clientIdSchema } from "@/server/validation/clients.schema";
@@ -17,9 +18,14 @@ async function PhotosContent({
   const session = await requireStaff();
   const parsed = clientIdSchema.safeParse((await params).id);
   if (!parsed.success || !session.studio.id) notFound();
-  const data = await getStaffPhotos(session.studio.id, parsed.data);
+  const [data, header] = await Promise.all([
+    getStaffPhotos(session.studio.id, parsed.data),
+    getClientHeader(parsed.data),
+  ]);
   if (!data) notFound();
-  return <PhotosTab data={data} />;
+  return (
+    <PhotosTab data={data} onboarding={header?.journeyStage === "onboarding"} />
+  );
 }
 
 export default function ClientPhotosPage(

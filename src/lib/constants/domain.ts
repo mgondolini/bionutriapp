@@ -62,6 +62,9 @@ export const ROUTES = {
     videos: "/app/video",
     tracking: "/app/tracking",
     photos: "/app/foto",
+    prep: "/app/prepara",
+    prepMeasures: "/app/prepara/misure",
+    prepPhotos: "/app/prepara/foto",
     profile: "/app/profilo",
     install: "/app/installa",
   },
@@ -744,3 +747,25 @@ export type PhotoNotificationKind = (typeof PHOTO_NOTIFICATION_KINDS)[number];
 export function photoSetClientPath(sessionId: string): string {
   return `${ROUTES.client.photos}/${sessionId}`;
 }
+
+// ---------------------------------------------------------------------
+// Preparazione della chiamata di onboarding (mockup v1.0.11: C28–C32)
+// ---------------------------------------------------------------------
+
+/**
+ * Misure di partenza: TUTTE le misure mensili attive dello studio (peso e
+ * circonferenze), decisione del 13 novembre 2026. Nel database è
+ * private.is_prep_metric(): vanno cambiate insieme.
+ */
+export const PREP_METRIC_FREQUENCY =
+  "monthly_30d" as const satisfies MetricFrequency;
+/**
+ * Promemoria (C32): alle 18 nel fuso dello studio, 2 giorni e 1 giorno
+ * prima della chiamata, solo se manca qualcosa. Scadenza mostrata al
+ * cliente: il giorno prima della chiamata, alle 18. DA CONFERMARE.
+ */
+export const PREP_REMINDER_HOUR = 18;
+export const PREP_REMINDER_DAYS_BEFORE = [2, 1] as const;
+export const PREP_DEADLINE_DAYS_BEFORE = 1;
+export const PREP_TASKS = ["measures", "photos"] as const;
+export type PrepTask = (typeof PREP_TASKS)[number];

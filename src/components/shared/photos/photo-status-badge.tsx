@@ -63,16 +63,19 @@ export function PhotoStatusBadge({
 /** Barra a tre segmenti delle foto caricate (decorativa: il testo accanto dice quante). */
 export function PhotoProgress({
   count,
+  total = 3,
   onMint = false,
   className,
 }: {
   count: number;
+  /** Segmenti: 3 foto; 2 per le attività della preparazione della chiamata. */
+  total?: number;
   onMint?: boolean;
   className?: string;
 }) {
   return (
     <div aria-hidden="true" className={cn("flex gap-1", className)}>
-      {[0, 1, 2].map((index) => (
+      {Array.from({ length: total }, (_, index) => index).map((index) => (
         <i
           key={index}
           className={cn(

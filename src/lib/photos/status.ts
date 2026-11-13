@@ -13,7 +13,9 @@ import {
 } from "@/lib/constants/domain";
 
 /**
- * - future: mancano più di 3 giorni alla sessione ("Prossima", senza azioni)
+ * - future: mancano più di 3 giorni alla sessione ("Prossima", senza azioni);
+ *   il set di partenza (onboarding) è aperto da subito: la preparazione
+ *   della chiamata lo chiede prima della chiamata
  * - to_upload: aperto (da 3 giorni prima), nessuna foto
  * - draft: 1 o 2 foto
  * - ready: tutte e tre, da salvare
@@ -29,11 +31,15 @@ export function getPhotoSetStatus(input: {
   sessionStatus: JourneySessionStatus;
   setStatus: PhotoSetStatus | null;
   views: readonly PhotoView[];
+  /** Set di partenza: aperto da subito. */
+  startSet?: boolean;
 }): PhotoSetState {
   if (input.setStatus === "saved") return "saved";
   const count = new Set(input.views).size;
   if (count === 0) {
-    if (!isPhotoSetOpen(input.sessionDate, input.today)) return "future";
+    if (!isPhotoSetOpen(input.sessionDate, input.today, input.startSet)) {
+      return "future";
+    }
     return input.sessionStatus === "skipped" ? "skipped" : "to_upload";
   }
   return count >= PHOTO_VIEWS.length ? "ready" : "draft";
@@ -44,8 +50,12 @@ export function photoSetOpensOn(sessionDate: string): string {
   return addDays(sessionDate, -PHOTO_SET_OPEN_DAYS_BEFORE);
 }
 
-export function isPhotoSetOpen(sessionDate: string, today: string): boolean {
-  return photoSetOpensOn(sessionDate) <= today;
+export function isPhotoSetOpen(
+  sessionDate: string,
+  today: string,
+  startSet = false,
+): boolean {
+  return startSet || photoSetOpensOn(sessionDate) <= today;
 }
 
 /** Viste ancora da caricare, nell'ordine Fronte, Lato, Dietro. */

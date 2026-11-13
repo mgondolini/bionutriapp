@@ -363,14 +363,17 @@ test("dopo il salvataggio né il cliente né lo staff modificano, nemmeno con l'
   expect(staffDelete?.code).toBe("23514");
 });
 
-test("in Onboarding il cliente carica le foto di partenza da 3 giorni prima", async ({
+test("in Onboarding le foto di partenza stanno in Prepara la chiamata", async ({
   page,
 }) => {
   await login(page, lucia.email, PASSWORD);
   await expect(page).toHaveURL(/\/app$/);
-  await page.getByRole("link", { name: /Carica le foto di partenza/ }).click();
+  // niente voce Foto in Onboarding: la pagina porta alla preparazione (C30)
+  await page.goto("/app/foto");
+  await expect(page).toHaveURL(/\/app\/prepara$/);
+  await page.getByRole("link", { name: "Carica le foto" }).click();
   await expect(
-    page.getByRole("heading", { name: "Foto · Onboarding" }),
+    page.getByRole("heading", { name: "Foto di partenza" }),
   ).toBeVisible();
   await page.waitForLoadState("networkidle");
   await clientAdd(page, "Fronte", "#c96");

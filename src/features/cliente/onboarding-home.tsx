@@ -35,10 +35,16 @@ const ICONS: Record<ClientNavKey, LucideIcon> = {
 export function OnboardingHome({
   studioName,
   videos,
+  prep,
+  callWhen,
 }: {
   studioName: string;
   /** "Intanto guarda" (mockup v4, C4), tra i passi e l'area bloccata. */
   videos?: ReactNode;
+  /** Card "Prepara la chiamata" (v1.0.11, C4), sotto il benvenuto. */
+  prep?: ReactNode;
+  /** Data e ora della chiamata, al posto del segnaposto del secondo passo. */
+  callWhen?: string | null;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -50,9 +56,11 @@ export function OnboardingHome({
           {t.title(studioName)}
         </h2>
         <p className="rounded-xl bg-white/60 px-3.5 py-3 text-sm leading-normal">
-          {t.description(studioName)}
+          {prep ? t.descriptionPrep(studioName) : t.description(studioName)}
         </p>
       </section>
+
+      {prep}
 
       <section
         aria-labelledby="onboarding-steps"
@@ -88,7 +96,7 @@ export function OnboardingHome({
                     ) : null}
                   </span>
                   <span className="text-[13px] text-muted-foreground">
-                    {step.description}
+                    {index === 1 && callWhen ? callWhen : step.description}
                   </span>
                 </div>
               </li>

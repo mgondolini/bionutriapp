@@ -25,16 +25,17 @@ async function ClientShell({ children }: { children: React.ReactNode }) {
   const { studio, client } = await requireClient();
   const [videos, openPhotoSets] = await Promise.all([
     getClientVideoHome(),
-    getClientOpenPhotoSets(client.id),
+    client.unlocked ? getClientOpenPhotoSets(client.id) : [],
   ]);
   const sections: ClientMenuItem[] = CLIENT_NAV.filter(
     (item) =>
       client.unlocked ||
       // in Onboarding la voce Video c'è solo se lo studio ha video di
-      // benvenuto, la voce Foto solo con un set aperto (foto di partenza)
+      // benvenuto; la voce Foto no: le foto di partenza si caricano da
+      // "Prepara la chiamata" (v1.0.11, C28)
       (!item.locked &&
         (item.key !== "videos" || videos.videoCount > 0) &&
-        (item.key !== "photos" || openPhotoSets.length > 0)),
+        item.key !== "photos"),
   ).map((item) => ({
     key: item.key,
     href: item.href,

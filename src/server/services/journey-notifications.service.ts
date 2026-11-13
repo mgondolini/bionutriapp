@@ -26,8 +26,15 @@ import {
   photoReminderMoment,
 } from "@/lib/photos/reminders";
 import { isValidTimeZone, localDateTime } from "@/lib/notifications/schedule";
+import { weekdayText, callDayText } from "@/lib/onboarding-prep/labels";
+import {
+  prepReminderKind,
+  prepReminderWindow,
+  prepDeadline,
+} from "@/lib/onboarding-prep/reminders";
 import * as journeysRepository from "@/server/repositories/journeys.repository";
 import * as notificationsRepository from "@/server/repositories/notifications.repository";
+import * as prepRepository from "@/server/repositories/onboarding-prep.repository";
 import * as photosRepository from "@/server/repositories/photos.repository";
 import * as pushService from "@/server/services/push.service";
 
@@ -316,6 +323,151 @@ async function preparePhotoReminders(
   return { jobs, sameDaySessions };
 }
 
+// ---------------------------------------------------------------------
+// Preparazione della chiamata di onboarding (C32)
+// ---------------------------------------------------------------------
+
+function prepPayload(
+  sessionId: string,
+  title: string,
+  body: string,
+): NotificationPayload {
+  return {
+    type: "daily_checkin",
+    title,
+    body,
+    icon: NOTIFICATION_ICON_URL,
+    url: ROUTES.client.prep,
+    tag: `prep-${sessionId}`,
+  };
+}
+
+type Missing = "measures" | "photos" | "both";
+
+function missingOf(measures: boolean, photos: boolean): Missing {
+  return measures && photos ? "both" : measures ? "measures" : "photos";
+}
+
+/**
+ * Promemoria della preparazione: alle 18, 2 giorni e 1 giorno prima della
+ * chiamata, solo se manca qualcosa (il testo dice cosa). Restituisce le
+ * chiamate di domani avvisate: il loro promemoria serale del percorso non
+ * parte (una sola push).
+ */
+async function preparePrepReminders(
+  studioId: string,
+  local: { day: string; hour: number },
+  report: JourneyReminderReport,
+): Promise<{ jobs: Job[]; dayBeforeSessions: Set<string> }> {
+  const jobs: Job[] = [];
+  const dayBeforeSessions = new Set<string>();
+  const window = prepReminderWindow(local);
+  if (!window) return { jobs, dayBeforeSessions };
+  const p = copy.onboardingPrep.push;
+  const candidates = (
+    await prepRepository.listReminderCandidates(
+      studioId,
+      window.from,
+      window.to,
+    )
+  ).flatMap((candidate) => {
+    const kind = prepReminderKind(candidate.call_date, local.day);
+    return kind ? [{ ...candidate, kind }] : [];
+  });
+  for (const c of candidates) {
+    if (c.kind === "prep_1d") dayBeforeSessions.add(c.session_id);
+  }
+  const inserted = new Map(
+    (
+      await journeysRepository.insertNotifications(
+        candidates.map((candidate) => ({
+          sessionId: candidate.session_id,
+          studioId,
+          clientId: candidate.client_id,
+          kind: candidate.kind,
+          referenceDate: candidate.call_date,
+          referenceTime: null,
+        })),
+      )
+    ).map((row) => [row.sessionId, row.id]),
+  );
+  for (const candidate of candidates) {
+    const logId = inserted.get(candidate.session_id);
+    if (!logId) {
+      report.duplicates += 1;
+      continue;
+    }
+    report.queued += 1;
+    const missing = missingOf(
+      candidate.measures_missing,
+      candidate.photos_missing,
+    );
+    const [title, body] =
+      candidate.kind === "prep_2d"
+        ? [
+            p.twoDaysTitle(p.missing[missing]),
+            p.twoDays(
+              weekdayText(candidate.call_date),
+              weekdayText(prepDeadline(candidate.call_date)),
+            ),
+          ]
+        : [p.lastTitle, p.last(p.missingShort[missing])];
+    jobs.push({
+      logId,
+      userId: candidate.user_id,
+      payload: prepPayload(candidate.session_id, title, body),
+    });
+  }
+  return { jobs, dayBeforeSessions };
+}
+
+/**
+ * Presentazione della preparazione (C32), una sola volta per data della
+ * chiamata: parte quando il cliente in Onboarding attiva le notifiche (al
+ * momento dell'attivazione dell'account il telefono non è ancora
+ * registrato). Dopo la risposta; non lancia mai.
+ */
+export function notifyPrepIntro(target: {
+  sessionId: string;
+  studioId: string;
+  clientId: string;
+  userId: string;
+  callDate: string;
+}) {
+  after(async () => {
+    try {
+      const [entry] = await journeysRepository.insertNotifications([
+        {
+          sessionId: target.sessionId,
+          studioId: target.studioId,
+          clientId: target.clientId,
+          kind: "prep_intro",
+          referenceDate: target.callDate,
+          referenceTime: null,
+        },
+      ]);
+      if (!entry) return;
+      const p = copy.onboardingPrep.push;
+      await deliverAll([
+        {
+          logId: entry.id,
+          userId: target.userId,
+          payload: prepPayload(
+            target.sessionId,
+            p.introTitle,
+            p.intro(callDayText(target.callDate).toLocaleLowerCase("it-IT")),
+          ),
+        },
+      ]);
+    } catch (error) {
+      console.error("[preparazione] presentazione non riuscita", {
+        clientId: target.clientId,
+        error: error instanceof Error ? error.name : "unknown",
+      });
+    }
+  });
+}
+
 /**
  * Prima parte, veloce: studi all'ora di un promemoria nel proprio fuso,
  * sessioni da fare del giorno giusto, righe del registro. Restituisce solo
@@ -334,6 +486,10 @@ export async function prepareJourneyReminders(
   for (const studio of studios) {
     if (!isValidTimeZone(studio.timezone)) continue;
     const local = localDateTime(now, studio.timezone);
+    // Preparazione della chiamata (C32): il giorno prima sostituisce il
+    // promemoria serale della sessione di onboarding
+    const prep = await preparePrepReminders(studio.id, local, report);
+    jobs.push(...prep.jobs);
     const slot = reminderSlot(local);
     if (!slot) continue;
     report.studios += 1;
@@ -351,8 +507,10 @@ export async function prepareJourneyReminders(
       .filter(
         (candidate) =>
           !(
-            slot.kind === "reminder_same_day" &&
-            photos.sameDaySessions.has(candidate.session_id)
+            (slot.kind === "reminder_same_day" &&
+              photos.sameDaySessions.has(candidate.session_id)) ||
+            (slot.kind === "reminder_day_before" &&
+              prep.dayBeforeSessions.has(candidate.session_id))
           ),
       )
       .filter((candidate) =>

@@ -29,6 +29,9 @@ const COLORS = [
 ];
 const ANNA = { email: "anna.rossi@example.test", password: "password123" };
 const ANNA_ID = "aaaaaaaa-2222-4000-8000-000000000001";
+/** Marco: in Onboarding, entra con il cellulare (preparazione della chiamata). */
+const MARCO = { phone: "333 000 0002", password: "password123" };
+const MARCO_ID = "aaaaaaaa-2222-4000-8000-000000000002";
 
 const PUBLIC_PAGES = [
   "/login",
@@ -46,6 +49,7 @@ const ADMIN_PAGES = [
   `/admin/clienti/${ANNA_ID}/tracking/water`,
   `/admin/clienti/${ANNA_ID}/foto`,
   `/admin/clienti/${ANNA_ID}/note`,
+  `/admin/clienti/${MARCO_ID}/profilo`,
   "/admin/impostazioni",
   "/admin/profilo",
 ];
@@ -62,6 +66,7 @@ const CLIENT_PAGES = [
   "/app/profilo",
   "/app/installa",
 ];
+const ONBOARDING_PAGES = ["/app", "/app/prepara", "/app/prepara/misure"];
 
 async function expectNoViolations(page: Page, path: string) {
   await page.goto(path);
@@ -159,6 +164,13 @@ for (const color of COLORS) {
     for (const path of CLIENT_PAGES)
       await expectNoViolations(client.page, path);
     await client.context.close();
+
+    const onboarding = await newDevice(browser);
+    await login(onboarding.page, MARCO.phone, MARCO.password);
+    await expect(onboarding.page).toHaveURL(/\/app/);
+    for (const path of ONBOARDING_PAGES)
+      await expectNoViolations(onboarding.page, path);
+    await onboarding.context.close();
   });
 }
 

@@ -1,4 +1,6 @@
+import { PrepCard } from "@/features/admin/onboarding-prep/prep-card";
 import type { ClientProfile as Profile } from "@/server/services/clients.service";
+import type { PrepView } from "@/server/services/onboarding-prep.service";
 
 import { AccountCard } from "./account-card";
 import { ClientDataCard } from "./client-data-card";
@@ -10,9 +12,12 @@ import { StageHistory } from "./stage-history";
 export function ClientProfile({
   client,
   senderName,
+  prep = null,
 }: {
   client: Profile;
   senderName: string;
+  /** Preparazione della chiamata (v1.0.11, A5): solo in Onboarding. */
+  prep?: PrepView | null;
 }) {
   const name = [client.firstName, client.lastName].filter(Boolean).join(" ");
   // data dell'ultimo ingresso nella fase corrente (storico dal più recente)
@@ -29,6 +34,7 @@ export function ClientProfile({
       <div className="flex flex-col gap-6">
         <AccountCard client={client} name={name} />
         <InviteCard client={client} name={name} senderName={senderName} />
+        {prep ? <PrepCard prep={prep} /> : null}
         <StageCard client={client} stageSince={stageSince} />
       </div>
     </div>

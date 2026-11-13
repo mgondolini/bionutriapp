@@ -329,7 +329,12 @@ describe("preparePhotoUpload", () => {
   it("il cliente fuori da In percorso non carica", async () => {
     expect(
       await service.preparePhotoUpload(
-        { kind: "client", clientId: CLIENT, canWrite: false },
+        {
+          kind: "client",
+          clientId: CLIENT,
+          canWrite: false,
+          onboardingOnly: false,
+        },
         { sessionId: sessionId(3), view: "front" },
       ),
     ).toEqual({ ok: false, reason: "read_only" });
