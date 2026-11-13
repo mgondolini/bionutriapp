@@ -50,7 +50,7 @@ function ItemText({ label, hint }: { label: string; hint: string }) {
 /**
  * "Aggiungi al calendario" dello staff (A17): evento lungo quanto la sessione
  * (onboarding un'ora, check 30 minuti) con il link
- * Meet della sessione (resolveMeetingUrl) e l'invito all'email del cliente,
+ * Meet della sessione e l'invito all'email del cliente,
  * in Google Calendar, Apple Calendar, Outlook o un altro calendario (.ics).
  */
 export function CalendarMenu({

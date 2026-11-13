@@ -1,17 +1,11 @@
 /**
- * Link della videochiamata di una sessione (A17, C19). La sessione può avere
- * un link proprio (impostato dallo staff o, dalla v2.0, creato con l'evento
- * Google); altrimenti vale quello del cliente. È l'unico punto che sceglie il
- * link: interfaccia, eventi del calendario e file .ics passano da qui.
+ * Link della videochiamata di una sessione (A17, C19): uno per ogni check,
+ * quello del Meet che Google Calendar crea con l'evento, copiato dallo staff
+ * nella sessione (dalla v2.0 lo scriverà l'app creando l'evento). Non c'è più
+ * un link del cliente valido per tutti i check (decisione del 13 novembre
+ * 2026): la colonna clients.meeting_url resta nel database ma l'app non la usa.
  */
 import { MEET_URL_PATTERN } from "@/lib/constants/domain";
-
-export function resolveMeetingUrl(
-  session: { meetingUrl: string | null } | null,
-  client: { meetingUrl: string | null } | null,
-): string | null {
-  return session?.meetingUrl || client?.meetingUrl || null;
-}
 
 /** Vero per https://meet.google.com/abc-defg-hij e nient'altro. */
 export function isMeetUrl(value: string): boolean {

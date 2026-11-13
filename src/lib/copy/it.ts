@@ -1928,23 +1928,18 @@ export const copy = {
         `${when} · ${duration}${name ? ` · invito a ${name}` : ""}`,
       meeting: {
         title: "Videochiamata",
-        none: "Nessun link Meet per questa sessione.",
-        sessionOnly: "Link solo per questo check",
+        none: "Nessun link Meet per questo check.",
         copy: "Copia link",
         copied: "Link copiato",
         copyFailed:
           "Non è stato possibile copiare il link. Selezionalo e copialo a mano.",
-        fieldLabel: (name: string) => `Link Google Meet di ${name}`,
+        fieldLabel: "Link Google Meet di questo check",
         placeholder: "https://meet.google.com/abc-defg-hij",
-        missing: (name: string) =>
-          `Aggiungi il link Meet di ${name} per inserirlo negli eventi del calendario.`,
-        saveClient: "Salva link",
-        useForSession: "Usa un link solo per questo check",
-        useClientLink: (name: string) => `Torna al link di ${name}`,
-        savedClient: "Link salvato",
-        removedClient: "Link rimosso",
-        savedSession: "Link salvato per questo check",
-        removedSession: "Il check usa di nuovo il link del cliente",
+        missing:
+          "Aggiungi il check a Google Calendar, che crea il Meet, poi incolla qui il link: il cliente lo vedrà nell'app.",
+        save: "Salva link",
+        saved: "Link salvato",
+        removed: "Link rimosso",
       },
       notifyNote:
         "Salvando, il cliente riceve una notifica push con la nuova data e ora. Promemoria automatici il giorno prima e la mattina stessa.",
@@ -2021,7 +2016,6 @@ export const copy = {
         noteTooLong: `Massimo ${500} caratteri.`,
         meetingUrlInvalid:
           "Inserisci un link Google Meet come https://meet.google.com/abc-defg-hij, senza altro dopo.",
-        meetingUrlRequired: "Inserisci il link Google Meet di questo check.",
       },
     },
     client: {

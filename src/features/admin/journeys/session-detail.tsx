@@ -21,7 +21,6 @@ import {
   type CalendarEvent,
 } from "@/lib/domain/journeys/calendar";
 import { sessionLabel } from "@/lib/domain/journeys/labels";
-import { resolveMeetingUrl } from "@/lib/domain/journeys/meeting";
 import { formatLongDate, formatShortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useHydrated } from "@/lib/use-hydrated";
@@ -101,7 +100,7 @@ export function SessionDetail({
     defaultValues: valuesOf(session),
   });
   const name = sessionLabel(session.name);
-  const meetingUrl = resolveMeetingUrl(session, client);
+  const meetingUrl = session.meetingUrl;
   const event = staffEvent(session, client, meetingUrl);
   const when = t.ics.when(formatShortDate(session.date), session.time);
 
@@ -227,10 +226,7 @@ export function SessionDetail({
           </span>
           <span>{t.admin.durationValue(event.durationMinutes)}</span>
         </p>
-        <MeetingLink
-          url={meetingUrl}
-          sessionOnly={session.meetingUrl !== null}
-        />
+        <MeetingLink url={meetingUrl} />
       </div>
 
       <div className="flex flex-col gap-4">
@@ -282,11 +278,8 @@ export function SessionDetail({
           )}
         />
         <MeetingField
-          key={`${client.meetingUrl}-${session.meetingUrl}`}
+          key={`${session.id}-${session.meetingUrl}`}
           sessionId={session.id}
-          clientId={client.id}
-          clientName={client.firstName}
-          clientUrl={client.meetingUrl}
           sessionUrl={session.meetingUrl}
         />
       </div>

@@ -41,7 +41,7 @@ export async function GET(
       date: journeySession.date,
       time: journeySession.time,
       durationMinutes: sessionMinutes(journeySession.type),
-      // già scelto da resolveMeetingUrl, solo per il prossimo check
+      // link del check, solo per il prossimo check
       meetingUrl: journeySession.meetingUrl,
     },
     copy.journeys.ics.meetLine,

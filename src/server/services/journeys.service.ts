@@ -15,7 +15,6 @@ import {
 } from "@/lib/constants/domain";
 import { planJourney } from "@/lib/domain/journeys/composition";
 import { journeyEndDate } from "@/lib/domain/journeys/dates";
-import { resolveMeetingUrl } from "@/lib/domain/journeys/meeting";
 import {
   completedCount,
   deriveSessionState,
@@ -58,7 +57,7 @@ export type StaffSessionView = {
   status: JourneySessionStatus;
   state: SessionState;
   note: string | null;
-  /** Link solo per questa sessione; quello usato lo sceglie resolveMeetingUrl. */
+  /** Link Meet di questa sessione (uno per check). */
   meetingUrl: string | null;
   /** Check con le foto: stato del set per il segno "Foto" (A17); aggiunto dalla pagina. */
   photo?: PhotoSetState;
@@ -93,8 +92,6 @@ export type StaffJourneys = {
     lastName: string;
     /** Invitata dall'evento del calendario dello staff (A17). */
     email: string | null;
-    /** Link Google Meet del cliente, ripiego di ogni sessione. */
-    meetingUrl: string | null;
     stage: JourneyStage;
     pushEnabled: boolean;
   };
@@ -180,10 +177,9 @@ export async function getStaffJourneys(
 ): Promise<StaffJourneys | null> {
   const client = await loadOwnedClient(studioId, clientId);
   if (!client) return null;
-  const [rows, history, meeting] = await Promise.all([
+  const [rows, history] = await Promise.all([
     journeysRepository.listJourneysOfClient(clientId),
     clientsRepository.listStageHistory(clientId),
-    journeysRepository.getClientMeetingUrl(clientId),
   ]);
   const automaticResumes = history
     .filter(
@@ -201,7 +197,6 @@ export async function getStaffJourneys(
       firstName: client.first_name!,
       lastName: client.last_name ?? "",
       email: client.email,
-      meetingUrl: meeting?.meetingUrl ?? null,
       stage: client.journey_stage as JourneyStage,
       pushEnabled: Boolean(client.push_enabled),
     },
@@ -474,24 +469,7 @@ export async function restoreSessionDate(
   return { ok: true, data: { clientId: session.client_id } };
 }
 
-/**
- * Link Google Meet del cliente (A17), usato da tutte le sue sessioni senza
- * un link proprio; null lo toglie. Vale anche con il percorso concluso.
- */
-export async function setClientMeetingUrl(
-  studioId: string,
-  input: { clientId: string; meetingUrl: string | null },
-): Promise<Result<{ clientId: string }>> {
-  const client = await loadOwnedClient(studioId, input.clientId);
-  if (!client) return { ok: false, reason: "not_found" };
-  await journeysRepository.setClientMeetingUrl(
-    input.clientId,
-    input.meetingUrl,
-  );
-  return { ok: true, data: { clientId: input.clientId } };
-}
-
-/** "Usa un link solo per questo check"; null torna al link del cliente. */
+/** Link Meet di un check (A17); null lo toglie. */
 export async function setSessionMeetingUrl(
   studioId: string,
   input: { sessionId: string; meetingUrl: string | null },
@@ -571,10 +549,7 @@ async function loadOwnJourneys(): Promise<{
           customDate: null,
           time: shortTime(session.session_time),
           status: session.status as JourneySessionStatus,
-          meetingUrl: resolveMeetingUrl(
-            { meetingUrl: session.meeting_url },
-            { meetingUrl: session.client_meeting_url },
-          ),
+          meetingUrl: session.meeting_url,
         })),
     );
     const names = sessionNames(dated, "client");

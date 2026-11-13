@@ -19,13 +19,12 @@ import {
  * registrata, estensione con omaggio da un percorso concluso con ritorno
  * automatico In percorso, area cliente (home, pagina, .ics) e isolamento:
  * il cliente non vede l'omaggio né le sessioni di un altro cliente.
- * Link Google Meet: del cliente (cliccabile e copiabile), solo per un check,
- * visibile al cliente solo sul prossimo check e mai quello di un altro.
+ * Link Google Meet: uno per ogni check (cliccabile e copiabile), visibile al
+ * cliente solo sul prossimo check e mai quello di un altro.
  */
 
 const STUDIO_ID = "aaaaaaaa-1111-4000-8000-000000000000";
 const PASSWORD = "Percorso-2026!";
-const CLIENT_MEET = "https://meet.google.com/kqz-mdvr-hdp";
 const SESSION_MEET = "https://meet.google.com/abc-defg-hij";
 const OTHER_MEET = "https://meet.google.com/xyz-abcd-efg";
 const OTHER_SESSION_MEET = "https://meet.google.com/ooo-oooo-ooo";
@@ -283,7 +282,7 @@ test("senza link il cliente vede solo Aggiungi al calendario, nella riga in home
   await device.context.close();
 });
 
-test("lo staff salva il link del cliente e lo vede cliccabile e copiabile nella sessione", async ({
+test("lo staff salva il link del check e lo vede cliccabile e copiabile", async ({
   page,
 }) => {
   await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
@@ -293,16 +292,20 @@ test("lo staff salva il link del cliente e lo vede cliccabile e copiabile nella 
 
   // la sessione mostrata è il prossimo check (l'omaggio)
   await expect(
-    page.getByText("Nessun link Meet per questa sessione."),
-  ).toBeVisible();
-  await expect(
-    page.getByText(
-      "Aggiungi il link Meet di Sara per inserirlo negli eventi del calendario.",
-    ),
+    page.getByText("Nessun link Meet per questo check."),
   ).toBeVisible();
 
-  const field = page.getByLabel("Link Google Meet di Sara");
-  await field.fill(`${CLIENT_MEET}?authuser=1`);
+  // senza link l'evento non ha un Meet dell'app: lo crea Google Calendar
+  await page.getByRole("button", { name: "Aggiungi al calendario" }).click();
+  let google = page.getByRole("menuitem", { name: /^Google Calendar/ });
+  let href = new URL((await google.getAttribute("href"))!);
+  expect(href.searchParams.get("location")).toBeNull();
+  expect(href.searchParams.get("details")).not.toContain("meet.google.com");
+  expect(href.searchParams.get("add")).toBe(client.email);
+  await page.keyboard.press("Escape");
+
+  const field = page.getByLabel("Link Google Meet di questo check");
+  await field.fill(`${SESSION_MEET}?authuser=1`);
   await page.getByRole("button", { name: "Salva link" }).click();
   await expect(
     page.getByText(
@@ -310,71 +313,41 @@ test("lo staff salva il link del cliente e lo vede cliccabile e copiabile nella 
     ),
   ).toBeVisible();
 
-  await field.fill(CLIENT_MEET);
+  await field.fill(SESSION_MEET);
   await page.getByRole("button", { name: "Salva link" }).click();
   await expect(page.getByText("Link salvato")).toBeVisible();
 
-  const link = page.getByRole("link", { name: "meet.google.com/kqz-mdvr-hdp" });
-  await expect(link).toHaveAttribute("href", CLIENT_MEET);
+  const link = page.getByRole("link", { name: "meet.google.com/abc-defg-hij" });
+  await expect(link).toHaveAttribute("href", SESSION_MEET);
   await expect(link).toHaveAttribute("target", "_blank");
   await expect(link).toHaveAttribute("rel", "noopener noreferrer");
 
   await page.getByRole("button", { name: "Copia link" }).click();
   await expect(page.getByText("Link copiato")).toBeVisible();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
-    CLIENT_MEET,
+    SESSION_MEET,
   );
 
-  // l'evento dello staff ha il link e invita la cliente
   await page.getByRole("button", { name: "Aggiungi al calendario" }).click();
-  const google = page.getByRole("menuitem", { name: /^Google Calendar/ });
-  const href = new URL((await google.getAttribute("href"))!);
-  expect(href.searchParams.get("location")).toBe(CLIENT_MEET);
-  expect(href.searchParams.get("add")).toBe(client.email);
+  google = page.getByRole("menuitem", { name: /^Google Calendar/ });
+  href = new URL((await google.getAttribute("href"))!);
+  expect(href.searchParams.get("location")).toBe(SESSION_MEET);
   expect(href.searchParams.get("text")).toMatch(
     /^Check omaggio · S\. Percorso/,
   );
+  await page.keyboard.press("Escape");
 
-  const { data } = await adminClient()
-    .from("clients")
-    .select("meeting_url")
-    .eq("id", client.clientId)
-    .single();
-  expect(data?.meeting_url).toBe(CLIENT_MEET);
-});
-
-test("con un link solo per il prossimo check il cliente vede quello, e solo su quel check", async ({
-  page,
-  browser,
-}) => {
-  await login(page, OWNER.email, OWNER.password);
-  await expect(page).toHaveURL(/\/admin/);
-  await openJourneyTab(page, client.clientId);
-
-  const field = page.getByLabel("Link Google Meet di Sara");
-  await expect(field).toHaveValue(CLIENT_MEET);
-  await field.fill(SESSION_MEET);
-  await page
-    .getByRole("button", { name: "Usa un link solo per questo check" })
-    .click();
-  await expect(page.getByText("Link salvato per questo check")).toBeVisible();
-  await expect(
-    page.getByText("Link solo per questo check", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: "meet.google.com/abc-defg-hij" }),
-  ).toHaveAttribute("href", SESSION_MEET);
-  // il link del cliente resta quello di prima
-  await expect(page.getByLabel("Link Google Meet di Sara")).toHaveValue(
-    CLIENT_MEET,
-  );
-
-  // un altro check usa ancora il link del cliente
+  // un altro check non eredita il link
   await square(page, /^Check 1 /).click();
   await expect(
-    page.getByRole("link", { name: "meet.google.com/kqz-mdvr-hdp" }),
+    page.getByText("Nessun link Meet per questo check."),
   ).toBeVisible();
+  await expect(page.getByLabel("Link Google Meet di questo check")).toHaveValue(
+    "",
+  );
+});
 
+test("il cliente vede il link solo sul prossimo check", async ({ browser }) => {
   const device = await newDevice(browser);
   const clientPage = device.page;
   await login(clientPage, client.email, PASSWORD);
@@ -389,9 +362,7 @@ test("con un link solo per il prossimo check il cliente vede quello, e solo su q
   await expect(join).toHaveAttribute("href", SESSION_MEET);
   await expect(join).toHaveAttribute("target", "_blank");
   await expect(join).toHaveAttribute("rel", "noopener noreferrer");
-  // solo il prossimo check porta il link: nessuna traccia di quello del cliente
   await expect(clientPage.getByText(/ · Google Meet/)).toHaveCount(1);
-  expect(await clientPage.content()).not.toContain("kqz-mdvr-hdp");
 
   await clientPage
     .getByRole("button", { name: "Aggiungi al calendario" })

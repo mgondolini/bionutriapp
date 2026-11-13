@@ -198,33 +198,7 @@ export async function clearCustomDate(sessionId: string) {
 // Link Google Meet (A17)
 // ---------------------------------------------------------------------
 
-/** Link del cliente; null se il cliente non esiste o è di un altro studio. */
-export async function getClientMeetingUrl(
-  clientId: string,
-): Promise<{ meetingUrl: string | null } | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("clients")
-    .select("meeting_url")
-    .eq("id", clientId)
-    .maybeSingle();
-  if (error) throw error;
-  return data ? { meetingUrl: data.meeting_url } : null;
-}
-
-export async function setClientMeetingUrl(
-  clientId: string,
-  meetingUrl: string | null,
-) {
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("clients")
-    .update({ meeting_url: meetingUrl })
-    .eq("id", clientId);
-  if (error) throw error;
-}
-
-/** Link solo per una sessione (origine "manual"); null = quello del cliente. */
+/** Link Meet di una sessione (origine "manual"); null lo toglie. */
 export async function setSessionMeetingUrl(
   sessionId: string,
   meetingUrl: string | null,

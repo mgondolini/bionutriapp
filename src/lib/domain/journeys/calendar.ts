@@ -4,7 +4,7 @@
  * calendari) lo costruisce ics.ts dallo stesso evento.
  *
  * Con l'ora l'evento dura quanto la sessione (sessionMinutes: onboarding
- * un'ora, check 30 minuti) nel fuso di Roma; senza, occupa la giornata. Il link Meet arriva già scelto da resolveMeetingUrl.
+ * un'ora, check 30 minuti) nel fuso di Roma; senza, occupa la giornata. Il link Meet è quello del check.
  */
 import {
   JOURNEY_CALENDAR_TIMEZONE,

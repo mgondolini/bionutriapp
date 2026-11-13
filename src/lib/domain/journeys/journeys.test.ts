@@ -20,7 +20,7 @@ import {
   sessionMinutes,
 } from "./calendar";
 import { buildIcs } from "./ics";
-import { meetingLinkText, resolveMeetingUrl } from "./meeting";
+import { meetingLinkText } from "./meeting";
 import { isReminderDue, reminderSlot, reminderTimes } from "./reminders";
 import {
   deriveSessionState,
@@ -441,31 +441,8 @@ describe("file .ics", () => {
 
 const MEET = "Videochiamata su Google Meet:";
 const URL_CLIENT = "https://meet.google.com/kqz-mdvr-hdp";
-const URL_SESSION = "https://meet.google.com/abc-defg-hij";
 
-describe("resolveMeetingUrl", () => {
-  it("usa il link della sessione se c'è", () => {
-    expect(
-      resolveMeetingUrl(
-        { meetingUrl: URL_SESSION },
-        { meetingUrl: URL_CLIENT },
-      ),
-    ).toBe(URL_SESSION);
-  });
-  it("altrimenti quello del cliente", () => {
-    expect(
-      resolveMeetingUrl({ meetingUrl: null }, { meetingUrl: URL_CLIENT }),
-    ).toBe(URL_CLIENT);
-    expect(resolveMeetingUrl(null, { meetingUrl: URL_CLIENT })).toBe(
-      URL_CLIENT,
-    );
-  });
-  it("altrimenti nessun link", () => {
-    expect(resolveMeetingUrl({ meetingUrl: null }, { meetingUrl: null })).toBe(
-      null,
-    );
-    expect(resolveMeetingUrl(null, null)).toBe(null);
-  });
+describe("link Meet", () => {
   it("testo del link senza https", () => {
     expect(meetingLinkText(URL_CLIENT)).toBe("meet.google.com/kqz-mdvr-hdp");
   });

@@ -89,31 +89,16 @@ export const meetingUrlSchema = z
   .trim()
   .regex(MEET_URL_PATTERN, e.meetingUrlInvalid);
 
-/** Link del cliente: vuoto = nessun link. */
-export const clientMeetingFormSchema = z.object({
+/** Link Meet di un check: vuoto o null = nessun link. */
+export const setSessionMeetingSchema = z.object({
+  sessionId: z.uuid(),
   meetingUrl: z
     .string()
     .trim()
     .refine((value) => value === "" || MEET_URL_PATTERN.test(value), {
       message: e.meetingUrlInvalid,
     })
-    .transform((value) => value || null),
-});
-export type ClientMeetingFormValues = z.input<typeof clientMeetingFormSchema>;
-
-export const setClientMeetingSchema = clientMeetingFormSchema.extend({
-  clientId: z.uuid(),
-});
-export type SetClientMeetingInput = z.input<typeof setClientMeetingSchema>;
-
-/** Link solo per una sessione; null = torna al link del cliente. */
-export const setSessionMeetingSchema = z.object({
-  sessionId: z.uuid(),
-  meetingUrl: z
-    .string()
-    .trim()
-    .min(1, e.meetingUrlRequired)
-    .pipe(meetingUrlSchema)
+    .transform((value) => value || null)
     .nullable(),
 });
 export type SetSessionMeetingInput = z.input<typeof setSessionMeetingSchema>;

@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  clientMeetingFormSchema,
-  meetingUrlSchema,
-  setSessionMeetingSchema,
-} from "./journeys.schema";
+import { meetingUrlSchema, setSessionMeetingSchema } from "./journeys.schema";
 
 const VALID = "https://meet.google.com/kqz-mdvr-hdp";
 const INVALID_MESSAGE =
@@ -35,33 +31,29 @@ describe("meetingUrlSchema", () => {
   });
 });
 
-describe("link del cliente e della sessione", () => {
-  it("il link del cliente vuoto vale come nessun link", () => {
-    expect(clientMeetingFormSchema.parse({ meetingUrl: "  " })).toEqual({
-      meetingUrl: null,
-    });
-    expect(clientMeetingFormSchema.parse({ meetingUrl: VALID })).toEqual({
-      meetingUrl: VALID,
-    });
-    expect(
-      clientMeetingFormSchema.safeParse({ meetingUrl: `${VALID}?x=1` }).success,
-    ).toBe(false);
-  });
+describe("link Meet di un check", () => {
+  const sessionId = "aaaaaaaa-2222-4000-8000-000000000001";
 
-  it("il link di una sessione è obbligatorio, null torna a quello del cliente", () => {
-    const sessionId = "aaaaaaaa-2222-4000-8000-000000000001";
+  it("vuoto o null vale come nessun link", () => {
     expect(
       setSessionMeetingSchema.parse({ sessionId, meetingUrl: null }),
     ).toEqual({ sessionId, meetingUrl: null });
     expect(
-      setSessionMeetingSchema.safeParse({ sessionId, meetingUrl: "" }).error
-        ?.issues[0]?.message,
-    ).toBe("Inserisci il link Google Meet di questo check.");
+      setSessionMeetingSchema.parse({ sessionId, meetingUrl: "  " }),
+    ).toEqual({ sessionId, meetingUrl: null });
     expect(
-      setSessionMeetingSchema.safeParse({
-        sessionId,
-        meetingUrl: "https://meet.google.com/abc",
-      }).success,
-    ).toBe(false);
+      setSessionMeetingSchema.parse({ sessionId, meetingUrl: ` ${VALID} ` }),
+    ).toEqual({ sessionId, meetingUrl: VALID });
+  });
+
+  it("rifiuta un link che non è Google Meet", () => {
+    for (const meetingUrl of [
+      "https://meet.google.com/abc",
+      `${VALID}?authuser=1`,
+    ]) {
+      expect(
+        setSessionMeetingSchema.safeParse({ sessionId, meetingUrl }).success,
+      ).toBe(false);
+    }
   });
 });
