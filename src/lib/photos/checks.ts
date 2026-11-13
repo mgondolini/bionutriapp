@@ -1,5 +1,6 @@
 /**
- * Check con le foto (FOTO-02): un set ogni 3 check, ai check 3, 6 e 9 con
+ * Check con le foto (FOTO-02): la foto di partenza all'onboarding, poi un
+ * set ogni 3 check, ai check 3, 6 e 9 con
  * il percorso di 1 anno, solo al 3 con quello di 6 mesi (l'ultimo check è
  * il 5). Numerazione del cliente: l'omaggio conta come un check qualsiasi.
  * La stessa regola è private.is_photo_check() nel database
@@ -34,18 +35,23 @@ type SessionRef = {
 };
 
 /**
- * Sessioni di UN percorso che prevedono le foto, con il numero del check
- * come lo vede il cliente (onboarding escluso, omaggio compreso).
+ * Sessioni di UN percorso che prevedono le foto: l'onboarding (foto di
+ * partenza, `checkNumber` null) e i check della regola, con il numero come
+ * lo vede il cliente (onboarding escluso, omaggio compreso). Nel database
+ * è private.is_photo_session().
  */
 export function photoSessionsOfJourney<T extends SessionRef>(
   sessions: readonly T[],
   durationMonths: number,
-): { session: T; checkNumber: number }[] {
+): { session: T; checkNumber: number | null }[] {
   const photoChecks = new Set(getPhotoCheckNumbers(durationMonths));
-  const out: { session: T; checkNumber: number }[] = [];
+  const out: { session: T; checkNumber: number | null }[] = [];
   let number = 0;
   for (const session of [...sessions].sort((a, b) => a.position - b.position)) {
-    if (session.type === "onboarding") continue;
+    if (session.type === "onboarding") {
+      out.push({ session, checkNumber: null });
+      continue;
+    }
     number += 1;
     if (photoChecks.has(number)) out.push({ session, checkNumber: number });
   }

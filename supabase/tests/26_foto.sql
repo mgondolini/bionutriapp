@@ -3,7 +3,7 @@
 -- server e con service_role), RLS fra clienti e studi, Storage, promemoria,
 -- cancellazione a cascata del cliente.
 begin;
-select plan(35);
+select plan(40);
 select tests.create_fixtures();
 
 -- Percorso di 1 anno: onboarding 120 giorni fa, poi un check ogni 30 giorni.
@@ -38,6 +38,15 @@ select pg_temp.journey(tests.id('c1'));
 select pg_temp.journey(tests.id('c2'));
 select pg_temp.journey(tests.id('c3'));
 select pg_temp.journey(tests.id('c7'));
+-- c6 (fase Onboarding): onboarding fra 2 giorni, check 3 fra 92
+select public.create_client_journey(tests.id('c6'), null, 'first', 6::smallint,
+  private.today_rome() + 2, (private.today_rome() + 2 + interval '6 months')::date,
+  true, 'none',
+  (select jsonb_agg(jsonb_build_object(
+            'position', p,
+            'type', case when p = 0 then 'onboarding' else 'check' end,
+            'calculated_date', private.today_rome() + 2 + p * 30))
+     from generate_series(0, 5) p));
 
 select results_eq(
   $$ select public, file_size_limit, allowed_mime_types from storage.buckets where id = 'client-photos' $$,
@@ -72,7 +81,7 @@ select throws_ok(
 );
 select throws_ok(
   format('insert into public.photo_sets (session_id) values (%L)', pg_temp.session(tests.id('c1'), 6)),
-  '23514', 'Il set si apre il giorno del check', 'il check 6 non è ancora arrivato'
+  '23514', 'Il set si apre 3 giorni prima del check', 'il check 6 non è ancora aperto'
 );
 
 -- ---------------------------------------------------------------------
@@ -215,7 +224,8 @@ insert into public.photos (set_id, view, storage_path, size_bytes, uploaded_by_r
 values (pg_temp.set_of(tests.id('c2')), 'side', pg_temp.path(tests.id('c2'), 'side'), 1000, 'client');
 select results_eq(
   format($$ select client_id, check_number, photo_count, missing_views
-              from public.photo_reminder_candidates(%L, private.today_rome() - 30) $$, tests.id('studio1')),
+              from public.photo_reminder_candidates(%L, private.today_rome() - 30)
+             where check_number = 3 $$, tests.id('studio1')),
   format($$ values (%L::uuid, 3, 1, array['front', 'back']::text[]) $$, tests.id('c2')),
   'promemoria: solo il set non salvato, con le foto mancanti'
 );
@@ -224,6 +234,35 @@ select throws_ok(
             values (%L, %L, %L, 'photos_other', current_date) $$,
          pg_temp.session(tests.id('c2'), 3), tests.id('studio1'), tests.id('c2')),
   '23514', null, 'il registro accetta solo i tipi previsti'
+);
+
+
+-- ---------------------------------------------------------------------
+-- Foto di partenza e apertura 3 giorni prima
+-- ---------------------------------------------------------------------
+select tests.authenticate_as(tests.id('u6'));
+select lives_ok(
+  format('insert into public.photo_sets (session_id) values (%L)', pg_temp.session(tests.id('c6'), 0)),
+  'il cliente in Onboarding apre il set di partenza 2 giorni prima della sessione'
+);
+select is(
+  (select count(*)::int from public.photo_sets where client_id = tests.id('c6')), 1,
+  'e lo legge'
+);
+select throws_ok(
+  format('insert into public.photo_sets (session_id) values (%L)', pg_temp.session(tests.id('c6'), 3)),
+  '23514', 'Il set si apre 3 giorni prima del check', 'il check 3 fra 92 giorni non è aperto'
+);
+select tests.clear_authentication();
+select is(
+  (select count(*)::int from public.photo_reminder_candidates(tests.id('studio1'), private.today_rome())
+    where client_id = tests.id('c6') and check_number is null),
+  1, 'promemoria del set di partenza dal giorno dell''apertura'
+);
+select is(
+  (select count(*)::int from public.photo_reminder_candidates(tests.id('studio1'), private.today_rome() - 2)
+    where client_id = tests.id('c6')),
+  0, 'nessun promemoria prima dell''apertura'
 );
 
 -- Cancellazione del cliente (procedura GDPR): la cascata passa

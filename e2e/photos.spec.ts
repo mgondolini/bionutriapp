@@ -24,18 +24,19 @@ const phones: string[] = [];
 type TestClient = { clientId: string; email: string; userId: string };
 let giulia: TestClient;
 let marta: TestClient;
+let lucia: TestClient;
 
 test.describe.configure({ mode: "serial" });
 
 /** Percorso di 1 anno iniziato 100 giorni fa: check 3 dieci giorni fa, check 6 fra 80. */
-async function createJourney(clientId: string) {
+async function createJourney(clientId: string, startOffset = -100) {
   const admin = adminClient();
   const day = (offset: number) => {
     const date = new Date();
     date.setUTCDate(date.getUTCDate() + offset);
     return date.toISOString().slice(0, 10);
   };
-  const start = day(-100);
+  const start = day(startOffset);
   const end = new Date(`${start}T12:00:00Z`);
   end.setUTCMonth(end.getUTCMonth() + 12);
   const { error } = await admin.rpc("create_client_journey", {
@@ -50,13 +51,16 @@ async function createJourney(clientId: string) {
     p_sessions: Array.from({ length: 12 }, (_, position) => ({
       position,
       type: position === 0 ? "onboarding" : "check",
-      calculated_date: day(-100 + position * 30),
+      calculated_date: day(startOffset + position * 30),
     })),
   });
   if (error) throw error;
 }
 
-async function newClient(firstName: string): Promise<TestClient> {
+async function newClient(
+  firstName: string,
+  startOffset = -100,
+): Promise<TestClient> {
   const suffix = `${Date.now()}${Math.floor(Math.random() * 1000)}`;
   const email = `foto.${suffix}@example.test`;
   const created = await createActiveClient({
@@ -66,13 +70,20 @@ async function newClient(firstName: string): Promise<TestClient> {
     email,
   });
   phones.push(created.phone.e164);
-  await createJourney(created.clientId);
+  await createJourney(created.clientId, startOffset);
   return { clientId: created.clientId, email, userId: created.userId };
 }
 
 test.beforeAll(async () => {
   giulia = await newClient("Giulia");
   marta = await newClient("Marta");
+  // in Onboarding, con l'onboarding fra 2 giorni: il set di partenza è aperto
+  lucia = await newClient("Lucia", 2);
+  const { error } = await adminClient()
+    .from("clients")
+    .update({ journey_stage: "onboarding" })
+    .eq("id", lucia.clientId);
+  if (error) throw error;
 });
 
 test.afterAll(async () => {
@@ -80,7 +91,7 @@ test.afterAll(async () => {
   const { data } = await admin
     .from("photos")
     .select("storage_path")
-    .in("client_id", [giulia.clientId, marta.clientId]);
+    .in("client_id", [giulia.clientId, marta.clientId, lucia.clientId]);
   await cleanup(phones);
   const paths = (data ?? []).map((row) => row.storage_path);
   if (paths.length) await admin.storage.from("client-photos").remove(paths);
@@ -217,9 +228,9 @@ test("il cliente carica due foto, rientra, aggiunge la terza e salva", async ({
   await expect(
     page.getByRole("heading", { name: "Foto salvate" }),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: /Carica le foto/ })).toHaveCount(
-    0,
-  );
+  await expect(
+    page.getByRole("link", { name: /Carica le foto del Check 3/ }),
+  ).toHaveCount(0);
 });
 
 test("il nutrizionista completa e salva la bozza di un cliente", async ({
@@ -231,7 +242,11 @@ test("il nutrizionista completa e salva la bozza di un cliente", async ({
   await login(device.page, marta.email, PASSWORD);
   await expect(device.page).toHaveURL(/\/app$/);
   await device.page.goto("/app/foto");
-  await device.page.getByRole("link", { name: "Carica le foto" }).click();
+  // il primo set è il più recente (check 3); sotto quello di partenza
+  await device.page
+    .getByRole("link", { name: "Carica le foto" })
+    .first()
+    .click();
   await device.page.waitForLoadState("networkidle");
   await clientAdd(device.page, "Fronte", "#c96");
   await device.context.close();
@@ -240,7 +255,7 @@ test("il nutrizionista completa e salva la bozza di un cliente", async ({
   await page.waitForURL(/\/admin/);
   await page.goto(`/admin/clienti/${marta.clientId}/foto`);
   await expect(
-    page.getByRole("link", { name: /Foto.*1 da completare/ }),
+    page.getByRole("link", { name: /Foto.*2 da completare/ }),
   ).toBeVisible();
   await expect(page.getByText("Bozza · 1 di 3")).toBeVisible();
   await expect(page.getByText(/Caricata da Marta/).first()).toBeVisible();
@@ -281,9 +296,10 @@ test("il nutrizionista completa e salva la bozza di un cliente", async ({
   await expect(
     page.getByRole("button", { name: /Sostituisci|Elimina/ }),
   ).toHaveCount(0);
-  await expect(page.getByRole("link", { name: /da completare/ })).toHaveCount(
-    0,
-  );
+  // resta da completare solo il set di partenza
+  await expect(
+    page.getByRole("link", { name: /Foto.*1 da completare/ }),
+  ).toBeVisible();
 
   // a schermo intero: frecce ed Esc
   await page.getByRole("button", { name: "Apri a schermo intero" }).click();
@@ -345,6 +361,23 @@ test("dopo il salvataggio né il cliente né lo staff modificano, nemmeno con l'
     .delete()
     .eq("client_id", marta.clientId);
   expect(staffDelete?.code).toBe("23514");
+});
+
+test("in Onboarding il cliente carica le foto di partenza da 3 giorni prima", async ({
+  page,
+}) => {
+  await login(page, lucia.email, PASSWORD);
+  await expect(page).toHaveURL(/\/app$/);
+  await page.getByRole("link", { name: /Carica le foto di partenza/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "Foto · Onboarding" }),
+  ).toBeVisible();
+  await page.waitForLoadState("networkidle");
+  await clientAdd(page, "Fronte", "#c96");
+  await expect(page.getByText(/^Caricata oggi/)).toHaveCount(1);
+  // il tracking resta bloccato in Onboarding
+  await page.goto("/app/tracking");
+  await expect(page).toHaveURL(/\/app$/);
 });
 
 test("smartphone a 390 px: elenco e set senza scorrimento orizzontale", async ({

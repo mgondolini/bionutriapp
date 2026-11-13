@@ -1,33 +1,23 @@
 /**
- * Promemoria delle foto (C27): il giorno del check alle 8, al posto del
- * promemoria del mattino del percorso; poi 3 e 7 giorni dopo alle 18, solo
- * se il set non è salvato. Ore nel fuso dello studio (DEV-10).
+ * Promemoria delle foto (C27, decisione del 13 novembre 2026): uno al
+ * giorno alle 8 nel fuso dello studio, dall'apertura del set (3 giorni
+ * prima della sessione) fino al salvataggio. Il giorno della sessione
+ * prende il posto del promemoria del mattino del percorso (DEV-10).
  */
-import {
-  JOURNEY_REMINDER_HOURS,
-  PHOTO_REMINDER_DAYS,
-  type PhotoNotificationKind,
-} from "@/lib/constants/domain";
-import { addDays } from "@/lib/domain/tracking/dates";
+import { JOURNEY_REMINDER_HOURS } from "@/lib/constants/domain";
 
-export type PhotoReminderSlot = {
-  kind: PhotoNotificationKind;
-  /** Giorno del check a cui si riferisce il promemoria. */
-  sessionDay: string;
-};
+export type PhotoReminderMoment = "before" | "same_day" | "after";
 
-export function photoReminderSlots(local: {
-  day: string;
-  hour: number;
-}): PhotoReminderSlot[] {
-  if (local.hour === JOURNEY_REMINDER_HOURS.sameDay) {
-    return [{ kind: "photos_same_day", sessionDay: local.day }];
-  }
-  if (local.hour === JOURNEY_REMINDER_HOURS.dayBefore) {
-    return PHOTO_REMINDER_DAYS.map((days) => ({
-      kind: `photos_day_${days}` as PhotoNotificationKind,
-      sessionDay: addDays(local.day, -days),
-    }));
-  }
-  return [];
+/** A quest'ora partono i promemoria delle foto? */
+export function isPhotoReminderHour(hour: number): boolean {
+  return hour === JOURNEY_REMINDER_HOURS.sameDay;
+}
+
+/** Testo del promemoria: prima della sessione, il giorno stesso o dopo. */
+export function photoReminderMoment(
+  sessionDate: string,
+  today: string,
+): PhotoReminderMoment {
+  if (sessionDate === today) return "same_day";
+  return sessionDate > today ? "before" : "after";
 }

@@ -4,6 +4,7 @@ import { ClientPageHeader } from "@/features/cliente/client-header";
 import { PhotoSetPage } from "@/features/cliente/photos/photo-set-page";
 import { ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import { canClientUploadPhotos } from "@/lib/photos/status";
 import { formatLongDate } from "@/lib/format";
 import { getClientPhotos } from "@/server/services/photos.service";
 import { requireClient } from "@/server/services/session.service";
@@ -13,14 +14,14 @@ import { photoSessionSchema } from "@/server/validation/photos.schema";
 export default async function ClientPhotoSetPage({
   params,
 }: PageProps<"/app/foto/[sessionId]">) {
-  const { client } = await requireClient({ unlocked: true });
+  const { client } = await requireClient();
   const parsed = photoSessionSchema.safeParse({
     sessionId: (await params).sessionId,
   });
   if (!parsed.success) notFound();
   const data = await getClientPhotos(
     client.id,
-    client.journeyStage === "in_progress",
+    canClientUploadPhotos(client.journeyStage),
   );
   const set = data.sets.find((s) => s.sessionId === parsed.data.sessionId);
   if (!set) notFound();

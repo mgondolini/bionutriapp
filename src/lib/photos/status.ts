@@ -2,16 +2,19 @@
  * Stato mostrato di un set (DEV-13): si salva solo bozza o salvato, il
  * resto dipende dalla data del check e dalle foto caricate.
  */
+import { addDays } from "@/lib/domain/tracking/dates";
 import {
+  PHOTO_SET_OPEN_DAYS_BEFORE,
   PHOTO_VIEWS,
   type JourneySessionStatus,
+  type JourneyStage,
   type PhotoSetStatus,
   type PhotoView,
 } from "@/lib/constants/domain";
 
 /**
- * - future: il check non è ancora arrivato ("Prossima", senza azioni)
- * - to_upload: aperto, nessuna foto
+ * - future: mancano più di 3 giorni alla sessione ("Prossima", senza azioni)
+ * - to_upload: aperto (da 3 giorni prima), nessuna foto
  * - draft: 1 o 2 foto
  * - ready: tutte e tre, da salvare
  * - saved: definitivo
@@ -30,10 +33,19 @@ export function getPhotoSetStatus(input: {
   if (input.setStatus === "saved") return "saved";
   const count = new Set(input.views).size;
   if (count === 0) {
-    if (input.sessionDate > input.today) return "future";
+    if (!isPhotoSetOpen(input.sessionDate, input.today)) return "future";
     return input.sessionStatus === "skipped" ? "skipped" : "to_upload";
   }
   return count >= PHOTO_VIEWS.length ? "ready" : "draft";
+}
+
+/** Giorno di apertura del set: 3 giorni prima della sessione. */
+export function photoSetOpensOn(sessionDate: string): string {
+  return addDays(sessionDate, -PHOTO_SET_OPEN_DAYS_BEFORE);
+}
+
+export function isPhotoSetOpen(sessionDate: string, today: string): boolean {
+  return photoSetOpensOn(sessionDate) <= today;
 }
 
 /** Viste ancora da caricare, nell'ordine Fronte, Lato, Dietro. */
@@ -47,6 +59,11 @@ export function canSavePhotoSet(input: {
   views: readonly PhotoView[];
 }): boolean {
   return input.setStatus !== "saved" && missingViews(input.views).length === 0;
+}
+
+/** Fasi in cui il cliente carica e salva le foto (anche quelle di partenza). */
+export function canClientUploadPhotos(stage: JourneyStage): boolean {
+  return stage === "onboarding" || stage === "in_progress";
 }
 
 /** Set aperto (si può caricare): arrivato e non salvato. */

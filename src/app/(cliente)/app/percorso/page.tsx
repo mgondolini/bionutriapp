@@ -2,7 +2,6 @@ import { ClientPageHeader } from "@/features/cliente/client-header";
 import { JourneyPage } from "@/features/cliente/journeys/journey-page";
 import { JOURNEY_PARAM } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
-import type { PhotoSetState } from "@/lib/photos/status";
 import { getClientJourneys } from "@/server/services/journeys.service";
 import { getClientPhotoMarks } from "@/server/services/photos.service";
 import { requireClient } from "@/server/services/session.service";
@@ -21,9 +20,7 @@ export default async function ClientJourneyPage({
   );
   const [data, photoMarks] = await Promise.all([
     getClientJourneys(journeyId),
-    session.client.unlocked
-      ? getClientPhotoMarks(session.client.id)
-      : Promise.resolve<Record<string, PhotoSetState>>({}),
+    getClientPhotoMarks(session.client.id),
   ]);
   // segno "Foto" sui check con le foto (C19)
   const marked = data.shown

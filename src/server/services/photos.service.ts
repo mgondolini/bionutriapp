@@ -21,6 +21,7 @@ import { hasJpegSignature, jpegHasMetadata } from "@/lib/photos/image";
 import {
   getPhotoSetStatus,
   isOpenState,
+  isPhotoSetOpen,
   missingViews,
   type PhotoSetState,
 } from "@/lib/photos/status";
@@ -58,7 +59,8 @@ type PhotoCheck = {
   sessionId: string;
   journeyActive: boolean;
   journeyOrder: string;
-  checkNumber: number;
+  /** null per l'onboarding (foto di partenza). */
+  checkNumber: number | null;
   /** Nome della sessione per chi guarda (lo staff vede la propria numerazione). */
   label: string;
   /** 1 = primo set di foto del percorso. */
@@ -76,7 +78,7 @@ export type PhotoItem = {
 
 export type PhotoSetView = {
   sessionId: string;
-  checkNumber: number;
+  checkNumber: number | null;
   label: string;
   ordinal: number;
   date: string;
@@ -90,7 +92,13 @@ export type PhotoSetView = {
   canEdit: boolean;
 };
 
-function labelOf(name: SessionName | undefined, checkNumber: number): string {
+function labelOf(
+  name: SessionName | undefined,
+  checkNumber: number | null,
+): string {
+  if (name?.kind === "onboarding" || checkNumber === null) {
+    return copy.journeys.sessionName.onboarding;
+  }
   if (name?.kind === "check") return copy.photos.checkName(name.number);
   if (name?.kind === "gift") return copy.journeys.sessionName.gift;
   return copy.photos.checkName(checkNumber);
@@ -420,7 +428,9 @@ async function resolveWritable(
   }
   const check = checks.find((c) => c.sessionId === sessionId);
   if (!check) return { ok: false, reason: "not_found" };
-  if (check.date > todayInRome()) return { ok: false, reason: "not_open" };
+  if (!isPhotoSetOpen(check.date, todayInRome())) {
+    return { ok: false, reason: "not_open" };
+  }
   return { ok: true, clientId, check };
 }
 

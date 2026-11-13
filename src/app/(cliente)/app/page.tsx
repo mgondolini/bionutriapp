@@ -44,10 +44,12 @@ export default async function ClientHomePage() {
     </>
   );
   if (!client.unlocked) {
+    const [startPhotos] = await getClientOpenPhotoSets(client.id);
     return (
       <div className="flex flex-col gap-4">
         <ClientHomeHeader />
         {pwa}
+        {startPhotos ? <PhotoHomeCard set={startPhotos} /> : null}
         <OnboardingHome
           studioName={studio.name}
           videos={<OnboardingVideos videos={await getOnboardingVideos()} />}

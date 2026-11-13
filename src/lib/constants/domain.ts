@@ -82,7 +82,8 @@ export const CLIENT_NAV = [
   // in Onboarding si vedono solo le cartelle "anche in Onboarding" (RLS)
   { key: "videos", href: ROUTES.client.videos, locked: false },
   { key: "tracking", href: ROUTES.client.tracking, locked: true },
-  { key: "photos", href: ROUTES.client.photos, locked: true },
+  // anche in Onboarding (foto di partenza), solo se c'è un set aperto
+  { key: "photos", href: ROUTES.client.photos, locked: false },
 ] as const;
 export type ClientNavKey = (typeof CLIENT_NAV)[number]["key"];
 
@@ -692,8 +693,10 @@ export const NOTE_SAVE_CONFLICT = "conflict";
 /** Tre viste per set; il lato è sempre il destro, per poter confrontare. */
 export const PHOTO_VIEWS = ["front", "side", "back"] as const;
 export type PhotoView = (typeof PHOTO_VIEWS)[number];
-/** Un set ogni 3 check (numerazione del cliente): 3, 6, 9. */
+/** Un set all'onboarding (foto di partenza) e ogni 3 check (numerazione del cliente): 3, 6, 9. */
 export const PHOTO_CHECK_INTERVAL = 3;
+/** Il set si apre questi giorni prima della sessione e resta aperto finché non è salvato. */
+export const PHOTO_SET_OPEN_DAYS_BEFORE = 3;
 /** Stato salvato del set; gli altri stati si calcolano (getPhotoSetStatus). */
 export const PHOTO_SET_STATUSES = ["draft", "saved"] as const;
 export type PhotoSetStatus = (typeof PHOTO_SET_STATUSES)[number];
@@ -725,12 +728,16 @@ export const PHOTO_HEAD_BYTES = 64 * 1024;
  * lo schermo intero più tardi ancora), quindi qualche minuto (NF-02).
  */
 export const PHOTO_SIGNED_URL_TTL_SECONDS = 5 * 60;
-/** Promemoria dopo il giorno del check se il set non è salvato (C27), alle 18. */
-export const PHOTO_REMINDER_DAYS = [3, 7] as const;
+/**
+ * Promemoria delle foto: uno al giorno, alle 8 nel fuso dello studio,
+ * dall'apertura del set fino al salvataggio. I primi tre tipi sono del
+ * vecchio schema (giorno del check, +3, +7), restano per il registro.
+ */
 export const PHOTO_NOTIFICATION_KINDS = [
   "photos_same_day",
   "photos_day_3",
   "photos_day_7",
+  "photos_daily",
 ] as const;
 export type PhotoNotificationKind = (typeof PHOTO_NOTIFICATION_KINDS)[number];
 

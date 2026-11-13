@@ -82,6 +82,13 @@ const clientNav: Record<ClientNavKey, { label: string; description: string }> =
 const VIDEO_COUNT = (count: number) =>
   count === 1 ? "1 video" : `${count} video`;
 
+/** "di partenza" per l'onboarding, "del Check 6" per un check. */
+const OF_SET = (label: string) =>
+  label === "Onboarding" ? "di partenza" : `del ${label}`;
+/** "all’onboarding", "al Check 3". */
+const AT_SET = (label: string) =>
+  label === "Onboarding" ? "all’onboarding" : `al ${label}`;
+
 export const copy = {
   app: {
     fallbackName: "Area riservata",
@@ -2253,7 +2260,7 @@ export const copy = {
     savedToast: "Foto salvate",
     deletedToast: (view: string) => `Foto ${view} eliminata`,
     confirm: {
-      title: (check: string) => `Salvare le foto del ${check}?`,
+      title: (check: string) => `Salvare le foto ${OF_SET(check)}?`,
       descriptionClient:
         "Dopo il salvataggio non potrai più sostituirle né eliminarle.",
       descriptionStaff: (name: string) =>
@@ -2313,7 +2320,7 @@ export const copy = {
     admin: {
       title: "Foto di avanzamento",
       intro: (name: string) =>
-        `Fronte, lato e dietro ogni 3 mesi, ai check 3, 6 e 9 del percorso. Le vedono solo ${name} e lo studio. Dopo il salvataggio non si possono più modificare.`,
+        `Fronte, lato e dietro all’onboarding (foto di partenza) e ogni 3 mesi, ai check 3, 6 e 9 del percorso. Le vedono solo ${name} e lo studio. Dopo il salvataggio non si possono più modificare.`,
       savedCount: (saved: number, total: number) =>
         `${saved} di ${total} set salvati`,
       tabBadge: (count: number) => `${count} da completare`,
@@ -2346,11 +2353,11 @@ export const copy = {
       remindersOff:
         "Il cliente non riceve promemoria: puoi caricare tu le foto.",
       future: (date: string, name: string) =>
-        `${date} · Il set si apre il giorno del check e ${name} riceve una notifica al mattino.`,
+        `${date} · Il set si apre 3 giorni prima e ${name} riceve una notifica ogni mattina.`,
       futureHint:
-        "Puoi caricare tu le foto dal giorno del check, per esempio durante una visita in studio.",
+        "Puoi caricare tu le foto da 3 giorni prima, per esempio durante una visita in studio.",
       dialogTitle: (check: string, name: string) =>
-        `Foto del ${check} · ${name}`,
+        `Foto ${OF_SET(check)} · ${name}`,
       dialogDescription:
         "Ogni foto si conserva come bozza appena la carichi. Puoi chiudere e riprendere quando vuoi.",
       warnTitle: "Dopo il salvataggio le foto sono definitive.",
@@ -2358,7 +2365,7 @@ export const copy = {
       closeDraft: "Chiudi, la bozza resta",
       emptyTitle: "Nessun check con le foto",
       emptyDescription:
-        "Le foto si caricano ai check 3, 6 e 9 del percorso. Crea il percorso del cliente per vederle qui.",
+        "Le foto si caricano all’onboarding e ai check 3, 6 e 9 del percorso. Crea il percorso del cliente per vederle qui.",
       emptyAction: "Vai al percorso",
       journeySign: "Foto",
       journeySignState: (state: string) => ` · ${state}`,
@@ -2366,10 +2373,10 @@ export const copy = {
     client: {
       title: "Le tue foto",
       heroTag: "Da caricare",
-      heroTitle: (check: string) => `Carica le foto del ${check}`,
+      heroTitle: (check: string) => `Carica le foto ${OF_SET(check)}`,
       heroNote: "Fronte, lato e dietro. Ci vogliono due minuti.",
       heroNoteAfter: (previous: string) =>
-        `Fronte, lato e dietro, come hai fatto al ${previous}. Ci vogliono due minuti.`,
+        `Fronte, lato e dietro, come hai fatto ${AT_SET(previous)}. Ci vogliono due minuti.`,
       heroProgress: (count: number) =>
         count === 0
           ? "Nessuna foto caricata"
@@ -2384,12 +2391,12 @@ export const copy = {
       savedByYou: (date: string) => `${date} · Salvate da te`,
       savedByStudio: (date: string) => `${date} · Salvate dallo studio`,
       nextSection: "Prossime",
-      nextLine: (date: string) => `${date} · si apre il giorno del check`,
+      nextLine: (date: string) => `${date} · si apre 3 giorni prima`,
       privacy:
         "Le foto le vedi solo tu e il tuo nutrizionista. Ogni set si salva una volta sola e poi non si modifica più.",
       emptyTitle: "Ancora nessuna foto",
       emptyDescription:
-        "Le foto di avanzamento si caricano ai check 3, 6 e 9 del percorso. Quando arriva il giorno, le trovi qui.",
+        "Le foto di avanzamento si caricano all’onboarding e ai check 3, 6 e 9 del percorso. Quando si avvicina il giorno, le trovi qui.",
       setTitle: (check: string) => `Foto · ${check}`,
       autosave:
         "Si conservano da sole come bozza: puoi chiudere e tornare quando vuoi.",
@@ -2403,7 +2410,7 @@ export const copy = {
         `Te, il ${date} alle ${time}`,
       savedByLineStudio: (date: string, time: string) =>
         `Lo studio, il ${date} alle ${time}`,
-      homeTitle: (check: string) => `Carica le foto del ${check}`,
+      homeTitle: (check: string) => `Carica le foto ${OF_SET(check)}`,
       homeProgress: (count: number, missing: string) =>
         count === 0
           ? "Fronte, lato e dietro"
@@ -2415,24 +2422,28 @@ export const copy = {
       menuBadge: (count: number) => `${count} da caricare`,
     },
     push: {
-      sameDayTitle: (check: string) => `Oggi hai il ${check}: carica le foto`,
+      beforeTitle: (check: string) =>
+        `Puoi già caricare le foto ${OF_SET(check)}`,
+      sameDayTitle: (check: string) =>
+        check === "Onboarding"
+          ? "Oggi hai l’onboarding: carica le foto di partenza"
+          : `Oggi hai il ${check}: carica le foto`,
+      afterTitle: (check: string) => `Foto ${OF_SET(check)} da completare`,
       sameDay: (time: string | null) =>
         `${time ? `Alle ${time}. ` : ""}Servono fronte, lato e dietro: ci vogliono due minuti.`,
-      day3Title: (check: string) => `Foto del ${check} da completare`,
-      day3: (count: number, missing: string[]) =>
+      /** Corpo dei promemoria: quante foto mancano (C27). */
+      progress: (count: number, missing: string[]) =>
         count === 0
-          ? "Non hai ancora caricato le foto: servono fronte, lato e dietro."
+          ? "Servono fronte, lato e dietro: ci vogliono due minuti."
           : count >= 3
             ? "Le foto ci sono tutte: rivedile e salvale."
             : missing.length === 1
               ? `Hai caricato ${count} foto su 3. Manca ${missing[0]}: aggiungila e poi salva.`
               : `Hai caricato ${count} foto su 3. Mancano ${missing.join(" e ")}: aggiungile e poi salva.`,
-      day7Title: "Ultimo promemoria per le foto",
-      day7: (check: string) => `Le foto del ${check} non sono ancora salvate.`,
     },
     errors: {
       notFound: "Questo check non esiste più.",
-      notOpen: "Il set si apre il giorno del check.",
+      notOpen: "Il set si apre 3 giorni prima del check.",
       saved:
         "Le foto di questo check sono già state salvate: non si possono più modificare.",
       incomplete: "Per salvare servono tutte e tre le foto.",

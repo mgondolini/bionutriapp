@@ -25,13 +25,16 @@ async function ClientShell({ children }: { children: React.ReactNode }) {
   const { studio, client } = await requireClient();
   const [videos, openPhotoSets] = await Promise.all([
     getClientVideoHome(),
-    client.unlocked ? getClientOpenPhotoSets(client.id) : Promise.resolve([]),
+    getClientOpenPhotoSets(client.id),
   ]);
   const sections: ClientMenuItem[] = CLIENT_NAV.filter(
     (item) =>
       client.unlocked ||
-      // in Onboarding la voce Video c'è solo se lo studio ha video di benvenuto
-      (!item.locked && (item.key !== "videos" || videos.videoCount > 0)),
+      // in Onboarding la voce Video c'è solo se lo studio ha video di
+      // benvenuto, la voce Foto solo con un set aperto (foto di partenza)
+      (!item.locked &&
+        (item.key !== "videos" || videos.videoCount > 0) &&
+        (item.key !== "photos" || openPhotoSets.length > 0)),
   ).map((item) => ({
     key: item.key,
     href: item.href,

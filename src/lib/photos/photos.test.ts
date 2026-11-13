@@ -42,12 +42,13 @@ describe("photoSessionsOfJourney", () => {
     type,
   });
 
-  it("onboarding escluso dalla numerazione", () => {
+  it("l'onboarding ha le foto di partenza ed è escluso dalla numerazione", () => {
     const sessions = [
       session(0, "onboarding"),
       ...[1, 2, 3, 4, 5].map((p) => session(p, "check")),
     ];
     expect(photoSessionsOfJourney(sessions, 6)).toEqual([
+      { session: sessions[0], checkNumber: null },
       { session: sessions[3], checkNumber: 3 },
     ]);
   });
@@ -88,11 +89,11 @@ describe("getPhotoSetStatus", () => {
     views: [],
   };
 
-  it("futuro prima del giorno del check", () => {
-    expect(getPhotoSetStatus({ ...base, today: "2026-10-29" })).toBe("future");
+  it("futuro fino a 4 giorni prima del check", () => {
+    expect(getPhotoSetStatus({ ...base, today: "2026-10-26" })).toBe("future");
   });
-  it("da caricare dal giorno del check", () => {
-    expect(getPhotoSetStatus({ ...base, today: "2026-10-30" })).toBe(
+  it("da caricare da 3 giorni prima del check", () => {
+    expect(getPhotoSetStatus({ ...base, today: "2026-10-27" })).toBe(
       "to_upload",
     );
   });
@@ -213,22 +214,16 @@ describe("immagini", () => {
   });
 });
 
-describe("photoReminderSlots", () => {
-  it("alle 8 il promemoria del giorno del check", async () => {
-    const { photoReminderSlots } = await import("./reminders");
-    expect(photoReminderSlots({ day: "2026-10-30", hour: 8 })).toEqual([
-      { kind: "photos_same_day", sessionDay: "2026-10-30" },
-    ]);
+describe("promemoria delle foto", () => {
+  it("uno al giorno, alle 8", async () => {
+    const { isPhotoReminderHour } = await import("./reminders");
+    expect(isPhotoReminderHour(8)).toBe(true);
+    expect(isPhotoReminderHour(18)).toBe(false);
   });
-  it("alle 18 quelli di 3 e 7 giorni dopo", async () => {
-    const { photoReminderSlots } = await import("./reminders");
-    expect(photoReminderSlots({ day: "2026-11-06", hour: 18 })).toEqual([
-      { kind: "photos_day_3", sessionDay: "2026-11-03" },
-      { kind: "photos_day_7", sessionDay: "2026-10-30" },
-    ]);
-  });
-  it("alle altre ore niente", async () => {
-    const { photoReminderSlots } = await import("./reminders");
-    expect(photoReminderSlots({ day: "2026-11-06", hour: 12 })).toEqual([]);
+  it("testo prima della sessione, il giorno stesso e dopo", async () => {
+    const { photoReminderMoment } = await import("./reminders");
+    expect(photoReminderMoment("2026-10-30", "2026-10-27")).toBe("before");
+    expect(photoReminderMoment("2026-10-30", "2026-10-30")).toBe("same_day");
+    expect(photoReminderMoment("2026-10-30", "2026-11-02")).toBe("after");
   });
 });

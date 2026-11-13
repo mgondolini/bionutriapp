@@ -15,8 +15,9 @@ const sessionId = (position: number) =>
 const SET = "aaaaaaaa-5555-4000-8000-000000000001";
 const OBJECT = "aaaaaaaa-6666-4000-8000-000000000001";
 
-/** Check 3 il 30 ottobre (aperto), check 6 e 9 nel 2027. */
+/** Onboarding ad aprile e check 3 il 30 ottobre (aperti), check 6 e 9 nel 2027. */
 const DATES: Record<number, string> = {
+  0: "2026-04-01",
   3: "2026-10-30",
   6: "2027-01-30",
   9: "2027-04-30",
@@ -235,15 +236,16 @@ beforeEach(async () => {
 });
 
 describe("getStaffPhotos", () => {
-  it("prima il set aperto, poi i prossimi dal più vicino", async () => {
+  it("prima i set aperti (anche le foto di partenza), poi i prossimi dal più vicino", async () => {
     const data = await service.getStaffPhotos(STUDIO, CLIENT);
     expect(data?.sets.map((s) => [s.label, s.state])).toEqual([
       ["Check 3", "to_upload"],
+      ["Onboarding", "to_upload"],
       ["Check 6", "future"],
       ["Check 9", "future"],
     ]);
     expect(data?.sets[0]?.canEdit).toBe(true);
-    expect(data?.sets[1]?.canEdit).toBe(false);
+    expect(data?.sets[2]?.canEdit).toBe(false);
   });
 
   it("un set salvato va dopo quelli aperti, senza comandi", async () => {
@@ -256,8 +258,13 @@ describe("getStaffPhotos", () => {
     addPhoto("back");
     db.sets[0]!.status = "saved";
     const data = await service.getStaffPhotos(STUDIO, CLIENT);
-    expect(data?.sets[0]).toMatchObject({ state: "saved", canEdit: false });
-    expect(data?.sets[0]?.photos.map((p) => p.url)).toEqual([
+    // il set aperto (onboarding) resta sopra
+    expect(data?.sets.map((s) => s.label).slice(0, 2)).toEqual([
+      "Onboarding",
+      "Check 3",
+    ]);
+    expect(data?.sets[1]).toMatchObject({ state: "saved", canEdit: false });
+    expect(data?.sets[1]?.photos.map((p) => p.url)).toEqual([
       `https://view/${STUDIO}/${CLIENT}/${SET}/front-old.jpg`,
       `https://view/${STUDIO}/${CLIENT}/${SET}/side-old.jpg`,
       `https://view/${STUDIO}/${CLIENT}/${SET}/back-old.jpg`,

@@ -107,35 +107,58 @@ describe("promemoria delle foto (C27)", () => {
       body: "Alle 10:30. Servono fronte, lato e dietro: ci vogliono due minuti.",
       url: "/app/foto",
     });
-    expect([...log.values()][0]!.kind).toBe("photos_same_day");
+    expect([...log.values()][0]).toMatchObject({
+      kind: "photos_daily",
+      referenceDate: "2026-11-05",
+    });
   });
 
-  it("3 giorni dopo dice quante foto mancano; 7 giorni dopo l'ultimo", async () => {
+  it("un promemoria ogni mattina: prima, dopo e per le foto di partenza", async () => {
     vi.mocked(repo.listReminderCandidates).mockResolvedValue([]);
-    vi.mocked(photosRepo.listReminderCandidates).mockImplementation(
-      async (_studio, day) =>
-        day === "2026-11-02"
-          ? [
-              photo({
-                session_id: "a",
-                session_date: day,
-                photo_count: 2,
-                missing_views: ["back"],
-              }),
-            ]
-          : [photo({ session_id: "b", session_date: day })],
-    );
-    // 17:00 UTC = 18:00 a Roma del 5 novembre
+    vi.mocked(photosRepo.listReminderCandidates).mockResolvedValue([
+      photo({ session_id: "a", session_date: "2026-11-07" }),
+      photo({
+        session_id: "b",
+        session_date: "2026-11-02",
+        photo_count: 2,
+        missing_views: ["back"],
+      }),
+      photo({
+        session_id: "c",
+        // onboarding: la RPC restituisce null (i tipi generati non lo prevedono)
+        check_number: null as unknown as number,
+        session_date: "2026-11-06",
+      }),
+    ]);
+    const MORNING = new Date("2026-11-05T07:00:00Z");
+    const { jobs } = await service.prepareJourneyReminders(MORNING);
+    expect(jobs.map((job) => [job.payload.title, job.payload.body])).toEqual([
+      [
+        "Puoi già caricare le foto del Check 6",
+        "Servono fronte, lato e dietro: ci vogliono due minuti.",
+      ],
+      [
+        "Foto del Check 6 da completare",
+        "Hai caricato 2 foto su 3. Manca Dietro: aggiungila e poi salva.",
+      ],
+      [
+        "Puoi già caricare le foto di partenza",
+        "Servono fronte, lato e dietro: ci vogliono due minuti.",
+      ],
+    ]);
+    // stesso giorno, seconda esecuzione: nessun doppione
+    const second = await service.prepareJourneyReminders(MORNING);
+    expect(second.jobs).toEqual([]);
+  });
+
+  it("alle 18 nessun promemoria delle foto", async () => {
+    vi.mocked(repo.listReminderCandidates).mockResolvedValue([]);
+    vi.mocked(photosRepo.listReminderCandidates).mockResolvedValue([photo()]);
     const { jobs } = await service.prepareJourneyReminders(
       new Date("2026-11-05T17:00:00Z"),
     );
-    expect(jobs.map((job) => job.payload.title)).toEqual([
-      "Foto del Check 6 da completare",
-      "Ultimo promemoria per le foto",
-    ]);
-    expect(jobs[0]!.payload.body).toBe(
-      "Hai caricato 2 foto su 3. Manca Dietro: aggiungila e poi salva.",
-    );
+    expect(jobs).toEqual([]);
+    expect(photosRepo.listReminderCandidates).not.toHaveBeenCalled();
   });
 });
 

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { ROUTES, clientDetailPath } from "@/lib/constants/domain";
+import { canClientUploadPhotos } from "@/lib/photos/status";
 import { copy } from "@/lib/copy/it";
 import { authFailure } from "@/server/actions/session-guard";
 import * as photosService from "@/server/services/photos.service";
@@ -40,17 +41,20 @@ const FAILURES: Record<PhotoFailure, string> = {
   rejected: e.rejected,
 };
 
-/** Staff dello studio o cliente sbloccato; il cliente scrive solo In percorso. */
+/**
+ * Staff dello studio o cliente con l'account attivo; il cliente scrive in
+ * Onboarding (foto di partenza) e In percorso, non In pausa o Concluso.
+ */
 async function photoActor(): Promise<PhotoActor | null> {
   const session = await getSession();
   if (session.kind === "staff" && session.studio.id) {
     return { kind: "staff", studioId: session.studio.id };
   }
-  if (session.kind === "client" && session.client.unlocked) {
+  if (session.kind === "client") {
     return {
       kind: "client",
       clientId: session.client.id,
-      canWrite: session.client.journeyStage === "in_progress",
+      canWrite: canClientUploadPhotos(session.client.journeyStage),
     };
   }
   return null;
