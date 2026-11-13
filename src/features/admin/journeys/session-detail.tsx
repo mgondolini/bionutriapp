@@ -148,23 +148,25 @@ export function SessionDetail({
       onSubmit={onSubmit}
       noValidate
       aria-labelledby={`${ids}-title`}
-      className="grid gap-6 rounded-2xl bg-muted p-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.2fr)_minmax(0,1fr)]"
+      className="grid gap-x-6 gap-y-5 rounded-2xl bg-muted p-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.2fr)_minmax(0,1fr)]"
     >
+      {/* titolo su tutta la riga: le tre colonne partono alla stessa altezza */}
+      <div className="flex flex-wrap items-center gap-2.5 lg:col-span-3">
+        <h3 id={`${ids}-title`} className="text-xl font-bold">
+          {name}
+        </h3>
+        <span className="rounded-full bg-card px-2.5 py-0.5 text-xs font-semibold">
+          {t.state[session.state]}
+        </span>
+      </div>
+
       <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <h3 id={`${ids}-title`} className="text-xl font-bold">
-            {name}
-          </h3>
-          <span className="rounded-full bg-card px-2.5 py-0.5 text-xs font-semibold">
-            {t.state[session.state]}
-          </span>
-        </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,9rem)] gap-3">
           <Controller
             name="date"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} className="w-44">
+              <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor={`${ids}-date`}>
                   {t.admin.sessionDate}
                 </FieldLabel>
@@ -184,7 +186,7 @@ export function SessionDetail({
             name="time"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} className="w-32">
+              <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor={`${ids}-time`}>
                   {t.admin.sessionTime}{" "}
                   <span className="font-normal text-admin-muted">
@@ -219,8 +221,10 @@ export function SessionDetail({
             {t.admin.restore}
           </Button>
         ) : null}
-        <p className="flex flex-col text-sm">
-          <span className="font-semibold">{t.admin.sessionDuration}</span>
+        <p className="flex flex-col gap-1 text-sm">
+          <span className="text-[13px] font-semibold">
+            {t.admin.sessionDuration}
+          </span>
           <span>{t.admin.durationValue(event.durationMinutes)}</span>
         </p>
         <MeetingLink
@@ -235,7 +239,7 @@ export function SessionDetail({
           control={form.control}
           render={({ field }) => (
             <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold">
+              <span className="text-[13px] font-semibold">
                 {t.admin.statusLabel}
               </span>
               <SegmentedControl
