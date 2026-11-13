@@ -3,7 +3,7 @@
 -- server e con service_role), RLS fra clienti e studi, Storage, promemoria,
 -- cancellazione a cascata del cliente.
 begin;
-select plan(40);
+select plan(42);
 select tests.create_fixtures();
 
 -- Percorso di 1 anno: onboarding 120 giorni fa, poi un check ogni 30 giorni.
@@ -54,12 +54,21 @@ select results_eq(
   'client-photos è privato, solo JPEG fino a 10 MB'
 );
 select is(
-  array(select n from generate_series(1, 12) n where private.is_photo_check(n, 12)),
-  array[3, 6, 9], 'percorso di 1 anno: foto ai check 3, 6 e 9'
+  array(select n from generate_series(1, 12) n where private.is_photo_check(n, 11)),
+  array[3, 6, 9, 11], 'percorso di 1 anno (ultimo check 11): foto ai check 3, 6, 9 e 11'
 );
 select is(
-  array(select n from generate_series(1, 6) n where private.is_photo_check(n, 6)),
-  array[3], 'percorso di 6 mesi: foto solo al check 3'
+  array(select n from generate_series(1, 6) n where private.is_photo_check(n, 5)),
+  array[3, 5], 'percorso di 6 mesi (ultimo check 5): foto ai check 3 e 5'
+);
+
+select ok(
+  private.is_photo_session(pg_temp.session(tests.id('c1'), 11)),
+  'l''ultimo check del percorso (11) prevede le foto'
+);
+select ok(
+  not private.is_photo_session(pg_temp.session(tests.id('c1'), 10)),
+  'il check 10 non prevede foto'
 );
 
 -- ---------------------------------------------------------------------

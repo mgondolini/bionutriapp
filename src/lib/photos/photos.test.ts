@@ -19,16 +19,21 @@ import {
 } from "./status";
 
 describe("getPhotoCheckNumbers", () => {
-  it("1 anno: check 3, 6 e 9", () => {
-    expect(getPhotoCheckNumbers(12)).toEqual([3, 6, 9]);
+  it("1 anno (ultimo check 11): check 3, 6, 9 e 11", () => {
+    expect(getPhotoCheckNumbers(11)).toEqual([3, 6, 9, 11]);
   });
-  it("6 mesi: solo il check 3 (l'ultimo check è il 5)", () => {
-    expect(getPhotoCheckNumbers(6)).toEqual([3]);
+  it("6 mesi (ultimo check 5): check 3 e 5", () => {
+    expect(getPhotoCheckNumbers(5)).toEqual([3, 5]);
+  });
+  it("con l'omaggio aggiunto l'ultimo è un multiplo di 3: nessun doppione", () => {
+    expect(getPhotoCheckNumbers(12)).toEqual([3, 6, 9, 12]);
+    expect(getPhotoCheckNumbers(6)).toEqual([3, 6]);
   });
   it("isPhotoCheck", () => {
-    expect(isPhotoCheck(6, 12)).toBe(true);
-    expect(isPhotoCheck(6, 6)).toBe(false);
-    expect(isPhotoCheck(4, 12)).toBe(false);
+    expect(isPhotoCheck(6, 11)).toBe(true);
+    expect(isPhotoCheck(11, 11)).toBe(true);
+    expect(isPhotoCheck(4, 11)).toBe(false);
+    expect(isPhotoCheck(10, 11)).toBe(false);
   });
 });
 
@@ -47,9 +52,10 @@ describe("photoSessionsOfJourney", () => {
       session(0, "onboarding"),
       ...[1, 2, 3, 4, 5].map((p) => session(p, "check")),
     ];
-    expect(photoSessionsOfJourney(sessions, 6)).toEqual([
+    expect(photoSessionsOfJourney(sessions)).toEqual([
       { session: sessions[0], checkNumber: null },
       { session: sessions[3], checkNumber: 3 },
+      { session: sessions[5], checkNumber: 5 },
     ]);
   });
 
@@ -59,7 +65,7 @@ describe("photoSessionsOfJourney", () => {
       ...Array.from({ length: 11 }, (_, i) => session(i + 1, "check")),
     ];
     expect(
-      photoSessionsOfJourney(sessions, 12).map((s) => [
+      photoSessionsOfJourney(sessions).map((s) => [
         s.session.id,
         s.checkNumber,
       ]),
@@ -67,6 +73,7 @@ describe("photoSessionsOfJourney", () => {
       ["s2", 3],
       ["s5", 6],
       ["s8", 9],
+      ["s11", 12],
     ]);
   });
 
@@ -76,7 +83,7 @@ describe("photoSessionsOfJourney", () => {
       session(1, "check"),
       session(2, "check"),
     ];
-    expect(photoSessionsOfJourney(sessions, 6)[0]?.session.id).toBe("s3");
+    expect(photoSessionsOfJourney(sessions)[0]?.session.id).toBe("s3");
   });
 });
 

@@ -28,6 +28,7 @@ import {
   type SessionState,
 } from "@/lib/domain/journeys/sessions";
 import { daysBetween, todayInRome } from "@/lib/domain/tracking/dates";
+import { photoSessionsOfJourney } from "@/lib/photos/checks";
 import * as clientsRepository from "@/server/repositories/clients.repository";
 import * as journeysRepository from "@/server/repositories/journeys.repository";
 import * as photosRepository from "@/server/repositories/photos.repository";
@@ -346,14 +347,33 @@ export async function updateJourney(
     input.startDate,
   );
   if (plan.blocked) return { ok: false, reason: "shorten_blocked" };
-  // un check da togliere ha già foto (in bozza o salvate): non si perdono
-  if (plan.deletes.length > 0) {
-    const sets = await photosRepository.listSetsOfClient(journey.client_id);
-    if (
-      sets.some(
-        (set) => plan.deletes.includes(set.session_id) && set.photos.length > 0,
-      )
-    ) {
+  // Le foto già caricate non si perdono e non si nascondono: un check da
+  // togliere con foto, o un check con foto che smetterebbe di prevederle
+  // (l'ultimo check si sposta cambiando la durata), blocca il ricalcolo.
+  const sets = await photosRepository.listSetsOfClient(journey.client_id);
+  const withPhotos = sets.filter(
+    (set) =>
+      set.photos.length > 0 &&
+      existing.some((session) => session.id === set.session_id),
+  );
+  if (withPhotos.length > 0) {
+    const positions = new Map(existing.map((s) => [s.id, s.position]));
+    const after = [
+      ...plan.updates.map((u) => ({
+        id: u.id,
+        type: u.type,
+        position: positions.get(u.id)!,
+      })),
+      ...plan.inserts.map((i) => ({
+        id: `new-${i.position}`,
+        type: i.type,
+        position: i.position,
+      })),
+    ];
+    const photoIds = new Set(
+      photoSessionsOfJourney(after).map(({ session }) => session.id),
+    );
+    if (withPhotos.some((set) => !photoIds.has(set.session_id))) {
       return { ok: false, reason: "shorten_blocked_photos" };
     }
   }

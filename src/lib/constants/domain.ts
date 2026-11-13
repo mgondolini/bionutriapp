@@ -693,7 +693,7 @@ export const NOTE_SAVE_CONFLICT = "conflict";
 /** Tre viste per set; il lato è sempre il destro, per poter confrontare. */
 export const PHOTO_VIEWS = ["front", "side", "back"] as const;
 export type PhotoView = (typeof PHOTO_VIEWS)[number];
-/** Un set all'onboarding (foto di partenza) e ogni 3 check (numerazione del cliente): 3, 6, 9. */
+/** Un set all'onboarding (foto di partenza), ogni 3 check e all'ultimo check (numerazione del cliente): 3, 6, 9, 11 con 1 anno. */
 export const PHOTO_CHECK_INTERVAL = 3;
 /** Il set si apre questi giorni prima della sessione e resta aperto finché non è salvato. */
 export const PHOTO_SET_OPEN_DAYS_BEFORE = 3;

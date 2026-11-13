@@ -114,12 +114,11 @@ type SessionLike = {
 
 function checksOfJourney(
   sessions: SessionLike[],
-  durationMonths: number,
   audience: "staff" | "client",
   journey: { active: boolean; order: string },
 ): PhotoCheck[] {
   const names = sessionNames(sessions, audience);
-  return photoSessionsOfJourney(sessions, durationMonths).map(
+  return photoSessionsOfJourney(sessions).map(
     ({ session, checkNumber }, index) => ({
       sessionId: session.id,
       journeyActive: journey.active,
@@ -152,7 +151,6 @@ async function staffChecks(clientId: string): Promise<PhotoCheck[]> {
         date: s.custom_date ?? s.calculated_date,
         status: s.status as JourneySessionStatus,
       })),
-      journey.duration_months,
       "staff",
       { active: journey.status === "active", order: journey.created_at },
     );
@@ -175,7 +173,6 @@ async function clientChecks(): Promise<PhotoCheck[]> {
           date: s.session_date,
           status: s.status as JourneySessionStatus,
         })),
-      journey.duration_months,
       "client",
       {
         active: journey.status === "active",
@@ -417,7 +414,6 @@ async function resolveWritable(
         date: s.id === row.id ? (row.custom_date ?? row.calculated_date) : "",
         status: s.id === row.id ? (row.status as JourneySessionStatus) : "todo",
       })),
-      journey.duration_months,
       "staff",
       { active: journey.status === "active", order: "" },
     );

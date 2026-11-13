@@ -711,10 +711,10 @@ export const copy = {
         tabs: {
           profilo: "Profilo",
           percorso: "Percorso",
+          note: "Note cliniche",
           file: "File",
           tracking: "Tracking",
           foto: "Foto",
-          note: "Note cliniche",
         } satisfies Record<ClientTab, string>,
         notFoundTitle: "Cliente non trovato",
         notFoundDescription:
@@ -1874,7 +1874,7 @@ export const copy = {
       recalcBlocked:
         "Non puoi accorciare il percorso: tra le sessioni da togliere ce ne sono già completate o saltate.",
       recalcBlockedPhotos:
-        "Non puoi accorciare il percorso: tra i check da togliere ce ne sono con foto di avanzamento già caricate.",
+        "Non puoi cambiare la durata: un check con foto di avanzamento già caricate verrebbe tolto o non prevederebbe più le foto.",
       applyDuration: "Aggiorna le date",
       durationSaved: "Percorso aggiornato",
       recalcNote:
@@ -2320,7 +2320,7 @@ export const copy = {
     admin: {
       title: "Foto di avanzamento",
       intro: (name: string) =>
-        `Fronte, lato e dietro all’onboarding (foto di partenza) e ogni 3 mesi, ai check 3, 6 e 9 del percorso. Le vedono solo ${name} e lo studio. Dopo il salvataggio non si possono più modificare.`,
+        `Fronte, lato e dietro all’onboarding (foto di partenza), ogni 3 check e all’ultimo check del percorso. Le vedono solo ${name} e lo studio. Dopo il salvataggio non si possono più modificare.`,
       savedCount: (saved: number, total: number) =>
         `${saved} di ${total} set salvati`,
       tabBadge: (count: number) => `${count} da completare`,
@@ -2365,7 +2365,7 @@ export const copy = {
       closeDraft: "Chiudi, la bozza resta",
       emptyTitle: "Nessun check con le foto",
       emptyDescription:
-        "Le foto si caricano all’onboarding e ai check 3, 6 e 9 del percorso. Crea il percorso del cliente per vederle qui.",
+        "Le foto si caricano all’onboarding, ogni 3 check e all’ultimo check del percorso. Crea il percorso del cliente per vederle qui.",
       emptyAction: "Vai al percorso",
       journeySign: "Foto",
       journeySignState: (state: string) => ` · ${state}`,
@@ -2396,7 +2396,7 @@ export const copy = {
         "Le foto le vedi solo tu e il tuo nutrizionista. Ogni set si salva una volta sola e poi non si modifica più.",
       emptyTitle: "Ancora nessuna foto",
       emptyDescription:
-        "Le foto di avanzamento si caricano all’onboarding e ai check 3, 6 e 9 del percorso. Quando si avvicina il giorno, le trovi qui.",
+        "Le foto di avanzamento si caricano all’onboarding, ogni 3 check e all’ultimo check del percorso. Quando si avvicina il giorno, le trovi qui.",
       setTitle: (check: string) => `Foto · ${check}`,
       autosave:
         "Si conservano da sole come bozza: puoi chiudere e tornare quando vuoi.",

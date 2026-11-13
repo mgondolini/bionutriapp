@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /*
  * Foto di avanzamento con Supabase simulato: sessioni di un percorso di 1
- * anno (check con le foto 3, 6, 9), set e foto in memoria, Storage finto
+ * anno (check con le foto 3, 6, 9 e 11, l'ultimo), set e foto in memoria, Storage finto
  * con l'intestazione dell'oggetto caricato. "Oggi" è il 2 novembre 2026.
  */
 
@@ -21,6 +21,7 @@ const DATES: Record<number, string> = {
   3: "2026-10-30",
   6: "2027-01-30",
   9: "2027-04-30",
+  11: "2027-06-30",
 };
 
 type FakePhoto = {
@@ -243,6 +244,7 @@ describe("getStaffPhotos", () => {
       ["Onboarding", "to_upload"],
       ["Check 6", "future"],
       ["Check 9", "future"],
+      ["Check 11", "future"],
     ]);
     expect(data?.sets[0]?.canEdit).toBe(true);
     expect(data?.sets[2]?.canEdit).toBe(false);
