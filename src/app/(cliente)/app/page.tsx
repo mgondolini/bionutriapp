@@ -3,6 +3,7 @@ import { LatestFile } from "@/features/cliente/files/latest-file";
 import { JourneyHomeRow } from "@/features/cliente/journeys/journey-home-row";
 import { OtherCurrentFiles } from "@/features/cliente/files/other-current-files";
 import { OnboardingHome } from "@/features/cliente/onboarding-home";
+import { OnboardingCallActions } from "@/features/cliente/onboarding-prep/call-actions";
 import { PrepHomeCard } from "@/features/cliente/onboarding-prep/prep-home-card";
 import { PhotoHomeCard } from "@/features/cliente/photos/photos-page";
 import { InstallGuideAutoOpen } from "@/features/cliente/pwa/install-guide";
@@ -48,10 +49,17 @@ export default async function ClientHomePage() {
   );
   if (!client.unlocked) {
     // Preparazione della chiamata (v1.0.11, C4): card e data della chiamata
-    const [prep, onboardingVideos] = await Promise.all([
+    const [prep, onboardingVideos, journey] = await Promise.all([
       studio.id ? getOwnPrep(studio.id) : null,
       getOnboardingVideos(),
+      getClientJourneyHome(),
     ]);
+    // sessione di onboarding ancora da fare: Meet e calendario (come C19)
+    const call = journey?.sessions.find(
+      (session) =>
+        session.name.kind === "onboarding" &&
+        (session.state === "next" || session.state === "overdue"),
+    );
     return (
       <div className="flex flex-col gap-4">
         <ClientHomeHeader />
@@ -61,6 +69,11 @@ export default async function ClientHomePage() {
           prep={prep ? <PrepHomeCard prep={prep} /> : null}
           callWhen={
             prep?.call ? callWhenText(prep.call.date, prep.call.time) : null
+          }
+          callActions={
+            call ? (
+              <OnboardingCallActions session={call} studioName={studio.name} />
+            ) : null
           }
           videos={<OnboardingVideos videos={onboardingVideos} />}
         />

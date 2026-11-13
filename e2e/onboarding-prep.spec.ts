@@ -30,6 +30,7 @@ const run = Date.now().toString(36);
 const mobile = randomMobile();
 const person = { firstName: "Sofia", lastName: `Prep${run}` };
 const email = `prep.${run}@example.test`;
+const MEET = "https://meet.google.com/abc-defg-hij";
 let clientId = "";
 let token = "";
 /** Seconda cliente in Onboarding: "Onboarding completato" dal Profilo. */
@@ -67,6 +68,12 @@ test.beforeAll(async () => {
   });
   if (inviteError) throw inviteError;
   await createJourney(clientId);
+  const { error: meetError } = await admin
+    .from("journey_sessions")
+    .update({ meeting_url: MEET, meeting_source: "manual" })
+    .eq("client_id", clientId)
+    .eq("type", "onboarding");
+  if (meetError) throw meetError;
   const created = await createActiveClient({
     firstName: "Irene",
     lastName: `Prep${run}`,
@@ -182,6 +189,13 @@ test("il cliente si attiva, manda misure e foto di partenza e vede il riepilogo"
   await expect(card.getByText("0 di 2")).toBeVisible();
   await expect(card.getByText(/^Mandale entro /)).toBeVisible();
   await expect(page.getByText(/, ore 18:00$/)).toBeVisible();
+  // sotto la chiamata, come per il prossimo check: Meet e calendario
+  await expect(
+    page.getByRole("link", { name: "Partecipa su Google Meet" }),
+  ).toHaveAttribute("href", MEET);
+  await expect(
+    page.getByRole("button", { name: "Aggiungi al calendario" }),
+  ).toBeVisible();
   // in Onboarding niente voce Foto e niente Tracking
   await page.goto("/app/foto");
   await expect(page).toHaveURL(/\/app\/prepara$/);

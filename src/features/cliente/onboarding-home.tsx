@@ -37,6 +37,7 @@ export function OnboardingHome({
   videos,
   prep,
   callWhen,
+  callActions,
 }: {
   studioName: string;
   /** "Intanto guarda" (mockup v4, C4), tra i passi e l'area bloccata. */
@@ -45,6 +46,8 @@ export function OnboardingHome({
   prep?: ReactNode;
   /** Data e ora della chiamata, al posto del segnaposto del secondo passo. */
   callWhen?: string | null;
+  /** Sotto la chiamata: Google Meet (con il link) e "Aggiungi al calendario". */
+  callActions?: ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -75,30 +78,33 @@ export function OnboardingHome({
             return (
               <li
                 key={step.title}
-                className="flex items-center gap-3.5 rounded-[14px] border bg-card p-3.5"
+                className="flex flex-col gap-3 rounded-[14px] border bg-card p-3.5"
               >
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "flex size-[30px] shrink-0 items-center justify-center rounded-full text-sm font-bold",
-                    done
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-foreground text-background",
-                  )}
-                >
-                  {done ? <Check className="size-4" /> : index + 1}
-                </span>
-                <div className="flex flex-col">
-                  <span className="text-[14.5px] font-bold">
-                    {step.title}
-                    {done ? (
-                      <span className="sr-only">{t.stepDone}</span>
-                    ) : null}
+                <div className="flex items-center gap-3.5">
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "flex size-[30px] shrink-0 items-center justify-center rounded-full text-sm font-bold",
+                      done
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-foreground text-background",
+                    )}
+                  >
+                    {done ? <Check className="size-4" /> : index + 1}
                   </span>
-                  <span className="text-[13px] text-muted-foreground">
-                    {index === 1 && callWhen ? callWhen : step.description}
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-[14.5px] font-bold">
+                      {step.title}
+                      {done ? (
+                        <span className="sr-only">{t.stepDone}</span>
+                      ) : null}
+                    </span>
+                    <span className="text-[13px] text-muted-foreground">
+                      {index === 1 && callWhen ? callWhen : step.description}
+                    </span>
+                  </div>
                 </div>
+                {index === 1 && callActions ? callActions : null}
               </li>
             );
           })}
