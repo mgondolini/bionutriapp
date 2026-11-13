@@ -53,6 +53,7 @@
   --color-warm-soft: var(--warm-soft);
   --color-file-workout: var(--file-workout);
   --color-habit: var(--habit);
+  --color-photo: var(--photo);
   --color-video: var(--video);
   --color-video-tint: var(--video-tint);
   --color-video-ink: var(--video-ink);
@@ -139,8 +140,11 @@
   /* schede dei file per categoria */
   --file-workout: #c9e4f5;
   --file-report: #fbefc4;
-  /* Lilla: tile delle icone delle abitudini giornaliere (le spunte restano nel primario) */
-  --habit: #ece7f6;
+  /* Verde acqua: tile delle icone delle abitudini giornaliere, cliente e
+     admin (le spunte restano nel primario) */
+  --habit: #d2efeb;
+  /* Lilla: tile della voce Foto nel menu del cliente */
+  --photo: #ece7f6;
   /* Video (mockup v4): Lavanda identifica la sezione (cartelle, tile del
      menu), Tinta Video per i fondi tenui, Viola profondo per icone e testo
      sulla Lavanda. Non è uno stato. */

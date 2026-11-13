@@ -5,25 +5,22 @@ import { APP_BACKGROUND_COLOR, ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { getPublicStudio } from "@/server/services/studio.service";
 
-const SHORT_NAME_MAX = 12;
-
 /**
  * Manifest della PWA con il branding dello studio del dominio (il browser lo
  * scarica senza cookie). start_url "/app": l'app installata apre l'area cliente (DEV-04).
+ * short_name = nome completo dello studio: è quello che il telefono salva
+ * sotto l'icona (prima era tagliato a 12 caratteri); se è lungo, è il
+ * sistema a mostrarlo con i puntini, ma il nome salvato resta intero.
  */
 export default async function manifest(): Promise<MetadataRoute.Manifest> {
   await connection();
   const studio = await getPublicStudio();
-  const shortName =
-    studio.name.length <= SHORT_NAME_MAX
-      ? studio.name
-      : studio.name.slice(0, SHORT_NAME_MAX).trim();
 
   return {
     // identità stabile dell'app installata, anche se cambia start_url
     id: ROUTES.client.home,
     name: studio.name,
-    short_name: shortName,
+    short_name: studio.name,
     description: copy.manifest.description(studio.name),
     lang: "it",
     start_url: ROUTES.client.home,

@@ -84,7 +84,8 @@ function useClientShell(): ClientShell {
   return shell;
 }
 
-type TileTone = "primary" | "info" | "report" | "neutral" | "warning" | "video";
+type TileTone =
+  "primary" | "info" | "report" | "neutral" | "warning" | "video" | "photo";
 
 const tileVariants = cva(
   "flex size-10 shrink-0 items-center justify-center rounded-xl",
@@ -99,6 +100,7 @@ const tileVariants = cva(
         neutral: "bg-primary-tint text-secondary-foreground",
         warning: "bg-warning text-secondary-foreground",
         video: "bg-video text-secondary-foreground",
+        photo: "bg-photo text-secondary-foreground",
       } satisfies Record<TileTone, string>,
     },
   },
@@ -114,7 +116,7 @@ const ICONS: Record<
   tracking: { icon: Activity, tone: "warning" },
   profile: { icon: UserRound, tone: "neutral" },
   videos: { icon: Clapperboard, tone: "video" },
-  photos: { icon: Camera, tone: "neutral" },
+  photos: { icon: Camera, tone: "photo" },
 };
 
 const itemClassName =
