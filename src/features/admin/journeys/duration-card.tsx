@@ -99,7 +99,7 @@ export function DurationCard({ journey }: { journey: StaffJourneyView }) {
         ) : null}
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[auto_auto_auto_1fr] lg:items-end">
+      <div className="flex flex-wrap items-end gap-5">
         <div className="flex flex-col gap-2">
           <span id={`${ids}-duration`} className="text-sm font-semibold">
             {t.admin.durationLabel}
@@ -144,7 +144,9 @@ export function DurationCard({ journey }: { journey: StaffJourneyView }) {
               : formatLongDate(journey.endDate)}
           </p>
         </div>
-        <p className="text-[13px] text-admin-muted">{t.admin.durationHint}</p>
+        <p className="basis-full text-[13px] text-admin-muted">
+          {t.admin.durationHint}
+        </p>
       </div>
 
       {plan ? (

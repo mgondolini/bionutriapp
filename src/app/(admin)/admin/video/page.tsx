@@ -30,8 +30,7 @@ export default function VideosPage({
   searchParams,
 }: PageProps<"/admin/video">) {
   return (
-    // data-admin-page: sfondo della pagina dal token --admin-page (AdminFrame)
-    <div data-admin-page className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <Suspense fallback={<PageLoading />}>
         <Library searchParams={searchParams} />
       </Suspense>

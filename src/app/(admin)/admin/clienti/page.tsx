@@ -90,8 +90,7 @@ export default function ClientsPage({
   searchParams,
 }: PageProps<"/admin/clienti">) {
   return (
-    // data-admin-page: sfondo della pagina dal token --admin-page (AdminFrame)
-    <div data-admin-page className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <PageHeader
         title={t.title}
         description={t.description}

@@ -242,10 +242,10 @@ export type CsvFileError = (typeof CSV_FILE_ERRORS)[number];
 export const CLIENT_TABS = [
   "profilo",
   "percorso",
+  "note",
   "file",
   "tracking",
   "foto",
-  "note",
 ] as const;
 export type ClientTab = (typeof CLIENT_TABS)[number];
 

@@ -45,7 +45,6 @@
   --color-admin-field: var(--admin-field);
   --color-admin-muted: var(--admin-muted);
   --color-admin-row-hover: var(--admin-row-hover);
-  --color-admin-page: var(--admin-page);
   --color-chip-workout: var(--chip-workout);
   --color-chip-report: var(--chip-report);
   --color-mint: var(--mint);
@@ -128,7 +127,6 @@
   --admin-field: #84938f;
   --admin-muted: #435a54;
   --admin-row-hover: #f2f5f4;
-  --admin-page: #ffffff;
   --chip-workout: #98d4e2;
   --chip-report: #f2de92;
   /* Menta: superfici in evidenza del cliente, badge "In percorso" e "Nuovo",

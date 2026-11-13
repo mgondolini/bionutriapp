@@ -225,7 +225,7 @@ export function AdminFrame({ studio, user, items, children }: AdminFrameProps) {
 
         <main
           id={MAIN_CONTENT_ID}
-          className="flex-1 px-4 py-6 has-[[data-admin-page]]:bg-admin-page sm:px-6 lg:px-10 lg:pt-8 lg:pb-12"
+          className="flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:pt-8 lg:pb-12"
         >
           {children}
         </main>
