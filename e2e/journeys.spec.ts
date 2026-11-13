@@ -318,9 +318,6 @@ test("lo staff salva il link del cliente e lo vede cliccabile e copiabile nella 
   await expect(link).toHaveAttribute("href", CLIENT_MEET);
   await expect(link).toHaveAttribute("target", "_blank");
   await expect(link).toHaveAttribute("rel", "noopener noreferrer");
-  await expect(
-    page.getByText(/Riusare lo stesso link per più check è meno sicuro/),
-  ).toBeVisible();
 
   await page.getByRole("button", { name: "Copia link" }).click();
   await expect(page.getByText("Link copiato")).toBeVisible();

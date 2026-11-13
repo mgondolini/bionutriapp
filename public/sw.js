@@ -9,10 +9,11 @@
  * Cambiare VERSION a ogni modifica di questo file o di offline.html.
  */
 
-const VERSION = "v7";
+const VERSION = "v8";
 const CACHE = `offline-${VERSION}`;
 const OFFLINE_URL = "/offline.html";
 const DEFAULT_URL = "/app";
+const IS_ANDROID = /Android/i.test(self.navigator.userAgent);
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -81,10 +82,12 @@ self.addEventListener("push", (event) => {
     data = {};
   }
   // Su iPhone ogni push DEVE mostrare una notifica: anche senza dati validi.
+  // Android mostra già l'icona dell'app a sinistra: l'icona grande
+  // (quadrata, a destra) sarebbe un doppione e non si passa.
   const title = typeof data.title === "string" ? data.title : "";
   const options = {
     body: typeof data.body === "string" ? data.body : "",
-    icon: safeUrl(data.icon) ?? undefined,
+    icon: IS_ANDROID ? undefined : (safeUrl(data.icon) ?? undefined),
     badge: badgeFor(data.type),
     tag: typeof data.tag === "string" ? data.tag : undefined,
     renotify: typeof data.tag === "string",

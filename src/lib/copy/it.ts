@@ -1697,19 +1697,31 @@ export const copy = {
   /** Catalogo dei testi delle notifiche (N-05): mai dati del file o misure. */
   notifications: {
     filePublished: "Hai un nuovo documento nella tua area riservata",
+    /**
+     * Titolo = di cosa si tratta, mai il nome dello studio: il sistema mostra
+     * già il nome dell'app (Android nell'intestazione, iOS con "da …"), e
+     * con il nome come titolo compariva due volte.
+     */
+    title: {
+      file_diet: "Nuovo piano alimentare",
+      file_workout: "Nuova scheda di allenamento",
+      file_report: "Nuovo report",
+      daily_checkin: "Check-in di oggi",
+      video: "Nuovo video",
+      measure_check_eve: "Domani c’è il check delle misure",
+      measure_check_day: "Oggi c’è il check delle misure",
+    },
     body: {
-      file_diet: "È disponibile il tuo nuovo piano alimentare.",
-      file_workout: "È disponibile la tua nuova scheda di allenamento.",
-      file_report: "È disponibile il tuo nuovo report.",
+      file_diet: "Lo trovi nella sezione Diete.",
+      file_workout: "La trovi nella sezione Allenamenti.",
+      file_report: "Lo trovi nella sezione Report.",
       daily_checkin: "Com'è andata oggi? Un minuto per passi, sonno e acqua.",
       daily_checkin_workout:
         "Com'è andata oggi? Un minuto per passi, sonno e acqua, e se ti sei allenato il voto dell'allenamento.",
       /** Il nome della cartella è della libreria dello studio, non un dato del cliente. */
-      video: (folderName: string) => `Nuovo video disponibile in ${folderName}`,
-      measure_check_eve:
-        "Domani è il giorno del check: prepara metro e bilancia.",
-      measure_check_day:
-        "Oggi è il giorno del check: registra peso e circonferenze.",
+      video: (folderName: string) => `Lo trovi in ${folderName}.`,
+      measure_check_eve: "Prepara metro e bilancia.",
+      measure_check_day: "Registra peso e circonferenze.",
     },
   },
   push: {
@@ -1919,11 +1931,8 @@ export const copy = {
           "Non è stato possibile copiare il link. Selezionalo e copialo a mano.",
         fieldLabel: (name: string) => `Link Google Meet di ${name}`,
         placeholder: "https://meet.google.com/abc-defg-hij",
-        hint: "Un link per ogni cliente, usato in tutti i suoi check.",
         missing: (name: string) =>
           `Aggiungi il link Meet di ${name} per inserirlo negli eventi del calendario.`,
-        reuseWarning:
-          "Riusare lo stesso link per più check è meno sicuro: Google consiglia una stanza nuova per ogni evento. Con il calendario v2.0 il link si creerà da solo per ogni check.",
         saveClient: "Salva link",
         useForSession: "Usa un link solo per questo check",
         useClientLink: (name: string) => `Torna al link di ${name}`,

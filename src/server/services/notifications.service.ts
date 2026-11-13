@@ -74,7 +74,7 @@ async function deliverQueued(job: QueuedNotification): Promise<void> {
   try {
     const outcome = await pushService.sendToUser(
       job.userId,
-      buildNotification(job.event, { name: job.studioName }),
+      buildNotification(job.event),
       notificationTtl(job.event),
     );
     if (outcome.status === "skipped") {

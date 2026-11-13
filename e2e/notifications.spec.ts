@@ -180,8 +180,8 @@ test("pubblico un file: la cliente riceve la push con il link della categoria", 
   const message = JSON.parse(text);
   expect(message).toEqual({
     type: "file_workout",
-    title: expect.any(String),
-    body: "È disponibile la tua nuova scheda di allenamento.",
+    title: "Nuova scheda di allenamento",
+    body: "La trovi nella sezione Allenamenti.",
     icon: "/icon/192",
     url: "/app/allenamenti",
     tag: "files:file_workout",

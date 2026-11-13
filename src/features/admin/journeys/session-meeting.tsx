@@ -179,7 +179,6 @@ export function MeetingField({
             placeholder={t.placeholder}
             disabled={isPending}
             aria-invalid={error ? true : undefined}
-            aria-describedby={`${ids}-hint`}
             className="min-w-0 flex-1 basis-56"
           />
           <Button
@@ -215,14 +214,7 @@ export function MeetingField({
           </Button>
         ) : null}
       </div>
-      <p id={`${ids}-hint`} className="text-[13px] text-admin-muted">
-        {t.hint}
-      </p>
-      {clientUrl ? (
-        <p className="rounded-xl bg-info px-4 py-3 text-[13px] text-info-foreground">
-          {t.reuseWarning}
-        </p>
-      ) : (
+      {clientUrl ? null : (
         <p className="text-[13px] text-admin-muted">{t.missing(clientName)}</p>
       )}
     </div>

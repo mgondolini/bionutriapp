@@ -14,7 +14,8 @@ import { copy } from "@/lib/copy/it";
 /*
  * Catalogo delle notifiche (N-05, N-06): per ogni tipo il testo (da
  * `copy.notifications`), la pagina che apre, il tag e la chiave di
- * deduplicazione. Il titolo è sempre il nome dello studio. Gli eventi possono
+ * deduplicazione. Il titolo dice di cosa si tratta, mai il nome dello studio
+ * (il sistema mostra già il nome dell'app). Gli eventi possono
  * portare con sé altri dati: qui non si leggono mai titoli, note o valori;
  * l'unico nome ammesso è quello della cartella video (libreria dello studio).
  */
@@ -115,17 +116,26 @@ export function badgeUrl(type: NotificationType): string {
 
 export function buildNotification(
   event: NotificationEvent,
-  studio: { name: string },
 ): NotificationPayload {
   const type = notificationType(event);
   return {
     type,
-    title: studio.name,
+    title: notificationTitle(event),
     body: notificationBody(event),
     icon: NOTIFICATION_ICON_URL,
     url: notificationUrl(event),
     tag: notificationTag(event),
   };
+}
+
+function notificationTitle(event: NotificationEvent): string {
+  const t = copy.notifications.title;
+  if (event.type === "measure_check") {
+    return event.when === "eve" ? t.measure_check_eve : t.measure_check_day;
+  }
+  return t[
+    notificationType(event) as Exclude<NotificationType, "measure_check">
+  ];
 }
 
 function notificationBody(event: NotificationEvent): string {

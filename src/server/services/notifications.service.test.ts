@@ -85,7 +85,7 @@ describe("notifyNewFile", () => {
       "u1",
       expect.objectContaining({
         type: "file_workout",
-        title: "Studio Verde",
+        title: "Nuova scheda di allenamento",
         url: "/app/allenamenti",
         tag: "files:file_workout",
       }),
@@ -284,7 +284,7 @@ describe("promemoria del check delle misure", () => {
       "u1",
       expect.objectContaining({
         type: "measure_check",
-        body: "Domani è il giorno del check: prepara metro e bilancia.",
+        body: "Prepara metro e bilancia.",
         url: "/app/tracking",
         tag: "measure-check-2026-12-01",
       }),

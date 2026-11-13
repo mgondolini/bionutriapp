@@ -9,7 +9,6 @@ import {
   type NotificationEvent,
 } from "./catalog";
 
-const STUDIO = { name: "Studio Verde" };
 const FILE_ID = "1b4e28ba-2fa1-11d2-883f-0016d3cca427";
 
 describe("buildNotification", () => {
@@ -17,29 +16,32 @@ describe("buildNotification", () => {
     [
       "diet",
       "file_diet",
-      "È disponibile il tuo nuovo piano alimentare.",
+      "Nuovo piano alimentare",
+      "Lo trovi nella sezione Diete.",
       "/app/diete",
     ],
     [
       "workout",
       "file_workout",
-      "È disponibile la tua nuova scheda di allenamento.",
+      "Nuova scheda di allenamento",
+      "La trovi nella sezione Allenamenti.",
       "/app/allenamenti",
     ],
     [
       "report",
       "file_report",
-      "È disponibile il tuo nuovo report.",
+      "Nuovo report",
+      "Lo trovi nella sezione Report.",
       "/app/report",
     ],
   ] as const)(
     "file %s: testo del catalogo, link alla categoria, tag per tipo",
-    (category, type, body, url) => {
+    (category, type, title, body, url) => {
       expect(
-        buildNotification({ type: "file", category, fileId: FILE_ID }, STUDIO),
+        buildNotification({ type: "file", category, fileId: FILE_ID }),
       ).toEqual({
         type,
-        title: "Studio Verde",
+        title,
         body,
         icon: "/icon/192",
         url,
@@ -50,13 +52,14 @@ describe("buildNotification", () => {
 
   it("promemoria: variante base se oggi c'è già un allenamento", () => {
     expect(
-      buildNotification(
-        { type: "daily_checkin", day: "2026-11-06", variant: "base" },
-        STUDIO,
-      ),
+      buildNotification({
+        type: "daily_checkin",
+        day: "2026-11-06",
+        variant: "base",
+      }),
     ).toEqual({
       type: "daily_checkin",
-      title: "Studio Verde",
+      title: "Check-in di oggi",
       body: "Com'è andata oggi? Un minuto per passi, sonno e acqua.",
       icon: "/icon/192",
       url: "/app/tracking",
@@ -66,13 +69,23 @@ describe("buildNotification", () => {
 
   it("promemoria: senza allenamento oggi il testo lo ricorda", () => {
     expect(
-      buildNotification(
-        { type: "daily_checkin", day: "2026-11-06", variant: "workout" },
-        STUDIO,
-      ).body,
+      buildNotification({
+        type: "daily_checkin",
+        day: "2026-11-06",
+        variant: "workout",
+      }).body,
     ).toBe(
       "Com'è andata oggi? Un minuto per passi, sonno e acqua, e se ti sei allenato il voto dell'allenamento.",
     );
+  });
+
+  it("il titolo non è mai il nome dello studio (iOS lo ripeterebbe)", () => {
+    const event: NotificationEvent = {
+      type: "file",
+      category: "diet",
+      fileId: FILE_ID,
+    };
+    expect(buildNotification(event).title).not.toContain("Studio");
   });
 
   it("non contiene mai titolo, nota o id del file anche se l'evento li porta", () => {
@@ -83,7 +96,7 @@ describe("buildNotification", () => {
       title: "Piano ipocalorico – diabete",
       note: "Ridurre gli zuccheri",
     } as NotificationEvent;
-    const serialized = JSON.stringify(buildNotification(event, STUDIO));
+    const serialized = JSON.stringify(buildNotification(event));
     for (const forbidden of [
       "ipocalorico",
       "diabete",
@@ -141,10 +154,10 @@ describe("deduplicazione e registro", () => {
       folderId: "f-1",
       folderName: "Ricette veloci",
     };
-    expect(buildNotification(event, STUDIO)).toEqual({
+    expect(buildNotification(event)).toEqual({
       type: "video",
-      title: "Studio Verde",
-      body: "Nuovo video disponibile in Ricette veloci",
+      title: "Nuovo video",
+      body: "Lo trovi in Ricette veloci.",
       icon: "/icon/192",
       url: "/app/video/f-1/v-1",
       tag: "videos",
@@ -165,16 +178,16 @@ describe("deduplicazione e registro", () => {
       dueOn: "2026-12-01",
       when: "eve",
     };
-    expect(buildNotification(eve, STUDIO)).toEqual({
+    expect(buildNotification(eve)).toEqual({
       type: "measure_check",
-      title: "Studio Verde",
-      body: "Domani è il giorno del check: prepara metro e bilancia.",
+      title: "Domani c’è il check delle misure",
+      body: "Prepara metro e bilancia.",
       icon: "/icon/192",
       url: "/app/tracking",
       tag: "measure-check-2026-12-01",
     });
-    expect(buildNotification({ ...eve, when: "day" }, STUDIO).body).toBe(
-      "Oggi è il giorno del check: registra peso e circonferenze.",
+    expect(buildNotification({ ...eve, when: "day" }).body).toBe(
+      "Registra peso e circonferenze.",
     );
     expect(dedupeKey(eve, "c1")).toBe("measure_check:c1:2026-12-01:eve");
     expect(dedupeKey({ ...eve, when: "day" }, "c1")).toBe(
