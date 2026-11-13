@@ -2,6 +2,7 @@
 
 import {
   Download,
+  Ellipsis,
   Share,
   SquarePlus,
   Smartphone,
@@ -23,7 +24,7 @@ import { usePwa } from "./pwa-provider";
 
 const t = copy.install;
 
-const IOS_ICONS = [Share, SquarePlus, BellRing];
+const IOS_ICONS = [Ellipsis, Share, SquarePlus, BellRing];
 const ANDROID_ICONS = [EllipsisVertical, Download, BellRing];
 /** Colori delle icone dei passaggi, come nel mockup C3. */
 const STEP_TONES = [

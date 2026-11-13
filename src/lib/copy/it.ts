@@ -1776,14 +1776,19 @@ export const copy = {
     tabs: { ios: "iPhone", android: "Android" },
     ios: [
       {
-        title: "Tocca Condividi in Safari",
+        title: "In Safari tocca i tre puntini (•••)",
         description:
-          "Il quadrato con la freccia, in basso (o in alto su iPad).",
+          "Sono in basso a destra, accanto all'indirizzo della pagina (in alto su iPad).",
       },
       {
-        title: "Scegli Aggiungi alla schermata Home",
+        title: "Tocca Condividi",
         description:
-          "Se non la vedi, scorri l'elenco verso il basso. Poi tocca Aggiungi.",
+          "È la voce con il quadrato e la freccia verso l'alto. Se il quadrato con la freccia lo vedi già in basso, puoi toccare direttamente quello.",
+      },
+      {
+        title: "Tocca Visualizza altro e poi Aggiungi alla schermata Home",
+        description:
+          "Visualizza altro è in fondo alle icone: scorri verso il basso se non lo vedi. Poi tocca Aggiungi, in alto a destra.",
       },
       {
         title: "Apri l'app dall'icona e attiva le notifiche",
