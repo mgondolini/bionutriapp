@@ -24,6 +24,7 @@ import { paginate, type Page } from "@/lib/pagination";
 import { parseClientsCsv } from "@/lib/csv/parse-clients-csv";
 import * as authAdminRepository from "@/server/repositories/auth-admin.repository";
 import * as clientsRepository from "@/server/repositories/clients.repository";
+import * as journeysRepository from "@/server/repositories/journeys.repository";
 import * as prepService from "@/server/services/onboarding-prep.service";
 import type {
   CreateClientInput,
@@ -357,7 +358,13 @@ export async function changeStage(
     plan.change.to,
     plan.change.source === "automatic",
   );
-  return changed ? { ok: true } : { ok: false, reason: "conflict" };
+  if (!changed) return { ok: false, reason: "conflict" };
+  // "Onboarding completato": anche la sessione di onboarding del percorso
+  // risulta completata (lo stesso passaggio dalla scheda Percorso cambia la fase)
+  if (input.from === "onboarding" && input.to === "in_progress") {
+    await journeysRepository.completeOnboardingSessions(input.clientId);
+  }
+  return { ok: true };
 }
 
 export type AccountToggleResult =

@@ -163,6 +163,21 @@ export async function getSession(sessionId: string) {
   return data;
 }
 
+/**
+ * "Onboarding completato" dal Profilo: le sessioni di onboarding ancora da
+ * fare del cliente diventano completate (scheda Percorso allineata).
+ */
+export async function completeOnboardingSessions(clientId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("journey_sessions")
+    .update({ status: "done" })
+    .eq("client_id", clientId)
+    .eq("type", "onboarding")
+    .eq("status", "todo");
+  if (error) throw error;
+}
+
 export async function updateSession(
   sessionId: string,
   values: {

@@ -8,6 +8,7 @@ import {
   OWNER,
   adminClient,
   cleanup,
+  createActiveClient,
   login,
   newDevice,
   randomMobile,
@@ -31,6 +32,8 @@ const person = { firstName: "Sofia", lastName: `Prep${run}` };
 const email = `prep.${run}@example.test`;
 let clientId = "";
 let token = "";
+/** Seconda cliente in Onboarding: "Onboarding completato" dal Profilo. */
+let second = { clientId: "", phone: "" };
 
 test.describe.configure({ mode: "serial" });
 
@@ -63,7 +66,25 @@ test.beforeAll(async () => {
     token_hash: createHash("sha256").update(token).digest("hex"),
   });
   if (inviteError) throw inviteError;
-  // percorso di 6 mesi con la chiamata di onboarding fra 3 giorni
+  await createJourney(clientId);
+  const created = await createActiveClient({
+    firstName: "Irene",
+    lastName: `Prep${run}`,
+    password: PASSWORD,
+    email: `prep2.${run}@example.test`,
+  });
+  second = { clientId: created.clientId, phone: created.phone.e164 };
+  const { error: stageError } = await admin
+    .from("clients")
+    .update({ journey_stage: "onboarding" })
+    .eq("id", second.clientId);
+  if (stageError) throw stageError;
+  await createJourney(second.clientId);
+});
+
+/** Percorso di 6 mesi con la chiamata di onboarding fra 3 giorni alle 18. */
+async function createJourney(clientId: string) {
+  const admin = adminClient();
   const start = day(3);
   const end = new Date(`${start}T12:00:00Z`);
   end.setUTCMonth(end.getUTCMonth() + 6);
@@ -89,7 +110,7 @@ test.beforeAll(async () => {
     .eq("client_id", clientId)
     .eq("type", "onboarding");
   if (timeError) throw timeError;
-});
+}
 
 test.afterAll(async () => {
   const admin = adminClient();
@@ -97,7 +118,7 @@ test.afterAll(async () => {
     .from("photos")
     .select("storage_path")
     .eq("client_id", clientId);
-  await cleanup([mobile.e164]);
+  await cleanup([mobile.e164, second.phone]);
   const paths = (data ?? []).map((row) => row.storage_path);
   if (paths.length) await admin.storage.from("client-photos").remove(paths);
 });
@@ -290,4 +311,43 @@ test("il nutrizionista vede la preparazione in Profilo, Foto ed elenco clienti",
   await expect(
     page.getByText(new RegExp(`${person.firstName} le ha salvate il `)),
   ).toBeVisible();
+});
+
+test("la sessione di onboarding completata porta il cliente In percorso, dalla scheda Percorso e dal Profilo", async ({
+  page,
+}) => {
+  await login(page, OWNER.email, OWNER.password);
+  await expect(page).toHaveURL(/\/admin/);
+
+  // scheda Percorso: Onboarding → Completata
+  await page.goto(`/admin/clienti/${clientId}/percorso`);
+  await page
+    .getByRole("group", { name: "Sessioni del percorso" })
+    .getByRole("button", { name: /^Onboarding / })
+    .click();
+  await page
+    .getByRole("group", { name: "Stato" })
+    .getByRole("button", { name: "Completata" })
+    .click();
+  await page.getByRole("button", { name: "Salva modifiche" }).click();
+  await expect(page.getByText("Sessione salvata")).toBeVisible();
+  await page.goto(`/admin/clienti/${clientId}/profilo`);
+  const history = page.getByRole("region", { name: "Storico del percorso" });
+  await expect(history.getByText("Onboarding → In percorso")).toBeVisible();
+
+  // Profilo: "Onboarding completato" → sessione di onboarding completata
+  await page.goto(`/admin/clienti/${second.clientId}/profilo`);
+  await page.getByRole("button", { name: "Onboarding completato" }).click();
+  await expect(
+    page
+      .getByRole("region", { name: "Storico del percorso" })
+      .getByText("Onboarding → In percorso"),
+  ).toBeVisible();
+  const { data } = await adminClient()
+    .from("journey_sessions")
+    .select("status")
+    .eq("client_id", second.clientId)
+    .eq("type", "onboarding")
+    .single();
+  expect(data?.status).toBe("done");
 });

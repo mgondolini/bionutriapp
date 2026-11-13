@@ -413,7 +413,9 @@ async function loadOwnedSession(
 /**
  * Data, ora, stato e nota di una sessione. La data uguale a quella calcolata
  * non conta come modifica. Se data effettiva o ora cambiano, il cliente
- * riceve subito la push (anche per un ripristino).
+ * riceve subito la push (anche per un ripristino). La sessione di
+ * onboarding segnata come completata porta il cliente da Onboarding a In
+ * percorso, come "Onboarding completato" nel Profilo.
  */
 export async function updateSession(
   studioId: string,
@@ -424,7 +426,7 @@ export async function updateSession(
     status: JourneySessionStatus;
     note: string | null;
   },
-): Promise<Result<{ clientId: string }>> {
+): Promise<Result<{ clientId: string; stageChanged: boolean }>> {
   const loaded = await loadOwnedSession(studioId, input.sessionId);
   if (!loaded.ok) return loaded;
   const { session } = loaded;
@@ -445,7 +447,26 @@ export async function updateSession(
   ) {
     notifySessionsChanged([input.sessionId]);
   }
-  return { ok: true, data: { clientId: session.client_id } };
+  // onboarding completato dalla scheda Percorso: fase In percorso, solo se
+  // il cliente è ancora in Onboarding e ha già attivato l'account (prima
+  // dell'attivazione la fase non si cambia: activate_client la riporta a
+  // quella dell'origine); storico con l'autore
+  let stageChanged = false;
+  if (
+    session.type === "onboarding" &&
+    input.status === "done" &&
+    session.status !== "done"
+  ) {
+    const client = await clientsRepository.getClientProfile(session.client_id);
+    if (client?.journey_stage === "onboarding" && client.activated_at) {
+      stageChanged = await clientsRepository.setJourneyStage(
+        session.client_id,
+        "onboarding",
+        "in_progress",
+      );
+    }
+  }
+  return { ok: true, data: { clientId: session.client_id, stageChanged } };
 }
 
 /**
@@ -455,7 +476,7 @@ export async function updateSession(
 export async function rescheduleSession(
   studioId: string,
   input: { sessionId: string; date: string; time: string | null },
-): Promise<Result<{ clientId: string }>> {
+): Promise<Result<{ clientId: string; stageChanged: boolean }>> {
   const loaded = await loadOwnedSession(studioId, input.sessionId);
   if (!loaded.ok) return loaded;
   return updateSession(studioId, {

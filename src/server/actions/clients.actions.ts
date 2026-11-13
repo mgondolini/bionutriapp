@@ -172,6 +172,9 @@ export async function changeStageAction(
   }
 
   revalidateClient(parsed.data.clientId);
+  // la sessione di onboarding risulta completata nella scheda Percorso
+  revalidatePath(clientDetailPath(parsed.data.clientId, "percorso"), "layout");
+  revalidatePath(ROUTES.client.home, "layout");
   return ok();
 }
 

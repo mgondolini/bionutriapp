@@ -117,6 +117,13 @@ export async function updateSessionAction(
   );
   if (!result.ok) return fail(FAILURES[result.reason]);
   revalidateJourney(result.data.clientId);
+  if (result.data.stageChanged) {
+    // fase cambiata (onboarding completato): intestazione della scheda,
+    // profilo, elenco clienti e area del cliente
+    revalidatePath(`${ROUTES.admin.clients}/${result.data.clientId}`, "layout");
+    revalidatePath(ROUTES.admin.clients);
+    revalidatePath(ROUTES.client.home, "layout");
+  }
   return ok();
 }
 
