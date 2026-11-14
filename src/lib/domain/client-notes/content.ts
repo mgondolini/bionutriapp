@@ -1,13 +1,22 @@
 /**
- * Documento delle note cliniche: il JSON di ProseMirror/Tiptap, limitato
- * agli elementi dell'editor (paragrafo, titoli h2 e h3, elenchi, a capo;
- * grassetto, corsivo, evidenziatore). Funzioni pure, senza Tiptap: le usa
- * il server per pulire ciò che arriva dal browser e ricavare il testo
- * semplice (content_text, per ricerche future e per l'anteprima).
+ * Documento delle note formattate (note cliniche e nota dei video): il JSON
+ * di ProseMirror/Tiptap, limitato agli elementi dell'editor (paragrafo,
+ * titoli h2 e h3, elenchi, a capo; grassetto, corsivo, evidenziatore; il
+ * link solo dove è ammesso, cioè nella nota dei video). Funzioni pure,
+ * senza Tiptap: le usa il server per pulire ciò che arriva dal browser e
+ * ricavare il testo semplice (content_text, note_text), e il componente che
+ * mostra la nota al cliente.
  */
 import { ANAMNESIS_TEMPLATE_HEADINGS } from "@/lib/constants/domain";
 
-export type NoteMark = { type: "bold" | "italic" | "highlight" };
+import { normalizeLinkHref } from "./links";
+
+export type NoteMark =
+  | { type: "bold" | "italic" | "highlight" }
+  | { type: "link"; attrs: { href: string } };
+
+/** Opzioni della pulizia: i link sono ammessi solo nella nota dei video. */
+export type SanitizeOptions = { links?: boolean };
 
 export type NoteNode =
   | { type: "text"; text: string; marks?: NoteMark[] }
@@ -33,38 +42,62 @@ function isRecord(value: unknown): value is Raw {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function children(node: Raw, depth: number): NoteNode[] | null {
+function children(
+  node: Raw,
+  depth: number,
+  options: SanitizeOptions,
+): NoteNode[] | null {
   if (node.content === undefined) return [];
   if (!Array.isArray(node.content)) return null;
   const out: NoteNode[] = [];
   for (const child of node.content) {
-    const clean = cleanNode(child, depth + 1);
+    const clean = cleanNode(child, depth + 1, options);
     if (clean === null) return null;
     out.push(clean);
   }
   return out;
 }
 
-function cleanMarks(value: unknown): NoteMark[] | null {
+function cleanMarks(
+  value: unknown,
+  options: SanitizeOptions,
+): NoteMark[] | null {
   if (value === undefined) return [];
   if (!Array.isArray(value)) return null;
   const out: NoteMark[] = [];
   for (const mark of value) {
     if (!isRecord(mark) || typeof mark.type !== "string") return null;
-    // un segno non previsto (link, colore) si scarta, il testo resta
-    if (MARKS.has(mark.type) && !out.some((m) => m.type === mark.type)) {
-      out.push({ type: mark.type as NoteMark["type"] });
+    if (out.some((m) => m.type === mark.type)) continue;
+    if (mark.type === "link") {
+      // solo l'indirizzo, ripulito: target e rel li decide chi mostra la nota;
+      // un indirizzo non ammesso (javascript:, data:…) toglie il link, il testo resta
+      const href =
+        options.links &&
+        isRecord(mark.attrs) &&
+        typeof mark.attrs.href === "string"
+          ? normalizeLinkHref(mark.attrs.href)
+          : null;
+      if (href) out.push({ type: "link", attrs: { href } });
+      continue;
+    }
+    // un segno non previsto (colore, sottolineato) si scarta, il testo resta
+    if (MARKS.has(mark.type)) {
+      out.push({ type: mark.type as "bold" | "italic" | "highlight" });
     }
   }
   return out;
 }
 
-function cleanNode(value: unknown, depth: number): NoteNode | null {
+function cleanNode(
+  value: unknown,
+  depth: number,
+  options: SanitizeOptions,
+): NoteNode | null {
   if (depth > MAX_DEPTH || !isRecord(value)) return null;
   switch (value.type) {
     case "text": {
       if (typeof value.text !== "string" || value.text === "") return null;
-      const marks = cleanMarks(value.marks);
+      const marks = cleanMarks(value.marks, options);
       if (marks === null) return null;
       return marks.length
         ? { type: "text", text: value.text, marks }
@@ -73,7 +106,7 @@ function cleanNode(value: unknown, depth: number): NoteNode | null {
     case "hardBreak":
       return { type: "hardBreak" };
     case "paragraph": {
-      const content = inline(value, depth);
+      const content = inline(value, depth, options);
       if (content === null) return null;
       return content.length
         ? { type: "paragraph", content }
@@ -82,7 +115,7 @@ function cleanNode(value: unknown, depth: number): NoteNode | null {
     case "heading": {
       const level = isRecord(value.attrs) ? value.attrs.level : undefined;
       if (level !== 2 && level !== 3) return null;
-      const content = inline(value, depth);
+      const content = inline(value, depth, options);
       if (content === null) return null;
       return content.length
         ? { type: "heading", attrs: { level }, content }
@@ -90,7 +123,7 @@ function cleanNode(value: unknown, depth: number): NoteNode | null {
     }
     case "bulletList":
     case "orderedList": {
-      const items = children(value, depth);
+      const items = children(value, depth, options);
       if (!items?.length || items.some((i) => i.type !== "listItem")) {
         return null;
       }
@@ -106,7 +139,7 @@ function cleanNode(value: unknown, depth: number): NoteNode | null {
         : { type: "orderedList", content: items };
     }
     case "listItem": {
-      const content = children(value, depth);
+      const content = children(value, depth, options);
       if (
         !content?.length ||
         content.some(
@@ -125,8 +158,12 @@ function cleanNode(value: unknown, depth: number): NoteNode | null {
   }
 }
 
-function inline(node: Raw, depth: number): NoteNode[] | null {
-  const content = children(node, depth);
+function inline(
+  node: Raw,
+  depth: number,
+  options: SanitizeOptions,
+): NoteNode[] | null {
+  const content = children(node, depth, options);
   if (content === null) return null;
   return content.every((c) => c.type === "text" || c.type === "hardBreak")
     ? content
@@ -137,9 +174,12 @@ function inline(node: Raw, depth: number): NoteNode[] | null {
  * Documento ricostruito con soli nodi, segni e attributi previsti; null se
  * la struttura non è valida (nodo sconosciuto, nesting sbagliato).
  */
-export function sanitizeNoteDoc(value: unknown): NoteDoc | null {
+export function sanitizeNoteDoc(
+  value: unknown,
+  options: SanitizeOptions = {},
+): NoteDoc | null {
   if (!isRecord(value) || value.type !== "doc") return null;
-  const content = children(value, 0);
+  const content = children(value, 0, options);
   if (content === null) return null;
   const blocks = new Set(["paragraph", "heading", "bulletList", "orderedList"]);
   if (content.some((c) => !blocks.has(c.type))) return null;
@@ -154,7 +194,9 @@ export function noteDocBytes(doc: unknown): number {
 
 function inlineText(nodes: NoteNode[] | undefined): string {
   return (nodes ?? [])
-    .map((n) => (n.type === "text" ? n.text : n.type === "hardBreak" ? "\n" : ""))
+    .map((n) =>
+      n.type === "text" ? n.text : n.type === "hardBreak" ? "\n" : "",
+    )
     .join("");
 }
 
@@ -178,6 +220,25 @@ function blockLines(node: NoteNode, prefix: string): string[] {
     default:
       return [];
   }
+}
+
+/**
+ * Caratteri di testo visibile (solo il testo: niente formattazione, segni
+ * degli elenchi o a capo). È il conteggio del limite della nota dei video.
+ */
+export function noteVisibleLength(doc: NoteDoc): number {
+  const count = (nodes: NoteNode[] | undefined): number =>
+    (nodes ?? []).reduce(
+      (total, node) =>
+        total +
+        (node.type === "text"
+          ? [...node.text].length
+          : "content" in node
+            ? count(node.content)
+            : 0),
+      0,
+    );
+  return count(doc.content);
 }
 
 /** Testo semplice: un blocco per riga, elenchi con "- " e "1. ", senza righe vuote. */
@@ -204,7 +265,8 @@ export function noteExcerpt(text: string): string {
   );
 }
 
-function isEmptyDoc(doc: NoteDoc): boolean {
+/** Documento senza testo (solo paragrafi vuoti): equivale a nessuna nota. */
+export function isEmptyDoc(doc: NoteDoc): boolean {
   return (doc.content ?? []).every(
     (node) => node.type === "paragraph" && !node.content?.length,
   );

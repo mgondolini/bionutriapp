@@ -10,6 +10,7 @@ import { z } from "zod";
 
 import { FormMessage } from "@/components/shared/form-message";
 import { ResponsiveDialog } from "@/components/shared/responsive-dialog";
+import { RichNoteField } from "@/components/shared/rich-text/rich-note-field";
 import { VideoThumbnail } from "@/components/shared/video-thumbnail";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +24,9 @@ import { Input } from "@/components/ui/input";
 import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import { VIDEO_NOTE_MAX, VIDEO_TITLE_MAX } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import type { NoteDoc } from "@/lib/domain/client-notes/content";
+import { formatNumber } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { youtubeShortLabel } from "@/lib/videos/youtube";
 import {
   addVideoAction,
@@ -36,7 +40,6 @@ import { addVideoSchema } from "@/server/validation/videos.schema";
 import {
   LinkErrorBox,
   SELECT_CLASS,
-  TEXTAREA_CLASS,
   isLinkErrorCode,
   type LinkErrorCode,
 } from "./video-form-parts";
@@ -55,7 +58,7 @@ export type VideoDialogMode =
         youtubeId: string;
         title: string;
         folderId: string;
-        note: string | null;
+        note: NoteDoc | null;
       };
     };
 
@@ -95,7 +98,7 @@ export function VideoDialog({
         url: youtubeShortLabel(mode.video.youtubeId),
         title: mode.video.title,
         folderId: mode.video.folderId,
-        note: mode.video.note ?? "",
+        note: mode.video.note ? JSON.stringify(mode.video.note) : "",
         notify: false,
       }
     : {
@@ -111,10 +114,11 @@ export function VideoDialog({
     }) as unknown as Resolver<VideoFormValues>,
     defaultValues: defaults,
   });
-  const [url, note, folderId] = useWatch({
+  const [url, folderId] = useWatch({
     control: form.control,
-    name: ["url", "note", "folderId"],
+    name: ["url", "folderId"],
   });
+  const [noteCount, setNoteCount] = useState(0);
   const audience = folders.find((f) => f.id === folderId)?.audience ?? 0;
   const fieldId = (key: string) => `video-${mode.kind}-${key}`;
 
@@ -379,19 +383,49 @@ export function VideoDialog({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={fieldId("note")}>{t.note}</FieldLabel>
-                    <textarea
-                      {...field}
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+                      <FieldLabel
+                        htmlFor={fieldId("note")}
+                        id={fieldId("note-label")}
+                      >
+                        {t.note}{" "}
+                        <span className="font-normal text-admin-muted">
+                          {t.noteOptional}
+                        </span>
+                      </FieldLabel>
+                      <span className="text-[12.5px] text-admin-muted">
+                        {t.noteSameEditor}
+                      </span>
+                    </div>
+                    <RichNoteField
                       id={fieldId("note")}
-                      rows={3}
-                      maxLength={VIDEO_NOTE_MAX}
-                      aria-invalid={fieldState.invalid}
-                      aria-describedby={fieldId("note-count")}
-                      className={TEXTAREA_CLASS}
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      label={t.note}
+                      placeholder={t.notePlaceholder}
+                      describedBy={fieldId("note-hint")}
+                      invalid={fieldState.invalid || noteCount > VIDEO_NOTE_MAX}
+                      onCount={setNoteCount}
                     />
-                    <FieldDescription id={fieldId("note-count")}>
-                      {t.count(note.length, VIDEO_NOTE_MAX)}
-                    </FieldDescription>
+                    <div
+                      id={fieldId("note-hint")}
+                      className="flex items-start justify-between gap-3 text-[13px] text-admin-muted"
+                    >
+                      <span>{t.noteHint}</span>
+                      <span
+                        className={cn(
+                          "shrink-0 tabular-nums",
+                          noteCount > VIDEO_NOTE_MAX &&
+                            "font-semibold text-warning-foreground",
+                        )}
+                      >
+                        {t.count(
+                          formatNumber(noteCount),
+                          formatNumber(VIDEO_NOTE_MAX),
+                        )}
+                      </span>
+                    </div>
                     <FieldError errors={[fieldState.error]} />
                   </Field>
                 )}

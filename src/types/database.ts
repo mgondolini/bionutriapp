@@ -1517,7 +1517,8 @@ export type Database = {
           created_by: string | null;
           folder_id: string;
           id: string;
-          note: string | null;
+          note_doc: Json | null;
+          note_text: string | null;
           sort_order: number;
           studio_id: string;
           title: string;
@@ -1532,7 +1533,8 @@ export type Database = {
           created_by?: string | null;
           folder_id: string;
           id?: string;
-          note?: string | null;
+          note_doc?: Json | null;
+          note_text?: string | null;
           sort_order?: number;
           studio_id: string;
           title: string;
@@ -1546,7 +1548,8 @@ export type Database = {
           created_by?: string | null;
           folder_id?: string;
           id?: string;
-          note?: string | null;
+          note_doc?: Json | null;
+          note_text?: string | null;
           sort_order?: number;
           studio_id?: string;
           title?: string;
@@ -1854,6 +1857,14 @@ export type Database = {
           isOneToOne: false;
           isSetofReturn: true;
         };
+      };
+      my_studio_staff_name: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          first_name: string;
+          last_name: string;
+          title: string;
+        }[];
       };
       onboarding_prep_candidates: {
         Args: { p_from: string; p_studio: string; p_to: string };

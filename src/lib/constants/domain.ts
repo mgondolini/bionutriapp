@@ -548,7 +548,13 @@ export const PUSH_USER_AGENT_MAX_LENGTH = 256;
  * di sottocartelle. Niente durata: oEmbed di YouTube non la fornisce.
  */
 export const VIDEO_TITLE_MAX = 120;
-export const VIDEO_NOTE_MAX = 300;
+/**
+ * Nota per i clienti (formattata, con link): al massimo 1000 caratteri di
+ * testo visibile, la formattazione non conta. Il JSON dell'editor che arriva
+ * dal browser ha un limite tecnico più largo (VIDEO_NOTE_JSON_MAX byte).
+ */
+export const VIDEO_NOTE_MAX = 1000;
+export const VIDEO_NOTE_JSON_MAX = 64_000;
 export const VIDEO_FOLDER_NAME_MAX = 40;
 export const VIDEO_FOLDER_DESCRIPTION_MAX = 200;
 /** Un video è "Nuovo" per i giorni dopo l'aggiunta (per il cliente, finché non lo apre). */

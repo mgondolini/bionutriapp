@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { NoteDoc } from "@/lib/domain/client-notes/content";
 import { createClient } from "@/lib/supabase/server";
 
 /*
@@ -23,7 +24,10 @@ export type VideoRow = {
   folderId: string;
   youtubeId: string;
   title: string;
-  note: string | null;
+  /** Nota formattata (documento dell'editor, già pulito al salvataggio). */
+  note: NoteDoc | null;
+  /** Testo semplice della nota. */
+  noteText: string | null;
   sortOrder: number;
   createdAt: string;
   unavailableAt: string | null;
@@ -32,7 +36,7 @@ export type VideoRow = {
 const FOLDER_COLUMNS =
   "id, parent_id, name, description, visible_in_onboarding, sort_order";
 const VIDEO_COLUMNS =
-  "id, folder_id, youtube_id, title, note, sort_order, created_at, unavailable_at";
+  "id, folder_id, youtube_id, title, note_doc, note_text, sort_order, created_at, unavailable_at";
 
 type FolderDb = {
   id: string;
@@ -47,7 +51,8 @@ type VideoDb = {
   folder_id: string;
   youtube_id: string;
   title: string;
-  note: string | null;
+  note_doc: unknown;
+  note_text: string | null;
   sort_order: number;
   created_at: string;
   unavailable_at: string | null;
@@ -67,7 +72,8 @@ const toVideo = (row: VideoDb): VideoRow => ({
   folderId: row.folder_id,
   youtubeId: row.youtube_id,
   title: row.title,
-  note: row.note,
+  note: (row.note_doc as NoteDoc | null) ?? null,
+  noteText: row.note_text,
   sortOrder: row.sort_order,
   createdAt: row.created_at,
   unavailableAt: row.unavailable_at,
@@ -209,7 +215,7 @@ export async function insertVideo(row: {
   folderId: string;
   youtubeId: string;
   title: string;
-  note: string | null;
+  note: { doc: NoteDoc; text: string } | null;
 }): Promise<{ ok: true; id: string } | { ok: false; reason: "duplicate" }> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -218,7 +224,8 @@ export async function insertVideo(row: {
       folder_id: row.folderId,
       youtube_id: row.youtubeId,
       title: row.title,
-      note: row.note,
+      note_doc: row.note?.doc ?? null,
+      note_text: row.note?.text ?? null,
       // ricalcolato comunque dal trigger a partire dalla cartella
       studio_id: row.studioId,
     })
@@ -231,7 +238,11 @@ export async function insertVideo(row: {
 
 export async function updateVideo(
   videoId: string,
-  fields: { title: string; folderId: string; note: string | null },
+  fields: {
+    title: string;
+    folderId: string;
+    note: { doc: NoteDoc; text: string } | null;
+  },
 ): Promise<"ok" | "not_found" | "duplicate"> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -239,7 +250,8 @@ export async function updateVideo(
     .update({
       title: fields.title,
       folder_id: fields.folderId,
-      note: fields.note,
+      note_doc: fields.note?.doc ?? null,
+      note_text: fields.note?.text ?? null,
     })
     .eq("id", videoId)
     .select("id");
@@ -298,4 +310,22 @@ export async function recordOwnView(videoId: string): Promise<boolean> {
   if (error?.code === "P0001") return false;
   if (error) throw error;
   return true;
+}
+
+/**
+ * Titolo e nome del titolare dello studio del cliente, per "Nota del Dott.
+ * …" sotto il video (RPC: il cliente non legge studio_members).
+ */
+export async function getStudioStaffName(): Promise<{
+  title: string;
+  firstName: string;
+  lastName: string;
+} | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("my_studio_staff_name");
+  if (error) throw error;
+  const row = data?.[0];
+  return row
+    ? { title: row.title, firstName: row.first_name, lastName: row.last_name }
+    : null;
 }

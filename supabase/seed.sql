@@ -178,20 +178,32 @@ insert into public.video_folders (id, studio_id, parent_id, name, description, v
   ('aaaaaaaa-7777-4000-8000-000000000004', 'aaaaaaaa-1111-4000-8000-000000000000',
    'aaaaaaaa-7777-4000-8000-000000000002', 'Colazioni', null, false);
 
-insert into public.videos (id, studio_id, folder_id, youtube_id, title, note, created_at, unavailable_at) values
+insert into public.videos (id, studio_id, folder_id, youtube_id, title, created_at, unavailable_at) values
   ('aaaaaaaa-8888-4000-8000-000000000001', 'aaaaaaaa-1111-4000-8000-000000000000',
-   'aaaaaaaa-7777-4000-8000-000000000001', 'Seedvideo01', 'Come funziona il percorso', null, now() - interval '60 days', null),
+   'aaaaaaaa-7777-4000-8000-000000000001', 'Seedvideo01', 'Come funziona il percorso', now() - interval '60 days', null),
   ('aaaaaaaa-8888-4000-8000-000000000002', 'aaaaaaaa-1111-4000-8000-000000000000',
-   'aaaaaaaa-7777-4000-8000-000000000002', 'Seedvideo02', 'Meal prep della domenica', null, now() - interval '40 days', null),
+   'aaaaaaaa-7777-4000-8000-000000000002', 'Seedvideo02', 'Meal prep della domenica', now() - interval '40 days', null),
   ('aaaaaaaa-8888-4000-8000-000000000003', 'aaaaaaaa-1111-4000-8000-000000000000',
-   'aaaaaaaa-7777-4000-8000-000000000002', 'Seedvideo03', 'Snack da portare in borsa', null, now() - interval '30 days', now() - interval '2 days'),
+   'aaaaaaaa-7777-4000-8000-000000000002', 'Seedvideo03', 'Snack da portare in borsa', now() - interval '30 days', now() - interval '2 days'),
   ('aaaaaaaa-8888-4000-8000-000000000004', 'aaaaaaaa-1111-4000-8000-000000000000',
-   'aaaaaaaa-7777-4000-8000-000000000002', 'Seedvideo04', 'Pranzo da ufficio: la schiscetta bilanciata', null, now() - interval '5 days', null),
+   'aaaaaaaa-7777-4000-8000-000000000002', 'Seedvideo04', 'Pranzo da ufficio: la schiscetta bilanciata', now() - interval '5 days', null),
   ('aaaaaaaa-8888-4000-8000-000000000005', 'aaaaaaaa-1111-4000-8000-000000000000',
-   'aaaaaaaa-7777-4000-8000-000000000004', 'Seedvideo05', 'Colazione proteica in 5 minuti',
-   'Se non hai lo yogurt greco va benissimo lo skyr: stesse proteine.', now() - interval '1 day', null),
+   'aaaaaaaa-7777-4000-8000-000000000004', 'Seedvideo05', 'Colazione proteica in 5 minuti', now() - interval '1 day', null),
   ('aaaaaaaa-8888-4000-8000-000000000006', 'aaaaaaaa-1111-4000-8000-000000000000',
-   'aaaaaaaa-7777-4000-8000-000000000003', 'Seedvideo06', 'Mobilità per la schiena in 10 minuti', null, now() - interval '20 days', null);
+   'aaaaaaaa-7777-4000-8000-000000000003', 'Seedvideo06', 'Mobilità per la schiena in 10 minuti', now() - interval '20 days', null);
+
+-- Nota formattata (grassetto, elenco, link) sotto la colazione proteica
+update public.videos
+   set note_text = E'Se non hai lo yogurt greco va benissimo lo skyr: stesse proteine.\nPer una porzione:\n- 170 g di skyr bianco\n- 30 g di fiocchi d''avena\nApprofondisci qui: linee guida CREA',
+       note_doc = '{"type":"doc","content":[
+         {"type":"paragraph","content":[{"type":"text","text":"Se non hai lo yogurt greco","marks":[{"type":"bold"}]},{"type":"text","text":" va benissimo lo skyr: "},{"type":"text","text":"stesse proteine","marks":[{"type":"highlight"}]},{"type":"text","text":"."}]},
+         {"type":"paragraph","content":[{"type":"text","text":"Per una porzione:"}]},
+         {"type":"bulletList","content":[
+           {"type":"listItem","content":[{"type":"paragraph","content":[{"type":"text","text":"170 g di skyr bianco"}]}]},
+           {"type":"listItem","content":[{"type":"paragraph","content":[{"type":"text","text":"30 g di fiocchi d’avena"}]}]}]},
+         {"type":"paragraph","content":[{"type":"text","text":"Approfondisci qui: "},{"type":"text","text":"linee guida CREA","marks":[{"type":"link","attrs":{"href":"https://www.crea.gov.it/"}}]}]}
+       ]}'::jsonb
+ where id = 'aaaaaaaa-8888-4000-8000-000000000005';
 
 -- Anna ha già aperto il video di benvenuto e il meal prep
 insert into public.video_views (video_id, client_id, studio_id) values

@@ -1,7 +1,8 @@
-import { ExternalLink, MessageSquareQuote } from "lucide-react";
+import { ExternalLink, FileText } from "lucide-react";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 
+import { NoteDocView } from "@/components/shared/rich-text/note-doc-view";
 import { buttonVariants } from "@/components/ui/button";
 import { ClientPageHeader } from "@/features/cliente/client-header";
 import {
@@ -43,7 +44,7 @@ export default async function VideoPage({
     VIDEO_RELATED_LIMIT,
   );
   if (!data) notFound();
-  const { video, folder, related, relatedCount } = data;
+  const { video, folder, related, relatedCount, staff } = data;
   const unavailable = Boolean(video.unavailableAt);
 
   return (
@@ -78,19 +79,30 @@ export default async function VideoPage({
         </p>
       ) : null}
       {video.note ? (
-        <figure className="flex gap-2.5 rounded-xl bg-video-tint px-3.5 py-3 text-sm leading-normal">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-video text-video-ink">
-            <MessageSquareQuote aria-hidden="true" className="size-4" />
-          </span>
-          <div className="flex flex-col gap-0.5">
-            <figcaption className="text-xs font-bold text-video-ink">
-              {t.noteFrom(studio.name)}
-            </figcaption>
-            <blockquote className="whitespace-pre-line">
-              {t.quotedNote(video.note)}
-            </blockquote>
-          </div>
-        </figure>
+        <section
+          aria-labelledby="video-note"
+          className="flex flex-col gap-2.5 rounded-xl bg-video-tint px-4 py-3.5"
+        >
+          <h3
+            id="video-note"
+            className="flex items-center gap-2.5 text-[13px] font-bold text-video-ink"
+          >
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-video text-video-ink">
+              <FileText
+                aria-hidden="true"
+                strokeWidth={1.8}
+                className="size-4"
+              />
+            </span>
+            {staff
+              ? t.noteFromStaff(
+                  staff.title,
+                  `${staff.firstName} ${staff.lastName}`.trim(),
+                )
+              : t.noteFrom(studio.name)}
+          </h3>
+          <NoteDocView doc={video.note} />
+        </section>
       ) : null}
       <a
         href={youtubeWatchUrl(video.youtubeId)}

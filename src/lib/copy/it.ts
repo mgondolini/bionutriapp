@@ -482,8 +482,14 @@ export const copy = {
         titleHint: "Preso da YouTube, puoi modificarlo.",
         titleWaiting: "Compare dopo un link valido",
         folder: "Cartella",
-        note: "Nota per i clienti (facoltativa)",
-        count: (count: number, max: number) => `${count}/${max}`,
+        note: "Nota per i clienti",
+        noteOptional: "(facoltativa)",
+        noteSameEditor: "Stesso editor delle note cliniche",
+        notePlaceholder: "Un consiglio, una variante o un link utile per i clienti",
+        noteHint:
+          "La vedono i clienti sotto il video. I link si aprono in una nuova scheda.",
+        count: (count: number | string, max: number | string) =>
+          `${count}/${max}`,
         notify: "Avvisa i clienti",
         notifyHint: (count: number) =>
           `Invia una notifica push ${
@@ -529,7 +535,8 @@ export const copy = {
         descriptionTooLong: `Al massimo ${VIDEO_FOLDER_DESCRIPTION_MAX} caratteri.`,
         titleRequired: "Scrivi il titolo che vedono i clienti.",
         titleTooLong: `Al massimo ${VIDEO_TITLE_MAX} caratteri.`,
-        noteTooLong: `Al massimo ${VIDEO_NOTE_MAX} caratteri.`,
+        noteTooLong: `La nota supera i ${VIDEO_NOTE_MAX} caratteri: accorciala.`,
+        noteInvalid: "Non è stato possibile leggere la nota. Riprova.",
         linkInvalid: "Incolla un link di YouTube.",
         folderRequired: "Scegli una cartella.",
       },
@@ -1110,7 +1117,14 @@ export const copy = {
       backToVideos: "Torna ai video",
       backToFolder: (name: string) => `Torna a ${name}`,
       noteFrom: (studioName: string) => `Nota di ${studioName}`,
-      quotedNote: (note: string) => `“${note}”`,
+      /** "Nota del Dott. Fabio Carburi", "Nota della Dott.ssa Elena Verdi". */
+      noteFromStaff: (title: string, name: string) => {
+        const t = title.trim();
+        if (!t) return `Nota di ${name}`;
+        const feminine = /ssa\.?$/i.test(t);
+        return `Nota ${feminine ? "della" : "del"} ${t} ${name}`;
+      },
+      notePreviewLabel: "Nota",
       openOnYoutube: "Apri su YouTube",
       sameFolder: "Nella stessa cartella",
       unavailable: {
@@ -2183,9 +2197,26 @@ export const copy = {
       highlight: "Evidenzia",
       bulletList: "Elenco puntato",
       orderedList: "Elenco numerato",
+      link: "Inserisci link",
       undo: "Annulla",
       redo: "Ripeti",
     },
+    /** Finestra del link (nota dei video, A14b e A14c). */
+    linkDialog: {
+      addTitle: "Inserisci link",
+      editTitle: "Modifica link",
+      text: "Testo del link",
+      href: "Indirizzo",
+      hrefPlaceholder: "https://",
+      savedAs: (href: string) => `Verrà salvato come ${href}`,
+      invalid:
+        "Inserisci un indirizzo web che inizi con https:// oppure un'email.",
+      remove: "Rimuovi link",
+      cancel: "Annulla",
+      apply: "Applica",
+    },
+    /** Testo per i lettori di schermo dopo un link della nota (C16). */
+    newTab: "(si apre in una nuova scheda)",
     errors: {
       titleRequired: "Scrivi un titolo.",
       titleTooLong: "Il titolo può avere al massimo 120 caratteri.",

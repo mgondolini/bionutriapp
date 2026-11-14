@@ -7,6 +7,7 @@ import {
   ChevronDown,
   Highlighter,
   Italic,
+  Link2,
   List,
   ListOrdered,
   Redo2,
@@ -47,6 +48,7 @@ function useToolbarState(editor: Editor) {
       highlight: current.isActive("highlight"),
       bulletList: current.isActive("bulletList"),
       orderedList: current.isActive("orderedList"),
+      link: current.isActive("link"),
       block: (current.isActive("heading", { level: 2 })
         ? "h2"
         : current.isActive("heading", { level: 3 })
@@ -63,6 +65,7 @@ function ToolButton({
   label,
   shortcut,
   active,
+  activeStyle = "mint",
   disabled,
   size,
   onClick,
@@ -72,6 +75,8 @@ function ToolButton({
   shortcut?: string;
   /** undefined = pulsante senza stato (annulla, ripeti). */
   active?: boolean;
+  /** Stato attivo: Menta (formattazione) o tinta con bordo (cursore in un link). */
+  activeStyle?: "mint" | "wash";
   disabled?: boolean;
   size: Size;
   onClick: () => void;
@@ -91,7 +96,9 @@ function ToolButton({
         "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[10px] transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-default disabled:opacity-40",
         SIZE_CLASS[size],
         active
-          ? "bg-mint text-foreground"
+          ? activeStyle === "wash"
+            ? "border border-admin-field bg-wash text-foreground"
+            : "bg-mint text-foreground"
           : dark
             ? "text-white hover:bg-white/15"
             : "text-foreground hover:bg-card",
@@ -192,16 +199,22 @@ function BlockStyleMenu({
 }
 
 /**
- * Barra degli strumenti: fissa sopra il testo su desktop (pulsanti 40 px),
- * ancorata sopra la tastiera sul telefono (44 px, stile con "Aa").
+ * Barra degli strumenti delle note formattate (note cliniche e nota dei
+ * video): fissa sopra il testo su desktop (pulsanti 40 px), ancorata sopra la
+ * tastiera sul telefono (44 px, stile con "Aa"). Con `onLink` (solo la nota
+ * dei video) compare "Inserisci link" dopo gli elenchi: attivo con il cursore
+ * dentro un link, Ctrl/Cmd+K lo apre dall'editor.
  */
 export function EditorToolbar({
   editor,
   phone,
+  onLink,
   className,
 }: {
   editor: Editor;
   phone?: boolean;
+  /** Apre la finestra del link; senza, niente pulsante (note cliniche). */
+  onLink?: () => void;
   className?: string;
 }) {
   const state = useToolbarState(editor);
@@ -261,6 +274,20 @@ export function EditorToolbar({
         size={size}
         onClick={() => chain().toggleOrderedList().run()}
       />
+      {onLink ? (
+        <>
+          {phone ? null : <Separator />}
+          <ToolButton
+            icon={Link2}
+            label={t.link}
+            shortcut="Ctrl+K"
+            active={state.link}
+            activeStyle="wash"
+            size={size}
+            onClick={onLink}
+          />
+        </>
+      ) : null}
       {phone ? null : <span aria-hidden="true" className="flex-1" />}
       <ToolButton
         icon={Undo2}

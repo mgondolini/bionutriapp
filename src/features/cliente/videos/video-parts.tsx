@@ -1,6 +1,7 @@
-import { Check, ChevronRight, Folder } from "lucide-react";
+import { Check, ChevronRight, FileText, Folder } from "lucide-react";
 import Link from "next/link";
 
+import { NoteDocView } from "@/components/shared/rich-text/note-doc-view";
 import { VideoThumbnail } from "@/components/shared/video-thumbnail";
 import { videoFolderPath, videoPath } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
@@ -32,54 +33,77 @@ export function FolderPill({ name }: { name: string }) {
 
 /**
  * Riga di un video (C15, C16, C4, C5): tutta la riga apre il video. A destra
- * "Nuovo" finché non è aperto, la spunta se è già stato aperto.
+ * "Nuovo" finché non è aperto, la spunta se è già stato aperto. Con
+ * `notePreview` (elenco della cartella, C15) sotto compare l'anteprima della
+ * nota, al massimo due righe: i link sono solo sottolineati, il tocco sulla
+ * card apre il video.
  */
 export function VideoRowLink({
   video,
   meta,
   folderName,
+  notePreview = false,
   className,
 }: {
   video: ClientVideo;
   meta?: string;
   /** Cartella mostrata sopra il titolo (home e Onboarding). */
   folderName?: string;
+  notePreview?: boolean;
   className?: string;
 }) {
+  const note = notePreview ? video.note : null;
   return (
     <Link
       href={videoPath(video.folderId, video.id)}
       className={cn(
-        "flex min-h-21 items-center gap-3 bg-card px-3 py-2.5 transition-colors hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-inset",
+        "flex flex-col gap-2.5 bg-card px-3 py-2.5 transition-colors hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-inset",
         className,
       )}
     >
-      <VideoThumbnail youtubeId={video.youtubeId} className="w-[116px]" />
-      <span className="flex min-w-0 flex-1 flex-col gap-1">
-        {folderName ? <FolderPill name={folderName} /> : null}
-        <span className="line-clamp-2 text-[14.5px] leading-snug font-semibold break-words">
-          {video.title}
+      <span className="flex min-h-16 items-center gap-3">
+        <VideoThumbnail youtubeId={video.youtubeId} className="w-[116px]" />
+        <span className="flex min-w-0 flex-1 flex-col gap-1">
+          {folderName ? <FolderPill name={folderName} /> : null}
+          <span className="line-clamp-2 text-[14.5px] leading-snug font-semibold break-words">
+            {video.title}
+          </span>
+          {meta ? (
+            <span className="text-[12.5px] text-muted-foreground">{meta}</span>
+          ) : null}
         </span>
-        {meta ? (
-          <span className="text-[12.5px] text-muted-foreground">{meta}</span>
-        ) : null}
+        {video.isNew ? (
+          <NewBadge>{t.newBadge}</NewBadge>
+        ) : video.viewed ? (
+          <span
+            role="img"
+            aria-label={t.viewedAria}
+            className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary-tint text-foreground"
+          >
+            <Check aria-hidden="true" className="size-3.5" />
+          </span>
+        ) : (
+          <ChevronRight
+            aria-hidden="true"
+            className="size-5 shrink-0 text-secondary-foreground"
+          />
+        )}
       </span>
-      {video.isNew ? (
-        <NewBadge>{t.newBadge}</NewBadge>
-      ) : video.viewed ? (
-        <span
-          role="img"
-          aria-label={t.viewedAria}
-          className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary-tint text-foreground"
-        >
-          <Check aria-hidden="true" className="size-3.5" />
+      {note ? (
+        <span className="flex items-start gap-2.5 rounded-xl bg-video-tint px-3 py-2.5">
+          <FileText
+            aria-hidden="true"
+            strokeWidth={1.8}
+            className="mt-0.5 size-4 shrink-0 text-video-ink"
+          />
+          <span className="sr-only">{t.notePreviewLabel}</span>
+          <NoteDocView
+            doc={note}
+            preview
+            className="line-clamp-2 min-w-0 text-[13.5px] leading-5 text-foreground"
+          />
         </span>
-      ) : (
-        <ChevronRight
-          aria-hidden="true"
-          className="size-5 shrink-0 text-secondary-foreground"
-        />
-      )}
+      ) : null}
     </Link>
   );
 }

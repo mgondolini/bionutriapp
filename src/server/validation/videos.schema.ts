@@ -4,10 +4,18 @@ import { z } from "zod";
 import {
   VIDEO_FOLDER_DESCRIPTION_MAX,
   VIDEO_FOLDER_NAME_MAX,
+  VIDEO_NOTE_JSON_MAX,
   VIDEO_NOTE_MAX,
   VIDEO_TITLE_MAX,
 } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import {
+  noteContentToText,
+  noteDocBytes,
+  noteVisibleLength,
+  sanitizeNoteDoc,
+  type NoteDoc,
+} from "@/lib/domain/client-notes/content";
 import { parseYouTubeId } from "@/lib/videos/youtube";
 
 const v = copy.admin.videos.validation;
@@ -59,6 +67,40 @@ export const videoLinkSchema = z.object({
 });
 export type VideoLinkInput = z.input<typeof videoLinkSchema>;
 
+export type VideoNote = { doc: NoteDoc; text: string };
+
+/**
+ * Nota per i clienti: il documento dell'editor come stringa JSON (come le
+ * note cliniche: un oggetto passato a una Server Action perde gli attributi
+ * condivisi). Si ricostruisce con i soli nodi e segni ammessi, link compresi
+ * (https, http, mailto); vuota = null. Il limite conta il testo visibile.
+ */
+export const videoNoteSchema = z
+  .string()
+  .refine((raw) => noteDocBytes(raw) <= VIDEO_NOTE_JSON_MAX, v.noteTooLong)
+  .transform((raw, ctx): VideoNote | null => {
+    if (!raw.trim()) return null;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      ctx.addIssue({ code: "custom", message: v.noteInvalid });
+      return z.NEVER;
+    }
+    const doc = sanitizeNoteDoc(parsed, { links: true });
+    if (!doc) {
+      ctx.addIssue({ code: "custom", message: v.noteInvalid });
+      return z.NEVER;
+    }
+    const text = noteContentToText(doc);
+    if (!text.trim()) return null;
+    if (noteVisibleLength(doc) > VIDEO_NOTE_MAX) {
+      ctx.addIssue({ code: "custom", message: v.noteTooLong });
+      return z.NEVER;
+    }
+    return { doc, text };
+  });
+
 const videoFields = {
   title: z
     .string()
@@ -66,7 +108,7 @@ const videoFields = {
     .min(1, v.titleRequired)
     .max(VIDEO_TITLE_MAX, v.titleTooLong),
   folderId: z.uuid(v.folderRequired),
-  note: optionalText(VIDEO_NOTE_MAX, v.noteTooLong),
+  note: videoNoteSchema,
 };
 
 export const addVideoSchema = videoLinkSchema.extend({

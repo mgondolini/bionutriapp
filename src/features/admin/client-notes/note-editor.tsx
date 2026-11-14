@@ -43,9 +43,13 @@ import {
   visitDateSchema,
 } from "@/server/validation/client-notes.schema";
 
-import { cleanPastedHtml } from "./clean-pasted-html";
+import {
+  BubbleToolbar,
+  EditorToolbar,
+} from "@/components/shared/rich-text/editor-toolbar";
+import { cleanPastedHtml } from "@/components/shared/rich-text/clean-pasted-html";
+
 import { DeleteNoteDialog } from "./delete-note-dialog";
-import { BubbleToolbar, EditorToolbar } from "./editor-toolbar";
 import { SaveStatus, type SaveState } from "./save-status";
 import { useLeaveGuard } from "./use-leave-guard";
 import { useVisualViewport } from "./use-visual-viewport";

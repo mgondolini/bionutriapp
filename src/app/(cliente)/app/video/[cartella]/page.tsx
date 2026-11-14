@@ -123,6 +123,7 @@ export default async function VideoFolderPage({
                   <VideoRowLink
                     video={video}
                     meta={formatDayMonthLong(video.createdAt)}
+                    notePreview
                   />
                 </li>
               ))}

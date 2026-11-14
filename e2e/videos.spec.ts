@@ -109,7 +109,7 @@ test("lo staff organizza la libreria e il cliente guarda il video", async ({
   await expect(dialog.getByLabel("Titolo visibile ai clienti")).toHaveValue(
     "Video di prova e2e",
   );
-  await expect(dialog.getByLabel("Cartella")).toHaveValue(/.+/);
+  await expect(dialog.getByLabel("Cartella", { exact: true })).toHaveValue(/.+/);
   await dialog.getByRole("button", { name: "Aggiungi video" }).click();
   await expect(dialog).toBeHidden();
 
@@ -156,7 +156,15 @@ test("lo staff organizza la libreria e il cliente guarda il video", async ({
   await anna.page.waitForURL("**/app");
   await anna.page.goto("/app/video");
   await anna.page.getByRole("link", { name: new RegExp(FOLDER) }).click();
+  // "Ultimo video" di /app/video riporta il nome della sottocartella:
+  // si aspetta la pagina della cartella prima del clic successivo
+  await expect(
+    anna.page.getByRole("heading", { level: 1, name: FOLDER }),
+  ).toBeVisible();
   await anna.page.getByRole("link", { name: new RegExp(SUBFOLDER) }).click();
+  await expect(
+    anna.page.getByRole("heading", { level: 1, name: SUBFOLDER }),
+  ).toBeVisible();
   await expect(
     anna.page.getByRole("navigation", { name: "Filtra i video" }),
   ).toContainText("Da guardare · 2");

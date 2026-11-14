@@ -378,6 +378,8 @@ export type ClientVideoDetail = {
   folder: FolderRow;
   related: ClientVideo[];
   relatedCount: number;
+  /** Titolare dello studio, per "Nota del Dott. …" (solo se c'è una nota). */
+  staff: { title: string; firstName: string; lastName: string } | null;
 };
 
 /** Un video (C16, C17); null se non è nella cartella indicata o non è visibile. */
@@ -398,6 +400,7 @@ export async function getClientVideo(
     folder,
     related: others.slice(0, relatedLimit),
     relatedCount: others.length,
+    staff: video.note ? await videosRepository.getStudioStaffName() : null,
   };
 }
 
