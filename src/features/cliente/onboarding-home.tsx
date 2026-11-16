@@ -51,7 +51,7 @@ export function OnboardingHome({
 }) {
   return (
     <div className="flex flex-col gap-4">
-      <section className="flex flex-col gap-3 rounded-[18px] bg-mint p-5 text-mint-foreground">
+      <section className="flex flex-col gap-3 rounded-[20px] bg-mint p-5 text-mint-foreground">
         <p className="self-start rounded-full bg-mint-foreground px-2.5 py-1 text-[12.5px] leading-none font-bold text-mint">
           {t.welcome}
         </p>
@@ -78,7 +78,7 @@ export function OnboardingHome({
             return (
               <li
                 key={step.title}
-                className="flex flex-col gap-3 rounded-[14px] border bg-card p-3.5"
+                className="flex flex-col gap-3 rounded-[20px] border bg-card p-3.5"
               >
                 <div className="flex items-center gap-3.5">
                   <span
@@ -120,7 +120,7 @@ export function OnboardingHome({
         <h2 id="onboarding-area" className="text-[17px] font-bold">
           {t.areaTitle}
         </h2>
-        <ul className="flex flex-col divide-y divide-muted overflow-hidden rounded-[14px] border bg-card">
+        <ul className="flex flex-col divide-y divide-muted overflow-hidden rounded-[20px] border bg-card">
           {CLIENT_NAV.filter((item) => item.locked).map((item) => {
             const Icon = ICONS[item.key];
             return (

@@ -1,9 +1,8 @@
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
-import { buttonVariants } from "@/components/ui/button";
 import { ROUTES } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
-import { cn } from "@/lib/utils";
 import type {
   ClientVideo,
   ClientVideoHome,
@@ -20,26 +19,32 @@ export function HomeVideos({ home }: { home: ClientVideoHome }) {
   const { video, folder } = home.latest;
   return (
     <section aria-labelledby="home-videos" className="flex flex-col gap-2.5">
-      <SectionTitle
-        id="home-videos"
-        title={t.home.title}
-        aside={home.newCount > 0 ? t.newCount(home.newCount) : undefined}
-      />
+      <div className="flex items-center justify-between gap-3">
+        <h2
+          id="home-videos"
+          className="flex items-baseline gap-1.5 text-[17px] font-bold"
+        >
+          {t.home.title}
+          {home.newCount > 0 ? (
+            <span className="text-[13px] font-medium text-muted-foreground before:mr-1 before:content-['·']">
+              {t.newCount(home.newCount)}
+            </span>
+          ) : null}
+        </h2>
+        <Link
+          href={ROUTES.client.videos}
+          className="-mr-1 inline-flex min-h-11 shrink-0 items-center gap-1 rounded-lg px-1 text-[15px] font-semibold text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+        >
+          {t.home.all}
+          <ChevronRight aria-hidden="true" className="size-[18px]" />
+        </Link>
+      </div>
       <VideoRowLink
         video={video}
         folderName={folder.name}
         meta={formatDayMonthLong(video.createdAt)}
-        className="rounded-2xl border"
+        className="rounded-[20px] border"
       />
-      <Link
-        href={ROUTES.client.videos}
-        className={cn(
-          buttonVariants({ variant: "outline" }),
-          "h-12 rounded-xl",
-        )}
-      >
-        {t.home.all}
-      </Link>
     </section>
   );
 }
@@ -64,7 +69,7 @@ export function OnboardingVideos({
         title={t.onboarding.title}
         aside={t.videoCount(videos.length)}
       />
-      <ul className="flex flex-col divide-y divide-muted overflow-hidden rounded-2xl border bg-card">
+      <ul className="flex flex-col divide-y divide-muted overflow-hidden rounded-[20px] border bg-card">
         {videos.map(({ video, folder }) => (
           <li key={video.id}>
             <VideoRowLink video={video} folderName={folder.name} />

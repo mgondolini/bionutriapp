@@ -21,7 +21,7 @@ export function JourneyHomeRow({ journey }: { journey: ClientJourneyView }) {
     <Link
       href={JOURNEY_CLIENT_PATH}
       aria-label={t.client.homeAria(month, next)}
-      className="flex min-h-11 items-center gap-3 rounded-[18px] border bg-card px-4 py-3.5 transition-colors hover:bg-muted/40 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+      className="flex min-h-11 items-center gap-3 rounded-[20px] border bg-card px-4 py-3.5 transition-colors hover:bg-muted/40 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
     >
       <span className="flex min-w-0 flex-1 flex-col gap-2">
         <span className="flex items-baseline justify-between gap-2">

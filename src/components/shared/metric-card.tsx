@@ -113,7 +113,7 @@ export function MetricRowList({
   return (
     <ul
       aria-label={label}
-      className="flex flex-col divide-y divide-muted overflow-hidden rounded-[14px] border bg-card"
+      className="flex flex-col divide-y divide-muted overflow-hidden rounded-[20px] border bg-card"
     >
       {children}
     </ul>

@@ -46,7 +46,7 @@ const cardVariants = cva("flex text-card-foreground", {
     variant: {
       /** File in evidenza sulla menta: home (C5) e file in corso (C7). */
       featured:
-        "flex-col gap-3 rounded-[18px] bg-mint p-5 text-mint-foreground",
+        "flex-col gap-3 rounded-[20px] bg-mint p-5 text-mint-foreground",
       /** Riga compatta: archivio (C7, in un elenco raggruppato) e scheda File su schermi stretti. */
       row: "min-h-16 flex-wrap items-center gap-3 bg-card px-4 py-3",
     },

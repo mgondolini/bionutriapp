@@ -16,7 +16,7 @@ const ICONS: Record<FileCategory, LucideIcon> = {
 };
 
 /** Colore della card per categoria, come le voci del menu (C5, C6). */
-const cardVariants = cva("flex min-h-44 flex-col gap-1 rounded-2xl p-3.5", {
+const cardVariants = cva("flex min-h-44 flex-col gap-1 rounded-[20px] p-3.5", {
   variants: {
     category: {
       diet: "bg-primary-tint text-foreground",

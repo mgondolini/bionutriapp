@@ -45,7 +45,7 @@ export function ToRecord({ items }: { items: ToRecordItem[] }) {
         ) : null}
       </div>
       {pending === 0 ? (
-        <p className="flex items-center gap-2 rounded-[14px] border bg-card px-4 py-3 text-sm">
+        <p className="flex items-center gap-2 rounded-[20px] border bg-card px-4 py-3 text-sm">
           <CircleCheck aria-hidden="true" className="size-5 text-primary-ink" />
           {t.allDone}
         </p>
@@ -122,7 +122,7 @@ export function ToRecord({ items }: { items: ToRecordItem[] }) {
         href={ROUTES.client.tracking}
         className={buttonVariants({
           variant: "outline",
-          className: "w-full",
+          className: "w-full rounded-[20px]",
         })}
       >
         {t.cta}
