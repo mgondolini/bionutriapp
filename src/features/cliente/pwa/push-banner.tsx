@@ -46,7 +46,7 @@ export function PushBanner({
     <section
       aria-labelledby="push-banner-title"
       className={cn(
-        "flex gap-3 rounded-[20px] border bg-card p-3.5",
+        "flex gap-3 rounded-[20px] border-2 border-mint bg-card p-3.5",
         state === "denied" ? "items-start" : "items-center",
       )}
     >
