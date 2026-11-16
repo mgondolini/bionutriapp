@@ -7,7 +7,10 @@
  *   quale si riparte da registrazione + 30.
  * - Mai registrato e nessuna data scelta: nessun check in calendario.
  */
-import { CIRCUMFERENCE_INTERVAL_DAYS } from "@/lib/constants/domain";
+import {
+  CIRCUMFERENCE_INTERVAL_DAYS,
+  MEASURE_CHECK_REMINDER_DAYS,
+} from "@/lib/constants/domain";
 
 import { addDays } from "./dates";
 
@@ -48,15 +51,28 @@ export function measureCheck(input: MeasureCheckInput): MeasureCheck {
     : { dueOn: null, source: "none", defaultDueOn };
 }
 
-export type MeasureCheckReminder = "eve" | "day";
+/** Momento del promemoria: 3 e 2 giorni prima, il giorno prima, il giorno stesso. */
+export type MeasureCheckReminder = "d3" | "d2" | "eve" | "day";
 
-/** Promemoria delle 6: il giorno prima ("eve") e il giorno stesso ("day"). */
+const REMINDER_BY_DAYS: Record<number, MeasureCheckReminder> = {
+  3: "d3",
+  2: "d2",
+  1: "eve",
+  0: "day",
+};
+
+/**
+ * Promemoria delle 6: 3, 2 e 1 giorno prima e il giorno stesso
+ * (`MEASURE_CHECK_REMINDER_DAYS`, la stessa finestra di "In scadenza" della
+ * home). Le chiavi "eve" e "day" restano quelle già nel registro.
+ */
 export function measureCheckReminder(
   dueOn: string | null,
   today: string,
 ): MeasureCheckReminder | null {
   if (!dueOn) return null;
-  if (dueOn === today) return "day";
-  if (dueOn === addDays(today, 1)) return "eve";
-  return null;
+  const daysBefore = MEASURE_CHECK_REMINDER_DAYS.find(
+    (days) => addDays(today, days) === dueOn,
+  );
+  return daysBefore === undefined ? null : REMINDER_BY_DAYS[daysBefore]!;
 }

@@ -10,6 +10,7 @@ import {
   type NotificationType,
 } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import type { MeasureCheckReminder } from "@/lib/domain/tracking/measure-check";
 
 /*
  * Catalogo delle notifiche (N-05, N-06): per ogni tipo il testo (da
@@ -27,8 +28,8 @@ export type NotificationEvent =
   | { type: "file"; category: FileCategory; fileId: string }
   | { type: "daily_checkin"; day: string; variant: DailyCheckinVariant }
   | { type: "video"; videoId: string; folderId: string; folderName: string }
-  /** Check delle misure: "eve" il giorno prima, "day" il giorno stesso. */
-  | { type: "measure_check"; dueOn: string; when: "eve" | "day" };
+  /** Check delle misure: "d3"/"d2" 3 e 2 giorni prima, "eve" il giorno prima, "day" il giorno stesso. */
+  | { type: "measure_check"; dueOn: string; when: MeasureCheckReminder };
 
 /** Ciò che il service worker riceve e mostra (`public/sw.js`). */
 export type NotificationPayload = {
@@ -131,7 +132,7 @@ export function buildNotification(
 function notificationTitle(event: NotificationEvent): string {
   const t = copy.notifications.title;
   if (event.type === "measure_check") {
-    return event.when === "eve" ? t.measure_check_eve : t.measure_check_day;
+    return t[`measure_check_${event.when}`];
   }
   return t[
     notificationType(event) as Exclude<NotificationType, "measure_check">
@@ -150,7 +151,7 @@ function notificationBody(event: NotificationEvent): string {
     case "video":
       return t.video(event.folderName);
     case "measure_check":
-      return event.when === "eve" ? t.measure_check_eve : t.measure_check_day;
+      return t[`measure_check_${event.when}`];
   }
 }
 

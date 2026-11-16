@@ -241,8 +241,10 @@ describe("promemoria del check delle misure", () => {
       { ...base, clientId: "c1", userId: "u1", lastRecordedOn: "2026-11-01" },
       // check oggi
       { ...base, clientId: "c2", userId: "u2", lastRecordedOn: "2026-10-31" },
-      // check fra tre giorni: niente
+      // check fra tre giorni
       { ...base, clientId: "c3", userId: "u3", lastRecordedOn: "2026-11-03" },
+      // check fra quattro giorni: niente
+      { ...base, clientId: "c6", userId: "u6", lastRecordedOn: "2026-11-04" },
       // data scelta dallo staff: oggi
       {
         clientId: "c4",
@@ -263,13 +265,14 @@ describe("promemoria del check delle misure", () => {
     ]);
   });
 
-  it("alle 6 nel fuso dello studio: giorno prima e giorno stesso", async () => {
+  it("alle 6 nel fuso dello studio: 3, 2, 1 giorno prima e giorno stesso", async () => {
     const { report, jobs } = await service.prepareMeasureCheckReminders(NOW);
     expect(repo.listMeasureCheckCandidates).toHaveBeenCalledWith("roma");
-    expect(report).toEqual({ studios: 1, queued: 3, duplicates: 0 });
+    expect(report).toEqual({ studios: 1, queued: 4, duplicates: 0 });
     expect(jobs.map((job) => [job.clientId, job.event])).toEqual([
       ["c1", { type: "measure_check", dueOn: "2026-12-01", when: "eve" }],
       ["c2", { type: "measure_check", dueOn: "2026-11-30", when: "day" }],
+      ["c3", { type: "measure_check", dueOn: "2026-12-03", when: "d3" }],
       ["c4", { type: "measure_check", dueOn: "2026-11-30", when: "day" }],
     ]);
   });
@@ -277,7 +280,7 @@ describe("promemoria del check delle misure", () => {
   it("una seconda esecuzione non invia di nuovo; il testo non ha misure", async () => {
     await service.sendMeasureCheckReminders(NOW);
     const second = await service.sendMeasureCheckReminders(NOW);
-    expect(second).toEqual({ studios: 1, queued: 0, duplicates: 3 });
+    expect(second).toEqual({ studios: 1, queued: 0, duplicates: 4 });
     expect(scheduled).toHaveLength(1);
     await scheduled[0]();
     expect(push.sendToUser).toHaveBeenCalledWith(

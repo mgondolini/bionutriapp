@@ -189,6 +189,17 @@ describe("deduplicazione e registro", () => {
     expect(buildNotification({ ...eve, when: "day" }).body).toBe(
       "Registra peso e circonferenze.",
     );
+    expect(buildNotification({ ...eve, when: "d3" })).toMatchObject({
+      title: "Tra 3 giorni c’è il check delle misure",
+      body: "Puoi già registrare peso e circonferenze.",
+      tag: "measure-check-2026-12-01",
+    });
+    expect(buildNotification({ ...eve, when: "d2" }).title).toBe(
+      "Tra 2 giorni c’è il check delle misure",
+    );
+    expect(dedupeKey({ ...eve, when: "d2" }, "c1")).toBe(
+      "measure_check:c1:2026-12-01:d2",
+    );
     expect(dedupeKey(eve, "c1")).toBe("measure_check:c1:2026-12-01:eve");
     expect(dedupeKey({ ...eve, when: "day" }, "c1")).toBe(
       "measure_check:c1:2026-12-01:day",

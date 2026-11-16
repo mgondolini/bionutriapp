@@ -382,9 +382,14 @@ export type HabitKey = (typeof HABIT_KEYS)[number];
 export const CIRCUMFERENCE_INTERVAL_DAYS = 30;
 /** "In scadenza" nella home: mancano al massimo 3 giorni (C-02). */
 export const DUE_SOON_DAYS = 3;
+/**
+ * Promemoria del check delle misure: giorni prima del check (0 = il giorno
+ * stesso). Comincia quando le misure compaiono "In scadenza" nella home.
+ */
+export const MEASURE_CHECK_REMINDER_DAYS = [3, 2, 1, 0] as const;
 /** Il nutrizionista sposta il prossimo check al massimo di un anno. */
 export const MEASURE_CHECK_MAX_DAYS_AHEAD = 365;
-/** Ora locale (fuso dello studio) dei promemoria del check: giorno prima e giorno stesso. */
+/** Ora locale (fuso dello studio) dei promemoria del check delle misure. */
 export const MEASURE_CHECK_REMINDER_HOUR = 6;
 /** Cifre decimali dei valori delle circonferenze (precisione del metro). */
 export const MEASURE_DECIMALS = 1;

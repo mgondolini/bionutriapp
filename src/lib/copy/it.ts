@@ -310,7 +310,7 @@ export const copy = {
         },
         measureCheckEnabled: {
           label: "Check delle misure",
-          description: "Alle 6 del giorno prima e del giorno del check.",
+          description: "Alle 6, da 3 giorni prima fino al giorno del check.",
         },
         saved: "Preferenza salvata.",
         failed: "Non è stato possibile salvare la preferenza. Riprova.",
@@ -742,7 +742,7 @@ export const copy = {
             ` · cambia la data del prossimo check di ${clientName}`,
           dialogTitle: "Prossimo check delle misure",
           dialogDescription: (clientName: string) =>
-            `Peso e circonferenze di ${clientName}. Il cliente riceve un promemoria alle 6 del giorno prima e del giorno stesso.`,
+            `Peso e circonferenze di ${clientName}. Il cliente riceve un promemoria alle 6 da 3 giorni prima fino al giorno stesso.`,
           label: "Data del check",
           hint: (defaultDate: string | null) =>
             defaultDate
@@ -1724,6 +1724,8 @@ export const copy = {
       file_report: "Nuovo report",
       daily_checkin: "Check-in di oggi",
       video: "Nuovo video",
+      measure_check_d3: "Tra 3 giorni c’è il check delle misure",
+      measure_check_d2: "Tra 2 giorni c’è il check delle misure",
       measure_check_eve: "Domani c’è il check delle misure",
       measure_check_day: "Oggi c’è il check delle misure",
     },
@@ -1736,6 +1738,8 @@ export const copy = {
         "Com'è andata oggi? Un minuto per passi, sonno e acqua, e se ti sei allenato il voto dell'allenamento.",
       /** Il nome della cartella è della libreria dello studio, non un dato del cliente. */
       video: (folderName: string) => `Lo trovi in ${folderName}.`,
+      measure_check_d3: "Puoi già registrare peso e circonferenze.",
+      measure_check_d2: "Puoi già registrare peso e circonferenze.",
       measure_check_eve: "Prepara metro e bilancia.",
       measure_check_day: "Registra peso e circonferenze.",
     },

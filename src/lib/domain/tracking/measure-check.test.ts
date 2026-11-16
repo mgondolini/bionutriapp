@@ -71,10 +71,12 @@ describe("measureCheck", () => {
 });
 
 describe("measureCheckReminder", () => {
-  it("il giorno prima e il giorno stesso, mai altrimenti", () => {
+  it("3, 2 e 1 giorno prima e il giorno stesso, mai altrimenti", () => {
+    expect(measureCheckReminder("2026-12-01", "2026-11-27")).toBeNull();
+    expect(measureCheckReminder("2026-12-01", "2026-11-28")).toBe("d3");
+    expect(measureCheckReminder("2026-12-01", "2026-11-29")).toBe("d2");
     expect(measureCheckReminder("2026-12-01", "2026-11-30")).toBe("eve");
     expect(measureCheckReminder("2026-12-01", "2026-12-01")).toBe("day");
-    expect(measureCheckReminder("2026-12-01", "2026-11-29")).toBeNull();
     expect(measureCheckReminder("2026-12-01", "2026-12-02")).toBeNull();
     expect(measureCheckReminder(null, "2026-12-01")).toBeNull();
   });
@@ -101,5 +103,26 @@ describe("circumferenceSchedule con la data del nutrizionista", () => {
     expect(circumferenceSchedule(null, "2026-11-10", "2026-11-20").status).toBe(
       "never",
     );
+  });
+});
+
+describe("promemoria e home allineati", () => {
+  it("nei giorni del promemoria le misure sono già in scadenza nella home", () => {
+    // check scelto dal nutrizionista il 1° dicembre
+    for (const today of [
+      "2026-11-28",
+      "2026-11-29",
+      "2026-11-30",
+      "2026-12-01",
+    ]) {
+      expect(measureCheckReminder("2026-12-01", today)).not.toBeNull();
+      expect(
+        circumferenceSchedule("2026-11-05", today, "2026-12-01").status,
+      ).toBe("due_soon");
+    }
+    // il giorno prima del primo promemoria non compaiono ancora
+    expect(
+      circumferenceSchedule("2026-11-05", "2026-11-27", "2026-12-01").status,
+    ).toBe("ok");
   });
 });

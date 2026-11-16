@@ -44,8 +44,8 @@ const t = copy.admin.clients.tracking.check;
  * Prossimo check di peso e circonferenze accanto al titolo della sezione
  * (scheda Tracking): una sola data per cliente, predefinita a ultima
  * registrazione + 30 giorni. Il nutrizionista la sposta o torna a quella
- * standard; al cliente arriva un promemoria alle 6 del giorno prima e del
- * giorno stesso.
+ * standard; al cliente arriva un promemoria alle 6 da 3 giorni prima fino
+ * al giorno stesso.
  */
 export function MeasureCheckDialog({
   clientId,
