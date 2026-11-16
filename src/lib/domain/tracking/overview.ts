@@ -19,7 +19,7 @@ import {
   type CircumferenceSummary,
 } from "./circumferences";
 import { weeklyHabitStats, type WeeklyHabitStats } from "./habits";
-import { measureCheck, type MeasureCheck } from "./measure-check";
+import { journeyDueOn, measureCheck, type MeasureCheck } from "./measure-check";
 import { workoutStats, type WorkoutStats } from "./workouts";
 
 /** Configurazione di una misura dello studio (tabella metrics). */
@@ -170,6 +170,8 @@ export function measureCheckOf(input: {
   metrics: readonly MetricConfig[];
   entries: readonly TrackingEntry[];
   override: MeasureCheckOverride | null;
+  /** Check del percorso attivo ancora da fare, in ordine. */
+  journeyChecks?: readonly string[];
 }): MeasureCheck {
   const monthly = new Set(
     input.metrics
@@ -193,6 +195,7 @@ export function measureCheckOf(input: {
     overrideSetAt: input.override?.setAt ?? null,
     lastRecordedOn,
     lastCreatedAt,
+    journeyChecks: input.journeyChecks,
   });
 }
 
@@ -204,8 +207,14 @@ export function buildTrackingOverview(input: {
   today: string;
   /** Prossimo check: se l'ha scelto il nutrizionista vale per tutte le misure mensili. */
   check?: MeasureCheck;
+  /**
+   * Check del percorso attivo ancora da fare: ogni misura scade al primo che
+   * la sua ultima registrazione non copre (`journeyDueOn`).
+   */
+  journeyChecks?: readonly string[];
 }): MetricOverview[] {
   const staffDueOn = input.check?.source === "staff" ? input.check.dueOn : null;
+  const journeyChecks = input.journeyChecks ?? [];
   const byMetric = new Map<string, TrackingEntry[]>();
   for (const entry of input.entries) {
     const list = byMetric.get(entry.metricId);
@@ -214,15 +223,33 @@ export function buildTrackingOverview(input: {
   }
   return [...input.metrics]
     .sort((a, b) => a.sortOrder - b.sortOrder)
-    .map((metric) =>
-      metricOverview(
+    .map((metric) => {
+      const entries = byMetric.get(metric.id) ?? [];
+      return metricOverview(
         metric,
-        byMetric.get(metric.id) ?? [],
+        entries,
         input.goals,
         input.today,
-        staffDueOn,
-      ),
-    );
+        dueOnOf(metric, entries, journeyChecks) ?? staffDueOn,
+      );
+    });
+}
+
+/** Scadenza di una misura mensile dal percorso; null = regole senza percorso. */
+function dueOnOf(
+  metric: MetricConfig,
+  entries: readonly TrackingEntry[],
+  journeyChecks: readonly string[],
+): string | null {
+  if (journeyChecks.length === 0 || metricKind(metric) !== "circumference") {
+    return null;
+  }
+  const last = entries.reduce<string | null>(
+    (latest, entry) =>
+      !latest || entry.recordedOn > latest ? entry.recordedOn : latest,
+    null,
+  );
+  return journeyDueOn(journeyChecks, last);
 }
 
 export type CheckinStatus = {

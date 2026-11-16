@@ -128,6 +128,8 @@ export type MeasureCheckCandidate = {
   overrideSetAt: string | null;
   lastRecordedOn: string | null;
   lastCreatedAt: string | null;
+  /** Check del percorso attivo ancora da fare, in ordine. */
+  journeyChecks: string[];
 };
 
 /** Clienti che possono ricevere il promemoria del check (RPC solo service_role). */
@@ -146,6 +148,7 @@ export async function listMeasureCheckCandidates(
     overrideSetAt: row.measure_check_set_at,
     lastRecordedOn: row.last_recorded_on,
     lastCreatedAt: row.last_created_at,
+    journeyChecks: row.journey_checks ?? [],
   }));
 }
 

@@ -6,9 +6,15 @@
  *   data vale finché non arriva una nuova registrazione mensile, dopo la
  *   quale si riparte da registrazione + 30.
  * - Mai registrato e nessuna data scelta: nessun check in calendario.
+ * - Con un percorso attivo vale il percorso: il check è la prossima
+ *   sessione di check ancora da fare (data della scheda Percorso). Una
+ *   registrazione fatta da 3 giorni prima (`DUE_SOON_DAYS`) vale per quel
+ *   check, quindi si passa al successivo. Data scelta e +30 giorni restano
+ *   per chi non ha un percorso, o dopo l'ultimo check del percorso.
  */
 import {
   CIRCUMFERENCE_INTERVAL_DAYS,
+  DUE_SOON_DAYS,
   MEASURE_CHECK_REMINDER_DAYS,
 } from "@/lib/constants/domain";
 
@@ -23,18 +29,48 @@ export type MeasureCheckInput = {
   lastRecordedOn: string | null;
   /** Inserimento dell'ultima registrazione mensile (ISO). */
   lastCreatedAt: string | null;
+  /** Check del percorso attivo ancora da fare ("YYYY-MM-DD", in ordine). */
+  journeyChecks?: readonly string[];
 };
 
 export type MeasureCheck = {
   /** Giorno del prossimo check; null se non ce n'è uno. */
   dueOn: string | null;
-  /** `staff` = data scelta dal nutrizionista. */
-  source: "staff" | "default" | "none";
+  /** `journey` = check del percorso; `staff` = data scelta dal nutrizionista. */
+  source: "journey" | "staff" | "default" | "none";
   /** Data predefinita (ultima + 30), per "Ripristina". */
   defaultDueOn: string | null;
 };
 
+/** Check (anche omaggio) del percorso attivo ancora da fare, in ordine di data. */
+export function journeyCheckDates(
+  sessions: readonly { type: string; status: string; date: string }[],
+): string[] {
+  return sessions
+    .filter(
+      (session) => session.status === "todo" && session.type !== "onboarding",
+    )
+    .map((session) => session.date)
+    .sort();
+}
+
+/**
+ * Primo check del percorso non ancora coperto da una registrazione: una
+ * misura presa da `DUE_SOON_DAYS` giorni prima del check vale per quel check.
+ */
+export function journeyDueOn(
+  journeyChecks: readonly string[],
+  lastRecordedOn: string | null,
+): string | null {
+  return (
+    journeyChecks.find(
+      (day) => !lastRecordedOn || lastRecordedOn < addDays(day, -DUE_SOON_DAYS),
+    ) ?? null
+  );
+}
+
 export function measureCheck(input: MeasureCheckInput): MeasureCheck {
+  const journey = journeyDueOn(input.journeyChecks ?? [], input.lastRecordedOn);
   const defaultDueOn = input.lastRecordedOn
     ? addDays(input.lastRecordedOn, CIRCUMFERENCE_INTERVAL_DAYS)
     : null;
@@ -43,6 +79,7 @@ export function measureCheck(input: MeasureCheckInput): MeasureCheck {
     (input.lastCreatedAt === null ||
       input.overrideSetAt === null ||
       Date.parse(input.lastCreatedAt) <= Date.parse(input.overrideSetAt));
+  if (journey) return { dueOn: journey, source: "journey", defaultDueOn };
   if (overrideActive) {
     return { dueOn: input.override, source: "staff", defaultDueOn };
   }

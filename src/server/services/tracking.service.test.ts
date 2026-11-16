@@ -87,6 +87,13 @@ vi.mock("@/server/repositories/clients.repository", () => ({
   ),
 }));
 
+// nessun percorso: valgono le regole del check senza percorso
+vi.mock("@/server/repositories/journeys.repository", () => ({
+  listJourneysOfClient: vi.fn(async () => []),
+  listOwnJourneys: vi.fn(async () => []),
+  listOwnSessions: vi.fn(async () => []),
+}));
+
 const repository = await import("@/server/repositories/tracking.repository");
 const service = await import("./tracking.service");
 

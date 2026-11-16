@@ -1787,6 +1787,7 @@ export type Database = {
         Args: { p_studio: string };
         Returns: {
           client_id: string;
+          journey_checks: string[];
           last_created_at: string;
           last_recorded_on: string;
           measure_check_on: string;

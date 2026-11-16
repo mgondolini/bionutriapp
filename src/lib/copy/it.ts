@@ -735,6 +735,10 @@ export const copy = {
         check: {
           pill: (date: string) => `Prossimo check ${date}`,
           pillStaff: (date: string) => `Prossimo check ${date} · scelto da te`,
+          pillJourney: (date: string) => `Prossimo check ${date} · dal percorso`,
+          /** Dopo il testo visibile della pillola (WCAG 2.5.3). */
+          journeyAria: (clientName: string) =>
+            ` · cambia la data nel percorso di ${clientName}`,
           none: "Prossimo check: dopo la prima misura",
           edit: "Cambia data",
           /** Dopo il testo visibile della pillola (WCAG 2.5.3). */

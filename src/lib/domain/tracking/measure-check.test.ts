@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import { circumferenceSchedule } from "./circumferences";
-import { measureCheck, measureCheckReminder } from "./measure-check";
+import {
+  journeyCheckDates,
+  journeyDueOn,
+  measureCheck,
+  measureCheckReminder,
+} from "./measure-check";
 
 const NONE = {
   override: null,
@@ -124,5 +129,43 @@ describe("promemoria e home allineati", () => {
     expect(
       circumferenceSchedule("2026-11-05", "2026-11-27", "2026-12-01").status,
     ).toBe("ok");
+  });
+});
+
+describe("check delle misure dal percorso", () => {
+  it("solo i check (anche omaggio) da fare, in ordine di data", () => {
+    expect(
+      journeyCheckDates([
+        { type: "check", status: "todo", date: "2026-12-16" },
+        { type: "onboarding", status: "todo", date: "2026-10-10" },
+        { type: "check", status: "done", date: "2026-10-16" },
+        { type: "check", status: "skipped", date: "2026-11-01" },
+        { type: "gift", status: "todo", date: "2026-11-16" },
+      ]),
+    ).toEqual(["2026-11-16", "2026-12-16"]);
+  });
+
+  it("una misura presa da 3 giorni prima vale per quel check", () => {
+    const checks = ["2026-11-16", "2026-12-16"];
+    expect(journeyDueOn(checks, null)).toBe("2026-11-16");
+    expect(journeyDueOn(checks, "2026-11-12")).toBe("2026-11-16");
+    expect(journeyDueOn(checks, "2026-11-13")).toBe("2026-12-16");
+    expect(journeyDueOn(checks, "2026-12-20")).toBeNull();
+  });
+
+  it("il percorso vale più della data scelta e dei 30 giorni", () => {
+    const base = {
+      override: "2026-12-01",
+      overrideSetAt: "2026-11-01T10:00:00Z",
+      lastRecordedOn: "2026-10-30",
+      lastCreatedAt: "2026-10-30T10:00:00Z",
+    };
+    expect(measureCheck({ ...base, journeyChecks: ["2026-11-16"] })).toEqual({
+      dueOn: "2026-11-16",
+      source: "journey",
+      defaultDueOn: "2026-11-29",
+    });
+    // dopo l'ultimo check del percorso tornano le regole di prima
+    expect(measureCheck({ ...base, journeyChecks: [] }).source).toBe("staff");
   });
 });

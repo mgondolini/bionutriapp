@@ -22,7 +22,10 @@ import {
   type ToRecordItem,
   type TrackingEntry,
 } from "@/lib/domain/tracking/overview";
-import type { MeasureCheck } from "@/lib/domain/tracking/measure-check";
+import {
+  journeyCheckDates,
+  type MeasureCheck,
+} from "@/lib/domain/tracking/measure-check";
 import {
   canEditEntry,
   canWriteTracking,
@@ -30,6 +33,7 @@ import {
 } from "@/lib/domain/tracking/permissions";
 import { habitScale, type ScaleRow } from "@/lib/domain/tracking/score-scale";
 import * as clientsRepository from "@/server/repositories/clients.repository";
+import * as journeysRepository from "@/server/repositories/journeys.repository";
 import * as trackingRepository from "@/server/repositories/tracking.repository";
 import type { ClientProfile } from "@/server/services/session.service";
 import {
@@ -131,19 +135,64 @@ type TrackingData = {
   entries: TrackingEntry[];
   /** Prossimo check di peso e circonferenze. */
   check: MeasureCheck;
+  /** Check del percorso attivo ancora da fare (date della scheda Percorso). */
+  journeyChecks: string[];
 };
 
-/** Misure, obiettivi e registrazioni: tre query in parallelo, una sola per tutte le registrazioni. */
+/**
+ * Check del percorso attivo ancora da fare. Lo staff legge le sessioni; il
+ * cliente non le vede per la RLS e passa dalle RPC del proprio percorso.
+ */
+async function loadJourneyChecks(
+  clientId: string,
+  role: EntryViewer["role"],
+): Promise<string[]> {
+  if (role === "staff") {
+    const journeys = await journeysRepository.listJourneysOfClient(clientId);
+    const active = journeys.find((journey) => journey.status === "active");
+    return journeyCheckDates(
+      (active?.journey_sessions ?? []).map((session) => ({
+        type: session.type,
+        status: session.status,
+        date: session.custom_date ?? session.calculated_date,
+      })),
+    );
+  }
+  const [journeys, sessions] = await Promise.all([
+    journeysRepository.listOwnJourneys(),
+    journeysRepository.listOwnSessions(),
+  ]);
+  const active = journeys.find((journey) => journey.status === "active");
+  if (!active) return [];
+  return journeyCheckDates(
+    sessions
+      .filter((session) => session.journey_id === active.id)
+      .map((session) => ({
+        type: session.type,
+        status: session.status,
+        date: session.session_date,
+      })),
+  );
+}
+
+/**
+ * Misure, obiettivi e registrazioni in parallelo, una sola query per tutte
+ * le registrazioni. Con `journeyFor` anche i check del percorso, letti come
+ * quel ruolo (null = non servono, es. il check-in).
+ */
 async function loadTracking(
   studioId: string,
   clientId: string,
+  journeyFor: EntryViewer["role"] | null,
 ): Promise<TrackingData> {
-  const [metricRows, goals, entryRows, checkRow] = await Promise.all([
-    trackingRepository.listMetrics(studioId),
-    trackingRepository.listGoals(clientId),
-    trackingRepository.listEntries(clientId),
-    trackingRepository.getMeasureCheck(clientId),
-  ]);
+  const [metricRows, goals, entryRows, checkRow, journeyChecks] =
+    await Promise.all([
+      trackingRepository.listMetrics(studioId),
+      trackingRepository.listGoals(clientId),
+      trackingRepository.listEntries(clientId),
+      trackingRepository.getMeasureCheck(clientId),
+      journeyFor ? loadJourneyChecks(clientId, journeyFor) : [],
+    ]);
   const metrics = metricRows.map(toMetric);
   const entries = entryRows.map(toEntry);
   return {
@@ -162,7 +211,9 @@ async function loadTracking(
             setAt: checkRow.measure_check_set_at,
           }
         : null,
+      journeyChecks,
     }),
+    journeyChecks,
   };
 }
 
@@ -181,7 +232,11 @@ export type ClientTracking = {
 export async function getClientTracking(
   actor: TrackingActor,
 ): Promise<ClientTracking> {
-  const data = await loadTracking(actor.studioId, actor.clientId);
+  const data = await loadTracking(
+    actor.studioId,
+    actor.clientId,
+    actor.viewer.role,
+  );
   const today = todayInRome();
   return {
     overview: buildTrackingOverview({ ...data, today }),
@@ -276,6 +331,7 @@ export async function getCheckin(
   const { metrics, goals, entries } = await loadTracking(
     actor.studioId,
     actor.clientId,
+    null,
   );
   const today = todayInRome();
   const date = checkinDate(day, today);
@@ -524,7 +580,7 @@ export async function getStaffTracking(
 ): Promise<StaffTracking | null> {
   const client = await loadOwnedClient(studioId, clientId);
   if (!client) return null;
-  const data = await loadTracking(studioId, clientId);
+  const data = await loadTracking(studioId, clientId, "staff");
   const today = todayInRome();
   const goals = data.metrics
     .filter((metric) => isHabitKey(metric.key))

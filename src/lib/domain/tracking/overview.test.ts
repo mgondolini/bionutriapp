@@ -192,6 +192,39 @@ describe("buildTrackingOverview", () => {
     expect(items.at(-1)?.kind).toBe("workout");
   });
 
+  it("con un percorso le circonferenze scadono al check del percorso", () => {
+    // misure di partenza di 10 giorni fa: senza percorso sarebbero in regola
+    const items = toRecord(
+      buildTrackingOverview({
+        metrics: METRICS,
+        goals: [],
+        entries: [
+          entry("circ_waist", 80, "2026-10-04"),
+          entry("circ_navel", 80, "2026-10-04"),
+          // presa ieri: vale già per il check di domani
+          entry("circ_glutes", 98, "2026-10-13"),
+          entry("steps", 4, TODAY),
+          entry("sleep", 4, TODAY),
+          entry("water", 4, TODAY),
+        ],
+        today: TODAY,
+        journeyChecks: ["2026-10-15", "2026-11-14"],
+      }),
+    );
+    expect(
+      items.flatMap((item) =>
+        item.kind === "circumference"
+          ? [
+              `${item.item.metric.key}:${item.status}:${item.item.summary.schedule.dueOn}`,
+            ]
+          : [],
+      ),
+    ).toEqual([
+      "circ_waist:due_soon:2026-10-15",
+      "circ_navel:due_soon:2026-10-15",
+    ]);
+  });
+
   it("a parità di giorno conta l'ultima inserita", () => {
     const [waist] = buildTrackingOverview({
       metrics: [METRICS[4]!],

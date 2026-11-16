@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarClock, RotateCcw } from "lucide-react";
+import Link from "next/link";
 import { useId, useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -25,7 +26,10 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { redirectIfSignedOut } from "@/lib/auth/session-expired";
-import { MEASURE_CHECK_MAX_DAYS_AHEAD } from "@/lib/constants/domain";
+import {
+  MEASURE_CHECK_MAX_DAYS_AHEAD,
+  clientDetailPath,
+} from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { addDays } from "@/lib/domain/tracking/dates";
 import type { MeasureCheck } from "@/lib/domain/tracking/measure-check";
@@ -47,17 +51,49 @@ const t = copy.admin.clients.tracking.check;
  * standard; al cliente arriva un promemoria alle 6 da 3 giorni prima fino
  * al giorno stesso.
  */
-export function MeasureCheckDialog({
-  clientId,
-  clientName,
-  check,
-  today,
-}: {
+type MeasureCheckProps = {
   clientId: string;
   clientName: string;
   check: MeasureCheck;
   today: string;
-}) {
+};
+
+const PILL_CLASS =
+  "inline-flex min-h-7 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold whitespace-nowrap focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none";
+
+function pillTone(overdue: boolean) {
+  return overdue
+    ? "bg-warning text-warning-foreground"
+    : "bg-muted text-secondary-foreground hover:bg-admin-hover";
+}
+
+/**
+ * Con un percorso attivo il check è quello della scheda Percorso: la
+ * pillola porta lì, dove la data si sposta; altrimenti apre la finestra.
+ */
+export function MeasureCheckDialog(props: MeasureCheckProps) {
+  const { check, today, clientId, clientName } = props;
+  if (check.source === "journey" && check.dueOn) {
+    return (
+      <Link
+        href={clientDetailPath(clientId, "percorso")}
+        className={cn(PILL_CLASS, pillTone(check.dueOn < today))}
+      >
+        <CalendarClock aria-hidden="true" className="size-3.5" />
+        {t.pillJourney(formatDayMonthShort(check.dueOn))}
+        <span className="sr-only">{t.journeyAria(clientName)}</span>
+      </Link>
+    );
+  }
+  return <MeasureCheckEditor {...props} />;
+}
+
+function MeasureCheckEditor({
+  clientId,
+  clientName,
+  check,
+  today,
+}: MeasureCheckProps) {
   const hydrated = useHydrated();
   const ids = useId();
   const [open, setOpen] = useState(false);
@@ -107,12 +143,7 @@ export function MeasureCheckDialog({
         render={
           <button
             type="button"
-            className={cn(
-              "inline-flex min-h-7 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold whitespace-nowrap focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
-              overdue
-                ? "bg-warning text-warning-foreground"
-                : "bg-muted text-secondary-foreground hover:bg-admin-hover",
-            )}
+            className={cn(PILL_CLASS, pillTone(overdue))}
           />
         }
       >

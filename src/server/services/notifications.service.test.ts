@@ -229,6 +229,7 @@ describe("promemoria del check delle misure", () => {
     override: null,
     overrideSetAt: null,
     lastCreatedAt: "2026-10-01T08:00:00Z",
+    journeyChecks: [] as string[],
   };
 
   beforeEach(() => {
@@ -253,6 +254,25 @@ describe("promemoria del check delle misure", () => {
         overrideSetAt: "2026-11-20T10:00:00Z",
         lastRecordedOn: "2026-11-15",
         lastCreatedAt: "2026-11-15T08:00:00Z",
+        journeyChecks: [],
+      },
+      // percorso: check fra due giorni (vale più della data scelta)
+      {
+        ...base,
+        clientId: "c7",
+        userId: "u7",
+        lastRecordedOn: "2026-11-01",
+        override: "2026-12-20",
+        overrideSetAt: "2026-11-20T10:00:00Z",
+        journeyChecks: ["2026-12-02", "2026-12-30"],
+      },
+      // percorso: misure prese 3 giorni prima del check, vale il successivo
+      {
+        ...base,
+        clientId: "c8",
+        userId: "u8",
+        lastRecordedOn: "2026-11-29",
+        journeyChecks: ["2026-12-02", "2026-12-30"],
       },
       // mai registrato e nessuna data: niente
       {
@@ -261,6 +281,7 @@ describe("promemoria del check delle misure", () => {
         userId: "u5",
         lastRecordedOn: null,
         lastCreatedAt: null,
+        journeyChecks: [],
       },
     ]);
   });
@@ -268,19 +289,20 @@ describe("promemoria del check delle misure", () => {
   it("alle 6 nel fuso dello studio: 3, 2, 1 giorno prima e giorno stesso", async () => {
     const { report, jobs } = await service.prepareMeasureCheckReminders(NOW);
     expect(repo.listMeasureCheckCandidates).toHaveBeenCalledWith("roma");
-    expect(report).toEqual({ studios: 1, queued: 4, duplicates: 0 });
+    expect(report).toEqual({ studios: 1, queued: 5, duplicates: 0 });
     expect(jobs.map((job) => [job.clientId, job.event])).toEqual([
       ["c1", { type: "measure_check", dueOn: "2026-12-01", when: "eve" }],
       ["c2", { type: "measure_check", dueOn: "2026-11-30", when: "day" }],
       ["c3", { type: "measure_check", dueOn: "2026-12-03", when: "d3" }],
       ["c4", { type: "measure_check", dueOn: "2026-11-30", when: "day" }],
+      ["c7", { type: "measure_check", dueOn: "2026-12-02", when: "d2" }],
     ]);
   });
 
   it("una seconda esecuzione non invia di nuovo; il testo non ha misure", async () => {
     await service.sendMeasureCheckReminders(NOW);
     const second = await service.sendMeasureCheckReminders(NOW);
-    expect(second).toEqual({ studios: 1, queued: 0, duplicates: 4 });
+    expect(second).toEqual({ studios: 1, queued: 0, duplicates: 5 });
     expect(scheduled).toHaveLength(1);
     await scheduled[0]();
     expect(push.sendToUser).toHaveBeenCalledWith(
