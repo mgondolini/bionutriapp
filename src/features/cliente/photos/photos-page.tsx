@@ -67,8 +67,9 @@ function OpenHero({
         <Link
           href={photoSetClientPath(set.sessionId)}
           className={cn(
-            buttonVariants({ variant: "action", size: "lg" }),
-            "w-full",
+            // come "Apri PDF" del file in evidenza (stessa superficie menta)
+            buttonVariants({ variant: "default" }),
+            "h-12 w-full rounded-xl",
           )}
         >
           <Camera aria-hidden="true" strokeWidth={1.8} />
