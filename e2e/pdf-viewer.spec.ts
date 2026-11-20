@@ -75,13 +75,15 @@ test("link interni ed esterni del PDF funzionano nel visualizzatore", async ({
 
   const page2 = page.getByRole("group", { name: "Pagina 2 di 2" });
   await expect(page2.locator("canvas")).toBeVisible();
-  await expect(page2).not.toBeInViewport();
+  // a 390 px una pagina A4 è alta circa 500 px: la pagina 2 si vede già in
+  // parte (ed è l'ultima, non arriva in cima): il link la porta tutta in vista
+  await expect(page2).not.toBeInViewport({ ratio: 0.9 });
 
   // link interno: porta alla pagina 2
   const firstPage = page.getByRole("group", { name: "Pagina 1 di 2" });
   await expect(firstPage.locator(".annotationLayer a")).toHaveCount(2);
   await firstPage.locator(".annotationLayer a:not([target])").click();
-  await expect(page2).toBeInViewport();
+  await expect(page2).toBeInViewport({ ratio: 0.9 });
 
   // link esterno: nuova scheda, senza accesso a questa finestra
   await firstPage.scrollIntoViewIfNeeded();
