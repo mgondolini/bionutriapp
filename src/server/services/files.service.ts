@@ -234,6 +234,7 @@ export type OpenFileResult =
   | {
       ok: true;
       url: string;
+      title: string;
       clientId: string;
       category: FileCategory;
     }
@@ -276,6 +277,7 @@ export async function openFile(
   return {
     ok: true,
     url,
+    title: file.title,
     clientId: file.client_id,
     category: file.category as FileCategory,
   };

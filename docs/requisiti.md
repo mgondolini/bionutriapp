@@ -321,7 +321,7 @@ L'app è un unico progetto Next.js ospitato su Netlify, che usa Supabase come ba
 
 Organizzazione del codice a livelli: `src/app` (solo pagine e route, gruppi `(admin)` e `(cliente)`), `src/server/actions` (Server Actions: autorizzazione e validazione), `src/server/services` (logica di business), `src/server/repositories` (unico accesso a Supabase), `src/server/validation` (schemi Zod), `src/components`, `src/features`, `src/lib`, `src/types`. Il proxy di Next.js (ex middleware) indirizza ogni utente all'area del proprio ruolo.
 
-White label: nome, logo e colore dello studio sono letti dal database; manifest, icone e schermata di avvio della PWA sono generati con nome completo e logo dello studio. In futuro ogni studio sarà riconosciuto dal sottodominio o da un dominio personalizzato.
+White label: nome, logo e colore dello studio sono letti dal database; manifest e icone della PWA sono generati con nome completo e logo dello studio; la schermata di avvio mostra solo il logo, su iPhone e su Android. In futuro ogni studio sarà riconosciuto dal sottodominio o da un dominio personalizzato.
 
 ## Linee guida di sviluppo
 

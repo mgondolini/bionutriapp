@@ -15,21 +15,25 @@ export type SplashScreen = {
 
 /** iPhone e iPad in verticale (l'app è `orientation: portrait`). */
 export const SPLASH_SCREENS: readonly SplashScreen[] = [
-  { width: 440, height: 956, pixelRatio: 3 }, // 16 Pro Max
-  { width: 402, height: 874, pixelRatio: 3 }, // 16 Pro
+  { width: 440, height: 956, pixelRatio: 3 }, // 16/17 Pro Max
+  { width: 420, height: 912, pixelRatio: 3 }, // Air
+  { width: 402, height: 874, pixelRatio: 3 }, // 16 Pro, 17, 17 Pro
   { width: 430, height: 932, pixelRatio: 3 }, // 14/15 Pro Max, 15/16 Plus
   { width: 393, height: 852, pixelRatio: 3 }, // 14 Pro, 15, 15 Pro, 16
   { width: 428, height: 926, pixelRatio: 3 }, // 12/13 Pro Max, 14 Plus
-  { width: 390, height: 844, pixelRatio: 3 }, // 12, 13, 14
+  { width: 390, height: 844, pixelRatio: 3 }, // 12, 13, 14, 16e
   { width: 375, height: 812, pixelRatio: 3 }, // X, XS, 11 Pro, 12/13 mini
   { width: 414, height: 896, pixelRatio: 3 }, // XS Max, 11 Pro Max
   { width: 414, height: 896, pixelRatio: 2 }, // XR, 11
   { width: 414, height: 736, pixelRatio: 3 }, // 6/7/8 Plus
   { width: 375, height: 667, pixelRatio: 2 }, // SE, 6/7/8
-  { width: 1024, height: 1366, pixelRatio: 2 }, // iPad Pro 12,9"
+  { width: 1032, height: 1376, pixelRatio: 2 }, // iPad Pro 13" (M4)
+  { width: 1024, height: 1366, pixelRatio: 2 }, // iPad Pro 12,9", iPad Air 13"
+  { width: 834, height: 1210, pixelRatio: 2 }, // iPad Pro 11" (M4)
   { width: 834, height: 1194, pixelRatio: 2 }, // iPad Pro 11"
   { width: 820, height: 1180, pixelRatio: 2 }, // iPad Air
   { width: 768, height: 1024, pixelRatio: 2 }, // iPad
+  { width: 744, height: 1133, pixelRatio: 2 }, // iPad mini
 ];
 
 /** Pixel reali dell'immagine. */

@@ -102,9 +102,12 @@ export async function confirmUploadAction(
  * e cliente: URL firmato di 60 secondi. Se apre il cliente, la prima lettura
  * viene registrata e le sue pagine si aggiornano (scompare "Nuovo").
  */
+/** URL firmato, titolo e pagina da cui si è arrivati (visualizzatore). */
+export type OpenedFile = { url: string; title: string; backHref: string };
+
 export async function openFileAction(
   input: OpenFileInput,
-): Promise<ActionResult<{ url: string }>> {
+): Promise<ActionResult<OpenedFile>> {
   const session = await getSession();
   let actor: FileActor;
   if (session.kind === "staff" && session.studio.id) {
@@ -135,7 +138,14 @@ export async function openFileAction(
     revalidatePath(ROUTES.client.home);
     revalidatePath(CLIENT_FILE_ROUTES[result.category]);
   }
-  return ok({ url: result.url });
+  return ok({
+    url: result.url,
+    title: result.title,
+    backHref:
+      actor.kind === "client"
+        ? CLIENT_FILE_ROUTES[result.category]
+        : clientDetailPath(result.clientId, "file"),
+  });
 }
 
 /** Eliminazione con conferma (A-11): riga e oggetto in Storage. */

@@ -24,6 +24,12 @@ describe("schermate di avvio iOS", () => {
     expect(findSplashSize("99999x99999")).toBeNull();
   });
 
+  it("copre anche gli ultimi iPhone (Air, 17 Pro Max) e gli iPad Pro M4", () => {
+    expect(findSplashSize("1260x2736")).not.toBeNull(); // Air
+    expect(findSplashSize("1320x2868")).not.toBeNull(); // 17 Pro Max
+    expect(findSplashSize("2064x2752")).not.toBeNull(); // iPad Pro 13"
+  });
+
   it("non ha due schermi con la stessa immagine", () => {
     const paths = SPLASH_SCREENS.map(splashPath);
     expect(new Set(paths).size).toBe(paths.length);

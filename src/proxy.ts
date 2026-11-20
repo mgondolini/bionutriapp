@@ -59,7 +59,8 @@ export const config = {
      * Esegue il proxy su tutte le route tranne:
      * - _next/static, _next/image (asset di Next.js)
      * - favicon.ico e file statici (immagini, ecc.)
+     * - pdfjs/ (worker e asset del visualizzatore dei PDF)
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|pdfjs/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

@@ -12,7 +12,8 @@ type StudioSplashProps = {
 
 /**
  * Schermata di avvio dell'app installata (ImageResponse, solo stili inline):
- * logo dello studio al centro e il suo nome sotto, sullo sfondo dell'app.
+ * solo il logo dello studio al centro, sullo sfondo dell'app (il nome serve
+ * solo alle iniziali, quando manca il logo).
  */
 export function StudioSplash({
   name,
@@ -32,7 +33,6 @@ export function StudioSplash({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: Math.round(short * 0.06),
         background: APP_BACKGROUND_COLOR,
         color: DARK_TEXT_COLOR,
       }}
@@ -53,18 +53,6 @@ export function StudioSplash({
           size={logo}
           padding={0.1}
         />
-      </div>
-      <div
-        style={{
-          display: "flex",
-          maxWidth: Math.round(width * 0.8),
-          textAlign: "center",
-          fontSize: Math.round(short * 0.065),
-          fontWeight: 700,
-          lineHeight: 1.2,
-        }}
-      >
-        {name}
       </div>
     </div>
   );

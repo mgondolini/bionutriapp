@@ -1532,9 +1532,18 @@ export const copy = {
     opening: "Apertura…",
     // Il nome accessibile comincia con il testo visibile (WCAG 2.5.3)
     actionAria: (label: string, title: string) => `${label} ${title}`,
-    popupBlocked:
-      "Il browser ha bloccato la nuova finestra: tocca di nuovo per aprire il file.",
-    popupRetry: "Apri il file",
+    /** Visualizzatore dei PDF nell'app (react-pdf). */
+    viewer: {
+      title: "Documento",
+      back: "Indietro",
+      loading: "Caricamento del documento…",
+      loadingPage: (page: number) => `Caricamento della pagina ${page}…`,
+      error: "Non è stato possibile aprire il documento.",
+      retry: "Riprova",
+      pages: (count: number) => (count === 1 ? "1 pagina" : `${count} pagine`),
+      pageLabel: (page: number, total: number) => `Pagina ${page} di ${total}`,
+      newTab: "(si apre in una nuova scheda)",
+    },
     notFound: "File non trovato.",
     notAvailable:
       "Il file non è disponibile in questo momento. Riprova tra qualche istante.",

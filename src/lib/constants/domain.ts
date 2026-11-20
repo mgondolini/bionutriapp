@@ -306,6 +306,19 @@ export const FILE_UPLOAD_ERRORS = [
 export type FileUploadError = (typeof FILE_UPLOAD_ERRORS)[number];
 
 /** Pagina del cliente per ogni categoria di file (C-04). */
+/**
+ * Visualizzatore dei PDF nell'app (react-pdf): una pagina per area, così i
+ * link interni del PDF funzionano su ogni telefono (il visualizzatore del
+ * browser li ignora su iPhone e Android scarica il file).
+ */
+export function fileViewerPath(area: "admin" | "client", fileId: string) {
+  return `${area === "admin" ? ROUTES.admin.home : ROUTES.client.home}/file/${fileId}`;
+}
+/** Worker, cmaps e font di PDF.js (copiati da scripts/copy-pdfjs-assets.mjs). */
+export const PDFJS_ASSETS_PATH = "/pdfjs";
+/** Lato massimo di risoluzione delle pagine: oltre, troppa memoria sui telefoni. */
+export const PDF_MAX_PIXEL_RATIO = 2;
+
 export const CLIENT_FILE_ROUTES: Record<FileCategory, string> = {
   diet: ROUTES.client.diets,
   workout: ROUTES.client.workouts,

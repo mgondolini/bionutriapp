@@ -19,7 +19,8 @@
     "client:delete": "tsx scripts/client-delete.ts",
     "storage:backup": "tsx scripts/storage-backup.ts",
     "seed:files": "tsx scripts/seed-files.ts",
-    "notifications:badges": "tsx scripts/notification-badges.tsx"
+    "notifications:badges": "tsx scripts/notification-badges.tsx",
+    "postinstall": "node scripts/copy-pdfjs-assets.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -45,6 +46,7 @@
     "react-dom": "19.3.0",
     "react-easy-crop": "6.2.4",
     "react-hook-form": "^7.90.0",
+    "react-pdf": "11.0.0",
     "recharts": "3.8.0",
     "server-only": "^0.0.1",
     "sonner": "^2.0.8",

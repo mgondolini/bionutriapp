@@ -9,7 +9,7 @@ import {
 } from "@/server/services/studio.service";
 
 /**
- * Schermata di avvio dell'app installata su iOS (C-06): logo e nome dello
+ * Schermata di avvio dell'app installata su iOS (C-06): solo il logo dello
  * studio del dominio, come manifest e icone (il browser la scarica senza
  * cookie). Route Handler solo in lettura e solo per le dimensioni note di
  * `SPLASH_SCREENS`: le altre rispondono 404.

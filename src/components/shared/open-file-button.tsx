@@ -1,12 +1,17 @@
 "use client";
 
 import { ChevronRight, Download, ExternalLink, Eye } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import { useTransition, type ComponentProps } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { redirectIfSignedOut } from "@/lib/auth/session-expired";
-import type { FileOpenMode } from "@/lib/constants/domain";
+import {
+  ROUTES,
+  fileViewerPath,
+  type FileOpenMode,
+} from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import { openFileAction } from "@/server/actions/files.actions";
 
@@ -18,7 +23,7 @@ type OpenFileButtonProps = {
   mode: FileOpenMode;
   /** Testo visibile; il nome accessibile contiene sempre il titolo del file. */
   label: string;
-  /** Icona: per "view" finestra esterna (predefinita), occhio, oppure freccia dopo il testo. */
+  /** Icona: per "view" occhio (predefinita: il PDF si apre nell'app), finestra esterna, oppure freccia dopo il testo. */
   icon?: "external" | "eye" | "chevron";
   variant?: ComponentProps<typeof Button>["variant"];
   size?: ComponentProps<typeof Button>["size"];
@@ -26,49 +31,33 @@ type OpenFileButtonProps = {
 };
 
 /**
- * Apre o scarica un PDF con un URL firmato di 60 secondi chiesto alla Server
- * Action openFile (unico percorso per staff e cliente, DEV-05).
- * - "view": la finestra si apre in modo sincrono al clic (altrimenti il
- *   browser la blocca come popup) e riceve l'indirizzo alla risposta; sulla
- *   PWA installata su iPhone si apre il visualizzatore di Safari.
- * - "download": nessuna finestra; l'URL forza lo scaricamento, quindi la
- *   pagina resta dov'è e non rimane una scheda vuota.
- * `open` va chiamata direttamente dal gestore del clic.
+ * Apre o scarica un PDF.
+ * - "view": va al visualizzatore dell'app (react-pdf, `fileViewerPath`),
+ *   che chiede l'URL firmato e registra la prima lettura: così i link
+ *   interni del PDF funzionano su iPhone, Android e desktop.
+ * - "download": URL firmato di 60 secondi chiesto alla Server Action
+ *   openFile (unico percorso per staff e cliente, DEV-05); l'URL forza lo
+ *   scaricamento, quindi la pagina resta dov'è.
  */
 export function useOpenFile(fileId: string, mode: FileOpenMode) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const open = () => {
-    const popup = mode === "view" ? window.open("", "_blank") : null;
-    if (popup) {
-      // il visualizzatore non deve poter controllare questa finestra
-      popup.opener = null;
-      popup.document.title = t.opening;
-      if (popup.document.body) popup.document.body.textContent = t.opening;
+    if (mode === "view") {
+      const area = pathname.startsWith(ROUTES.admin.home) ? "admin" : "client";
+      startTransition(() => router.push(fileViewerPath(area, fileId)));
+      return;
     }
-
     startTransition(async () => {
       const result = await openFileAction({ fileId, mode });
       if (!result.ok) {
-        popup?.close();
         if (redirectIfSignedOut(result)) return;
         toast.error(result.error);
         return;
       }
-      const { url } = result.data;
-      if (mode === "download") {
-        window.location.assign(url);
-      } else if (popup && !popup.closed) {
-        popup.location.replace(url);
-      } else {
-        // finestra bloccata: un nuovo tocco dell'utente la apre di sicuro
-        toast.warning(t.popupBlocked, {
-          action: {
-            label: t.popupRetry,
-            onClick: () => window.open(url, "_blank", "noopener"),
-          },
-        });
-      }
+      window.location.assign(result.data.url);
     });
   };
 
@@ -88,7 +77,7 @@ export function OpenFileButton({
 }: OpenFileButtonProps) {
   const { open, isPending } = useOpenFile(fileId, mode);
   const Icon =
-    mode === "download" ? Download : icon === "eye" ? Eye : ExternalLink;
+    mode === "download" ? Download : icon === "external" ? ExternalLink : Eye;
 
   return (
     <Button

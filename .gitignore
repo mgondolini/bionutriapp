@@ -8,6 +8,9 @@
 !.yarn/releases
 !.yarn/versions
 
+# Asset di PDF.js copiati da scripts/copy-pdfjs-assets.mjs
+/public/pdfjs
+
 # Test
 /coverage
 

@@ -120,12 +120,17 @@ test("il titolare carica un PDF, la cliente lo apre, il titolare vede Letto ilâ€
   await expect(latest.getByText("Nuovo", { exact: true })).toBeVisible();
   await expect(latest.getByText(NOTE)).toBeVisible();
 
-  // "Apri PDF": finestra aperta al clic, URL firmato di 60 secondi
-  const popupPromise = anna.page.waitForEvent("popup");
+  // "Apri PDF": visualizzatore dell'app, URL firmato di 60 secondi
   await latest
     .getByRole("button", { name: new RegExp(`^Apri( PDF)? ${TITLE}$`) })
     .click();
-  const popup = await popupPromise;
+  await expect(anna.page).toHaveURL(/\/app\/file\/[0-9a-f-]{36}$/);
+  await expect(
+    anna.page.getByRole("heading", { level: 1, name: TITLE }),
+  ).toBeVisible();
+  await expect(anna.page.getByText("1 pagina")).toBeVisible({
+    timeout: 60_000,
+  });
   await expect.poll(() => signedUrls.length).toBeGreaterThan(0);
   const signed = new URL(signedUrls[0]!);
   expect(signed.pathname).toContain(stored.storage_path);
@@ -134,12 +139,9 @@ test("il titolare carica un PDF, la cliente lo apre, il titolare vede Letto ilâ€
     Buffer.from(token.split(".")[1]!, "base64url").toString(),
   );
   expect(claims.exp - claims.iat).toBe(60);
-  const head = await anna.context.request.get(signed.toString(), {
-    headers: { Range: "bytes=0-4" },
-  });
-  expect(head.ok()).toBe(true);
-  expect(await head.text()).toBe("%PDF-");
-  await popup.close();
+  await anna.page.getByRole("link", { name: "Indietro" }).click();
+  await expect(anna.page).toHaveURL(/\/app\/diete$/);
+  await anna.page.goto("/app");
 
   // Dopo l'apertura "Nuovo" scompare
   await expect(latest.getByText("Nuovo", { exact: true })).toBeHidden();
