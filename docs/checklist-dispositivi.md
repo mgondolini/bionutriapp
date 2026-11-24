@@ -19,7 +19,7 @@ Per ogni passaggio annota l'esito (✅ / ❌), il modello del telefono e la vers
 - [ ] **1.** Apri il sito in **Safari** e accedi come cliente. La guida "Installa l'app sul telefono" si apre da sola, sulla scheda **iPhone**.
 - [ ] **2.** Tocca **Più tardi** e torna alla home. Il banner dice "Installa l'app per ricevere gli avvisi", **non** "Attiva", e non compare nessuna richiesta di permesso.
 - [ ] **3.** Ricarica la home: la guida non si riapre da sola. Si riapre con **Come fare** nel banner e dal **Profilo** (sezione "App sul telefono").
-- [ ] **4.** Tocca Condividi e scegli **Aggiungi alla schermata Home**. Il nome proposto e l'icona sono quelli dello **studio** (logo o iniziali sul colore dello studio), non "Nutrify".
+- [ ] **4.** Tocca Condividi accanto all'indirizzo, poi **Visualizza altro** e **Aggiungi alla schermata Home**. Il nome proposto e l'icona sono quelli dello **studio** (logo o iniziali sul colore dello studio), non "Nutrify".
 - [ ] **5.** Apri l'app dall'icona: si apre a tutto schermo, senza la barra di Safari, sulla pagina di **login**. Su iPhone l'app installata non condivide la sessione con Safari.
 - [ ] **6.** Accedi: si apre la home (`/app`) e la guida **non** compare.
 
