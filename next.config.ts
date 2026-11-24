@@ -27,6 +27,16 @@ const nextConfig: NextConfig = {
     serverActions: { bodySizeLimit: "3mb" },
     agentUpgrade: "security",
   },
+  // iOS cerca l'icona della schermata Home anche a indirizzi fissi, oltre al
+  // link `apple-touch-icon` della pagina: servono la stessa icona generata.
+  async rewrites() {
+    return [
+      "/apple-touch-icon.png",
+      "/apple-touch-icon-precomposed.png",
+      "/apple-touch-icon-180x180.png",
+      "/apple-touch-icon-180x180-precomposed.png",
+    ].map((source) => ({ source, destination: "/apple-icon" }));
+  },
   async headers() {
     // Aree autenticate: nessuna copia in cache (browser, proxy, CDN), così
     // dopo il logout Indietro o la riapertura della PWA non mostrano dati
