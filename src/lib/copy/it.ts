@@ -485,7 +485,8 @@ export const copy = {
         note: "Nota per i clienti",
         noteOptional: "(facoltativa)",
         noteSameEditor: "Stesso editor delle note cliniche",
-        notePlaceholder: "Un consiglio, una variante o un link utile per i clienti",
+        notePlaceholder:
+          "Un consiglio, una variante o un link utile per i clienti",
         noteHint:
           "La vedono i clienti sotto il video. I link si aprono in una nuova scheda.",
         count: (count: number | string, max: number | string) =>
@@ -735,7 +736,8 @@ export const copy = {
         check: {
           pill: (date: string) => `Prossimo check ${date}`,
           pillStaff: (date: string) => `Prossimo check ${date} · scelto da te`,
-          pillJourney: (date: string) => `Prossimo check ${date} · dal percorso`,
+          pillJourney: (date: string) =>
+            `Prossimo check ${date} · dal percorso`,
           /** Dopo il testo visibile della pillola (WCAG 2.5.3). */
           journeyAria: (clientName: string) =>
             ` · cambia la data nel percorso di ${clientName}`,
@@ -1166,11 +1168,11 @@ export const copy = {
       onboarding: {
         welcome: "Ti diamo il benvenuto",
         title: (studioName: string) =>
-          `Il tuo percorso con ${studioName} inizia con una chiamata`,
+          `Il tuo percorso ${studioName} inizierà con la call di onboarding`,
         description: (studioName: string) =>
           `${studioName} ti chiamerà per conoscerti e preparare il tuo piano. Prima della chiamata non serve fare nulla.`,
-        descriptionPrep: (studioName: string) =>
-          `${studioName} ti chiama per conoscerti e preparare il tuo piano. Prima della chiamata mandagli le tue misure e le tue foto: così ha già un quadro di te.`,
+        descriptionPrep: () =>
+          "Prima della chiamata prepara le tue misure e le tue foto e allega tutto!",
         stepsTitle: "I prossimi passi",
         steps: [
           {
@@ -1411,6 +1413,8 @@ export const copy = {
       date: "Data",
       limits: (min: string, max: string, unit: string) =>
         `Valori ammessi: da ${min} a ${max} ${unit}. La data non può essere futura.`,
+      limitsStaff: (min: string, max: string, unit: string) =>
+        `Valori ammessi: da ${min} a ${max} ${unit}. Puoi scegliere anche una data futura, per esempio quella del check.`,
       note: "Nota",
       noteOptional: "(facoltativa)",
       notePlaceholder: "Com'è andata?",
@@ -1499,6 +1503,7 @@ export const copy = {
         `Il valore deve essere tra ${min} e ${max} ${unit}.`,
       dateRequired: "Inserisci la data.",
       dateFuture: "La data non può essere futura.",
+      dateTooFar: "La data può essere al massimo tra un anno.",
       scoreRequired: "Scegli un voto.",
       noteTooLong: "Massimo 500 caratteri.",
       checkinEmpty: "Scegli almeno un voto.",

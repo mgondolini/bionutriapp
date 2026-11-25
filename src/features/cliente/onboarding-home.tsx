@@ -59,7 +59,7 @@ export function OnboardingHome({
           {t.title(studioName)}
         </h2>
         <p className="rounded-xl bg-white/60 px-3.5 py-3 text-sm leading-normal">
-          {prep ? t.descriptionPrep(studioName) : t.description(studioName)}
+          {prep ? t.descriptionPrep() : t.description(studioName)}
         </p>
       </section>
 

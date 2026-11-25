@@ -402,6 +402,11 @@ export const DUE_SOON_DAYS = 3;
 export const MEASURE_CHECK_REMINDER_DAYS = [3, 2, 1, 0] as const;
 /** Il nutrizionista sposta il prossimo check al massimo di un anno. */
 export const MEASURE_CHECK_MAX_DAYS_AHEAD = 365;
+/**
+ * Peso e circonferenze inseriti dallo staff: data anche futura (per esempio
+ * il giorno del check), fino a un anno da oggi. Il cliente resta a oggi.
+ */
+export const STAFF_MEASURE_MAX_DAYS_AHEAD = 365;
 /** Ora locale (fuso dello studio) dei promemoria del check delle misure. */
 export const MEASURE_CHECK_REMINDER_HOUR = 6;
 /** Cifre decimali dei valori delle circonferenze (precisione del metro). */

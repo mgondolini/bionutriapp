@@ -15,7 +15,9 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { redirectIfSignedOut } from "@/lib/auth/session-expired";
+import { STAFF_MEASURE_MAX_DAYS_AHEAD } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
+import { addDays } from "@/lib/domain/tracking/dates";
 import { formatNumber } from "@/lib/format";
 import { useHydrated } from "@/lib/use-hydrated";
 import {
@@ -58,10 +60,15 @@ export function CircumferenceForm({
   const ids = useId();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  // lo staff (clientId nel modo) può scegliere anche una data futura
+  const author = mode.clientId ? "staff" : "client";
+  const maxDate =
+    author === "staff" ? addDays(today, STAFF_MEASURE_MAX_DAYS_AHEAD) : today;
+  const limitsHint = author === "staff" ? t.limitsStaff : t.limits;
   const emptyValues = { value: "", recordedOn: today };
   const form = useForm<CircumferenceFormValues>({
     // raw: alla Server Action vanno i valori digitati, che li rivalida
-    resolver: zodResolver(circumferenceFormSchema(limits), undefined, {
+    resolver: zodResolver(circumferenceFormSchema(limits, author), undefined, {
       raw: true,
     }) as unknown as Resolver<CircumferenceFormValues>,
     defaultValues: defaultValues ?? emptyValues,
@@ -139,7 +146,7 @@ export function CircumferenceForm({
                 {...field}
                 id={`${ids}-date`}
                 type="date"
-                max={today}
+                max={maxDate}
                 disabled={isPending}
                 aria-invalid={fieldState.invalid}
                 aria-describedby={hintId}
@@ -150,7 +157,7 @@ export function CircumferenceForm({
         />
       </div>
       <FieldDescription id={hintId}>
-        {t.limits(
+        {limitsHint(
           formatNumber(limits.minValue),
           formatNumber(limits.maxValue),
           limits.unit ?? "",

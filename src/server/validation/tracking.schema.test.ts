@@ -90,6 +90,25 @@ describe("circumferenceFormSchema", () => {
     ).toBe("Usa al massimo un decimale.");
   });
 
+  it("lo staff sceglie anche una data futura, al massimo tra un anno", () => {
+    const staff = circumferenceFormSchema(WAIST, "staff");
+    expect(
+      staff.safeParse({ value: "80", recordedOn: "2026-10-20" }).success,
+    ).toBe(true);
+    expect(
+      staff.safeParse({ value: "80", recordedOn: "2027-10-14" }).success,
+    ).toBe(true);
+    expect(
+      firstError(staff.safeParse({ value: "80", recordedOn: "2027-10-15" })),
+    ).toBe("La data può essere al massimo tra un anno.");
+    expect(
+      newEntryValuesSchema(WATER, "staff").safeParse({
+        value: 4,
+        recordedOn: "2026-10-15",
+      }).success,
+    ).toBe(false);
+  });
+
   it("rifiuta una data futura nel fuso di Roma", () => {
     expect(
       firstError(schema.safeParse({ value: "80", recordedOn: "2026-10-15" })),

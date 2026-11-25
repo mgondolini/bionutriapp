@@ -304,7 +304,7 @@ test("cliente nuovo: il secondo invito annulla il primo, attivazione in Onboardi
   await expect(device.page).toHaveURL(/\/app$/);
   await expect(
     device.page.getByRole("heading", {
-      name: `Il tuo percorso con ${OWNER.studioName} inizia con una chiamata`,
+      name: `Il tuo percorso ${OWNER.studioName} inizierà con la call di onboarding`,
     }),
   ).toBeVisible();
   await device.page.goto("/app/diete");

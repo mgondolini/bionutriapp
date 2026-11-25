@@ -15,6 +15,7 @@ import {
   MEASURE_CHECK_MAX_DAYS_AHEAD,
   MEASURE_DECIMALS,
   METRIC_KIND_BY_FREQUENCY,
+  STAFF_MEASURE_MAX_DAYS_AHEAD,
   TRACKING_NOTE_MAX,
   type MetricFrequency,
   type MetricKind,
@@ -61,6 +62,20 @@ export const recordedOnSchema = z.iso
   .date(v.dateRequired)
   .refine((day) => day <= todayInRome(), v.dateFuture);
 
+/**
+ * Peso e circonferenze dello staff: anche futura, fino a
+ * `STAFF_MEASURE_MAX_DAYS_AHEAD` giorni da oggi (A-15).
+ */
+export const staffMeasureDateSchema = z.iso
+  .date(v.dateRequired)
+  .refine(
+    (day) => day <= addDays(todayInRome(), STAFF_MEASURE_MAX_DAYS_AHEAD),
+    v.dateTooFar,
+  );
+
+/** Chi inserisce: il cliente (data fino a oggi) o lo staff. */
+export type EntryAuthor = "client" | "staff";
+
 /** Nota facoltativa (solo allenamenti): testo semplice, vuota = nessuna nota. */
 const noteSchema = z
   .string()
@@ -106,11 +121,14 @@ export function scoreSchema(limits: MetricLimits) {
     .max(limits.maxValue, v.scoreRequired);
 }
 
-/** Form della circonferenza (C10): valore come testo, data. */
-export function circumferenceFormSchema(limits: MetricLimits) {
+/** Form della circonferenza (C10): valore come testo, data (futura solo per lo staff). */
+export function circumferenceFormSchema(
+  limits: MetricLimits,
+  author: EntryAuthor = "client",
+) {
   return z.object({
     value: decimalValueSchema(limits),
-    recordedOn: recordedOnSchema,
+    recordedOn: author === "staff" ? staffMeasureDateSchema : recordedOnSchema,
   });
 }
 export type CircumferenceFormValues = { value: string; recordedOn: string };
@@ -154,10 +172,11 @@ export type EntryValues = {
 /** Schema dei valori di una registrazione in base al tipo di misura. */
 export function entryValuesSchema(
   limits: MetricLimits,
+  author: EntryAuthor = "client",
 ): z.ZodType<EntryValues, unknown> {
   switch (limits.kind) {
     case "circumference":
-      return circumferenceFormSchema(limits).transform((data) => ({
+      return circumferenceFormSchema(limits, author).transform((data) => ({
         ...data,
         note: null,
       }));
@@ -177,13 +196,14 @@ export function entryValuesSchema(
  */
 export function newEntryValuesSchema(
   limits: MetricLimits,
+  author: EntryAuthor = "client",
 ): z.ZodType<EntryValues, unknown> {
   return limits.kind === "habit"
     ? habitEntryFormSchema(limits).transform((data) => ({
         ...data,
         note: null,
       }))
-    : entryValuesSchema(limits);
+    : entryValuesSchema(limits, author);
 }
 
 const entryValuesInput = z.record(z.string(), z.unknown());

@@ -71,7 +71,7 @@ L'area admin è desktop-first, con un menu laterale (Clienti, Video, Impostazion
 
 - **A-12** Card per ogni misura con ultimo valore, data, variazione rispetto alla rilevazione precedente, mini-grafico e indicatore di misura in ritardo; accanto a "Peso e circonferenze" l'altezza del cliente e la pillola "Prossimo check" (vedi T-10).
 - **A-13** Dettaglio di una misura con grafico dell'andamento e storico; per gli allenamenti, voto medio ed elenco con data, voto e nota.
-- **A-15** Il nutrizionista può inserire nuove registrazioni per il cliente (per esempio le circonferenze misurate durante la visita) e modificare o eliminare qualsiasi registrazione, in ogni fase del percorso, con la stessa validazione usata nell'area cliente.
+- **A-15** Il nutrizionista può inserire nuove registrazioni per il cliente (per esempio le circonferenze misurate durante la visita) e modificare o eliminare qualsiasi registrazione, in ogni fase del percorso, con la stessa validazione usata nell'area cliente. Per peso e circonferenze può scegliere anche una data futura, fino a un anno da oggi (per esempio il giorno del check); il cliente registra solo fino a oggi.
 - **A-16** Ogni registrazione indica chi l'ha inserita o modificata per ultimo (cliente o nutrizionista); nello storico, cliente e nutrizionista vedono un'etichetta "Inserita dal nutrizionista" o "Modificata dal nutrizionista".
 - **A-17** La scheda Tracking, con card, grafici, storico e form di inserimento, è pienamente utilizzabile anche da smartphone: grafici leggibili su schermi stretti, con valori consultabili toccando i punti.
 

@@ -405,9 +405,10 @@ function fromRepository(
 function validateValues(
   metric: MetricConfig,
   values: unknown,
+  viewer: EntryViewer,
   schemaFor = entryValuesSchema,
 ): { ok: true; data: EntryValues } | WriteFailure {
-  const parsed = schemaFor(metricLimits(metric)).safeParse(values);
+  const parsed = schemaFor(metricLimits(metric), viewer.role).safeParse(values);
   if (parsed.success) return { ok: true, data: parsed.data };
   const fieldErrors: Record<string, string[]> = {};
   for (const issue of parsed.error.issues) {
@@ -474,7 +475,12 @@ export async function addEntry(
   ) {
     return { ok: false, reason: "not_found" };
   }
-  const validated = validateValues(metric, values, newEntryValuesSchema);
+  const validated = validateValues(
+    metric,
+    values,
+    actor.viewer,
+    newEntryValuesSchema,
+  );
   if (!validated.ok) return validated;
   const { value, recordedOn, note } = validated.data;
   const failure = fromRepository(
@@ -519,7 +525,7 @@ export async function updateEntry(
   if (!actor.canWrite) return { ok: false, reason: "read_only" };
   const owned = await loadEditableEntry(actor, entryId);
   if (!owned.ok) return owned;
-  const validated = validateValues(owned.metric, values);
+  const validated = validateValues(owned.metric, values, actor.viewer);
   if (!validated.ok) return validated;
   const failure = fromRepository(
     await trackingRepository.updateEntry(entryId, validated.data),
