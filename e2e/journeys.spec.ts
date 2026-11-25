@@ -498,3 +498,71 @@ test("con il cliente In pausa il percorso è in sola lettura", async ({
     await setStage("in_progress");
   }
 });
+
+test("con tutte le sessioni fatte lo staff estende il percorso o lo conclude", async ({
+  page,
+}) => {
+  const admin = adminClient();
+  const { data: active, error } = await admin
+    .from("client_journeys")
+    .select("id")
+    .eq("client_id", client.clientId)
+    .eq("status", "active")
+    .single();
+  if (error) throw error;
+  await admin
+    .from("journey_sessions")
+    .update({ status: "done" })
+    .eq("journey_id", active.id);
+
+  await login(page, OWNER.email, OWNER.password);
+  await expect(page).toHaveURL(/\/admin/);
+  await openJourneyTab(page, client.clientId);
+  await expect(
+    page.getByRole("heading", { name: "Tutte le sessioni sono state fatte" }),
+  ).toBeVisible();
+
+  // Estendi: il percorso attivo si conclude e ne parte uno nuovo
+  await page.getByRole("button", { name: "Estendi", exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: "3 mesi" }).click();
+  await dialog.getByRole("button", { name: "Crea nuovo percorso" }).click();
+  await dialog.getByRole("button", { name: "Crea nuovo percorso" }).click();
+  await expect(page.getByText("Percorso creato")).toBeVisible();
+  const { data: journeys } = await admin
+    .from("client_journeys")
+    .select("id, status, kind, duration_months")
+    .eq("client_id", client.clientId)
+    .order("created_at", { ascending: false })
+    .limit(2);
+  expect(journeys?.[0]).toMatchObject({
+    status: "active",
+    kind: "extension",
+    duration_months: 3,
+  });
+  expect(journeys?.[1]).toMatchObject({ id: active.id, status: "concluded" });
+  await expect(
+    page.getByRole("heading", { name: "Tutte le sessioni sono state fatte" }),
+  ).toHaveCount(0);
+
+  // Concludi: con tutte le sessioni del nuovo percorso fatte, il cliente passa a Concluso
+  await admin
+    .from("journey_sessions")
+    .update({ status: "done" })
+    .eq("journey_id", journeys![0]!.id);
+  await page.reload();
+  await page.getByRole("button", { name: "Concludi percorso" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Concludi percorso" })
+    .click();
+  await expect(
+    page.getByText("Percorso concluso", { exact: true }),
+  ).toBeVisible();
+  const { data: stage } = await admin
+    .from("clients")
+    .select("journey_stage")
+    .eq("id", client.clientId)
+    .single();
+  expect(stage?.journey_stage).toBe("completed");
+});

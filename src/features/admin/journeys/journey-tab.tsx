@@ -14,6 +14,7 @@ import type {
 } from "@/server/services/journeys.service";
 
 import { DurationCard } from "./duration-card";
+import { JourneyCompleteCard } from "./journey-complete-card";
 import { NewJourneyDialog } from "./new-journey-dialog";
 import { SessionSquareContent, sessionSquareClass } from "./session-square";
 import { SessionsBoard } from "./sessions-board";
@@ -273,6 +274,17 @@ export function JourneyTab({
         <PausedJourney journey={selected} today={today} />
       ) : selected.status === "active" ? (
         <>
+          {client.stage === "in_progress" &&
+          selected.sessions.length > 0 &&
+          selected.sessions.every((session) => session.status !== "todo") ? (
+            <JourneyCompleteCard
+              clientId={client.id}
+              clientName={clientName}
+              journey={selected}
+              today={today}
+              threshold={data.threshold}
+            />
+          ) : null}
           <DurationCard
             key={`${selected.id}-${selected.startDate}-${selected.durationMonths}`}
             journey={selected}

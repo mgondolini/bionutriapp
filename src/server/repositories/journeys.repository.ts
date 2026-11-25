@@ -109,6 +109,19 @@ export async function updateJourneyDates(
   if (error) throw error;
 }
 
+/** Conclude il percorso attivo (prima di un'estensione); la fase del cliente non cambia. */
+export async function concludeJourney(journeyId: string): Promise<boolean> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("client_journeys")
+    .update({ status: "concluded", concluded_at: new Date().toISOString() })
+    .eq("id", journeyId)
+    .eq("status", "active")
+    .select("id");
+  if (error) throw error;
+  return (data ?? []).length > 0;
+}
+
 /** Ricalcolo: nuove date calcolate, sessioni aggiunte o tolte (al massimo 13). */
 export async function applySessionPlan(
   journeyId: string,

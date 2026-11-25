@@ -170,6 +170,13 @@ async function loadOwnedClient(studioId: string, clientId: string) {
   return client?.studio_id === studioId ? client : null;
 }
 
+/** Tutte le sessioni completate o saltate: il percorso si può estendere o concludere. */
+export function allSessionsClosed(
+  sessions: readonly { status: string }[],
+): boolean {
+  return sessions.length > 0 && sessions.every((s) => s.status !== "todo");
+}
+
 /** Cliente In pausa: il percorso è in sola lettura (nessuna modifica). */
 async function isPaused(clientId: string): Promise<boolean> {
   const client = await clientsRepository.getClientProfile(clientId);
@@ -230,6 +237,7 @@ export type JourneyFailure =
   | "already_active"
   | "concluded"
   | "paused"
+  | "sessions_open"
   | "previous_not_concluded"
   | "shorten_blocked"
   | "shorten_blocked_photos";
@@ -257,17 +265,22 @@ export async function createJourney(
   const client = await loadOwnedClient(studioId, input.clientId);
   if (!client) return { ok: false, reason: "not_found" };
   if (client.journey_stage === "paused") return { ok: false, reason: "paused" };
-  if (await journeysRepository.hasActiveJourney(input.clientId)) {
-    return { ok: false, reason: "already_active" };
-  }
 
   let kind: JourneyKind = "first";
   if (input.previousJourneyId) {
-    const previous = await journeysRepository.getJourney(
-      input.previousJourneyId,
-    );
+    let previous = await journeysRepository.getJourney(input.previousJourneyId);
     if (!previous || previous.client_id !== input.clientId) {
       return { ok: false, reason: "not_found" };
+    }
+    // "Estendi" dal percorso attivo con tutte le sessioni fatte: si conclude
+    // prima, poi si crea l'estensione (la fase del cliente resta In percorso)
+    if (previous.status === "active") {
+      if (!allSessionsClosed(previous.journey_sessions)) {
+        return { ok: false, reason: "sessions_open" };
+      }
+      await journeysRepository.concludeJourney(previous.id);
+      previous = await journeysRepository.getJourney(previous.id);
+      if (!previous) return { ok: false, reason: "not_found" };
     }
     if (previous.status !== "concluded" || !previous.concluded_at) {
       return { ok: false, reason: "previous_not_concluded" };
@@ -276,11 +289,21 @@ export async function createJourney(
       previous.end_date,
       dayOf(previous.concluded_at),
     ].sort()[0]!;
+    if (await journeysRepository.hasActiveJourney(input.clientId)) {
+      return { ok: false, reason: "already_active" };
+    }
     kind =
       daysBetween(concludedOn, todayInRome()) <=
       JOURNEY_EXTENSION_THRESHOLD_DAYS
         ? "extension"
         : "resume";
+  }
+
+  if (
+    !input.previousJourneyId &&
+    (await journeysRepository.hasActiveJourney(input.clientId))
+  ) {
+    return { ok: false, reason: "already_active" };
   }
 
   const sessions = planJourney(input, input.startDate);

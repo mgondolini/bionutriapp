@@ -112,6 +112,7 @@ Ogni cliente ha un percorso di 6 mesi o 1 anno, con l'onboarding e i check perio
 - **PER-07** "Aggiungi al calendario" per ogni sessione, per nutrizionista e cliente: Google Calendar, Outlook sul web o file .ics (Apple e altri calendari). L'onboarding dura un'ora, i check 30 minuti; senza ora l'evento occupa la giornata.
 - **PER-08** Il cliente vede il percorso nella pagina "Il tuo percorso" (mese corrente, sessioni, data e ora, link Meet), senza note né composizione.
 - **PER-09** Notifiche push del percorso: quando il nutrizionista fissa o cambia data e ora di una sessione, e come promemoria alle 18 della sera prima e alle 8 della mattina stessa (quello del mattino salta se la sessione è prima delle 8).
+- **PER-10** Quando tutte le sessioni del percorso attivo sono completate o saltate, la scheda Percorso propone "Estendi" (nuovo percorso collegato: quello attuale si conclude alla creazione e il cliente resta In percorso) e "Concludi percorso" (con conferma, il cliente passa a Concluso e il percorso resta consultabile in sola lettura).
 
 ## Libreria video
 

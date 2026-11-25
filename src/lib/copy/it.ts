@@ -1932,6 +1932,19 @@ export const copy = {
         "Non puoi cambiare la durata: un check con foto di avanzamento già caricate verrebbe tolto o non prevederebbe più le foto.",
       applyDuration: "Aggiorna le date",
       durationSaved: "Percorso aggiornato",
+      complete: {
+        title: "Tutte le sessioni sono state fatte",
+        description:
+          "Estendi il percorso con un nuovo blocco di check oppure concludilo.",
+        extend: "Estendi",
+        conclude: "Concludi percorso",
+        confirmTitle: "Concludere il percorso?",
+        confirmDescription: (name: string) =>
+          `${name} passa a Concluso: il percorso resta consultabile in sola lettura e potrai sempre estenderlo o riprenderlo.`,
+        cancel: "Annulla",
+        confirm: "Concludi percorso",
+        concluded: "Percorso concluso",
+      },
       pausedNotice:
         "Il cliente è In pausa: il percorso è in sola lettura. Per modificarlo riportalo In percorso dal Profilo.",
       recalcNote:
@@ -2009,7 +2022,7 @@ export const copy = {
       dialog: {
         title: "Estendi o riprendi il percorso",
         description:
-          "Il percorso concluso resta nello storico. Ne parte uno nuovo, collegato a quello.",
+          "Il percorso precedente si conclude e resta nello storico. Ne parte uno nuovo, collegato a quello.",
         stageNotice: (name: string) =>
           `Creando il nuovo percorso, ${name} torna In percorso in automatico. Il cambio di fase resta nello storico, con data e autore.`,
         compositionLabel: "Come è composto il nuovo percorso",
@@ -2044,6 +2057,8 @@ export const copy = {
         notFound: "Il percorso non esiste o non appartiene al tuo studio.",
         alreadyActive: "Il cliente ha già un percorso attivo.",
         concluded: "Il percorso è concluso: è in sola lettura.",
+        sessionsOpen:
+          "Ci sono ancora sessioni da fare: segnale come completate o saltate prima di estendere il percorso.",
         paused:
           "Il cliente è In pausa: il percorso è in sola lettura. Per modificarlo riportalo In percorso dal Profilo.",
         previousNotConcluded:

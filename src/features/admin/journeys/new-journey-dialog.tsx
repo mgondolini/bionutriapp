@@ -62,7 +62,10 @@ export function NewJourneyDialog({
   clientConcluded,
   today,
   threshold,
+  triggerLabel,
 }: {
+  /** Testo del pulsante, se diverso da quello predefinito ("Estendi"). */
+  triggerLabel?: string;
   clientId: string;
   clientName: string;
   previous: PreviousJourney | null;
@@ -137,7 +140,7 @@ export function NewJourneyDialog({
         ) : (
           <Plus aria-hidden="true" />
         )}
-        {previous ? t.extend : t.empty.action}
+        {triggerLabel ?? (previous ? t.extend : t.empty.action)}
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
