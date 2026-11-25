@@ -170,6 +170,12 @@ async function loadOwnedClient(studioId: string, clientId: string) {
   return client?.studio_id === studioId ? client : null;
 }
 
+/** Cliente In pausa: il percorso è in sola lettura (nessuna modifica). */
+async function isPaused(clientId: string): Promise<boolean> {
+  const client = await clientsRepository.getClientProfile(clientId);
+  return client?.journey_stage === "paused";
+}
+
 /** Scheda Percorso (A17–A19); null se il cliente non è dello studio. */
 export async function getStaffJourneys(
   studioId: string,
@@ -223,6 +229,7 @@ export type JourneyFailure =
   | "not_found"
   | "already_active"
   | "concluded"
+  | "paused"
   | "previous_not_concluded"
   | "shorten_blocked"
   | "shorten_blocked_photos";
@@ -249,6 +256,7 @@ export async function createJourney(
 ): Promise<Result<{ journeyId: string; stageChanged: boolean }>> {
   const client = await loadOwnedClient(studioId, input.clientId);
   if (!client) return { ok: false, reason: "not_found" };
+  if (client.journey_stage === "paused") return { ok: false, reason: "paused" };
   if (await journeysRepository.hasActiveJourney(input.clientId)) {
     return { ok: false, reason: "already_active" };
   }
@@ -323,6 +331,7 @@ export async function updateJourney(
     return { ok: false, reason: "not_found" };
   }
   if (journey.status !== "active") return { ok: false, reason: "concluded" };
+  if (await isPaused(journey.client_id)) return { ok: false, reason: "paused" };
 
   const existing = journey.journey_sessions.map((session) => ({
     id: session.id,
@@ -407,6 +416,7 @@ async function loadOwnedSession(
   if (session.client_journeys.status !== "active") {
     return { ok: false, reason: "concluded" };
   }
+  if (await isPaused(session.client_id)) return { ok: false, reason: "paused" };
   return { ok: true, session };
 }
 

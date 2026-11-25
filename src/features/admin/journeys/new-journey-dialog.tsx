@@ -18,14 +18,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { redirectIfSignedOut } from "@/lib/auth/session-expired";
 import {
-  JOURNEY_CHECKS_BY_DURATION,
   JOURNEY_DURATIONS,
-  JOURNEY_GIFT_MODES,
+  JOURNEY_GIFT_OPTIONS,
   type JourneyDuration,
-  type JourneyGiftMode,
+  type JourneyGiftOption,
 } from "@/lib/constants/domain";
 import { copy } from "@/lib/copy/it";
 import {
+  journeyCheckCount,
   planJourney,
   suggestComposition,
 } from "@/lib/domain/journeys/composition";
@@ -79,7 +79,7 @@ export function NewJourneyDialog({
     : null;
   const initial = {
     includeOnboarding: suggestion?.includeOnboarding ?? true,
-    giftMode: suggestion?.giftMode ?? ("none" as JourneyGiftMode),
+    giftMode: suggestion?.giftMode ?? ("none" as JourneyGiftOption),
     durationMonths: suggestion?.durationMonths ?? (6 as JourneyDuration),
     startDate: today,
   };
@@ -96,7 +96,7 @@ export function NewJourneyDialog({
     preview.map((session) => ({ ...session, id: String(session.position) })),
     "staff",
   );
-  const checks = JOURNEY_CHECKS_BY_DURATION[values.durationMonths];
+  const checks = journeyCheckCount(values);
 
   const onOpenChange = (next: boolean) => {
     setOpen(next);
@@ -182,7 +182,7 @@ export function NewJourneyDialog({
 
         <fieldset className="flex flex-col gap-2.5">
           <legend className="sr-only">{d.giftLabel}</legend>
-          {JOURNEY_GIFT_MODES.map((mode) => (
+          {JOURNEY_GIFT_OPTIONS.map((mode) => (
             <label
               key={mode}
               htmlFor={`${ids}-gift-${mode}`}

@@ -6,7 +6,7 @@ import { z } from "zod";
 
 import {
   JOURNEY_DURATIONS,
-  JOURNEY_GIFT_MODES,
+  JOURNEY_GIFT_OPTIONS,
   JOURNEY_NOTE_MAX,
   JOURNEY_SESSION_STATUSES,
   MEET_URL_PATTERN,
@@ -38,7 +38,7 @@ export const sessionTimeSchema = z
   .transform((value) => value || null);
 
 export const durationSchema = z
-  .union([z.literal(6), z.literal(12)])
+  .union([z.literal(3), z.literal(6), z.literal(12)])
   .refine((value): value is JourneyDuration =>
     (JOURNEY_DURATIONS as readonly number[]).includes(value),
   );
@@ -49,7 +49,7 @@ export const createJourneySchema = z.object({
   durationMonths: durationSchema,
   startDate: journeyDateSchema,
   includeOnboarding: z.boolean(),
-  giftMode: z.enum(JOURNEY_GIFT_MODES),
+  giftMode: z.enum(JOURNEY_GIFT_OPTIONS),
 });
 export type CreateJourneyInput = z.input<typeof createJourneySchema>;
 

@@ -1,12 +1,13 @@
 /**
  * Composizione del percorso (A17, A18): onboarding sì o no, check omaggio
  * (nessuno, aggiunto o incluso) e durata decidono tipo e numero delle
- * sessioni, da 5 a 13.
+ * sessioni, da 6 a 13.
  */
 import {
   JOURNEY_CHECKS_BY_DURATION,
   type JourneyDuration,
   type JourneyGiftMode,
+  type JourneyGiftOption,
   type JourneyKind,
   type JourneySessionType,
 } from "@/lib/constants/domain";
@@ -29,6 +30,15 @@ export type PlannedSessionWithDate = PlannedSession & {
 };
 
 /**
+ * Check del percorso: quelli della durata, più uno senza onboarding (il posto
+ * dell'onboarding diventa un check: 6 invece di 5, 12 invece di 11).
+ */
+export function journeyCheckCount(composition: JourneyComposition): number {
+  const checks = JOURNEY_CHECKS_BY_DURATION[composition.durationMonths];
+  return composition.includeOnboarding ? checks : checks + 1;
+}
+
+/**
  * Tipi nell'ordine del percorso: onboarding (se c'è), poi i check. Con
  * l'omaggio aggiunto si somma un check gratuito in testa; con l'omaggio
  * incluso il primo check del percorso diventa omaggio.
@@ -36,7 +46,7 @@ export type PlannedSessionWithDate = PlannedSession & {
 export function buildSessions(
   composition: JourneyComposition,
 ): PlannedSession[] {
-  const checks = JOURNEY_CHECKS_BY_DURATION[composition.durationMonths];
+  const checks = journeyCheckCount(composition);
   const types: JourneySessionType[] = [];
   if (composition.includeOnboarding) types.push("onboarding");
   if (composition.giftMode === "added") {
@@ -67,6 +77,7 @@ export function planJourney(
 }
 
 export type CompositionSuggestion = JourneyComposition & {
+  giftMode: JourneyGiftOption;
   kind: Exclude<JourneyKind, "first">;
   /** Vero se il percorso concluso è entro la soglia. */
   withinThreshold: boolean;

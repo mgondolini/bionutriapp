@@ -27,7 +27,7 @@ export function addMonths(day: string, months: number): string {
   return `${String(y).padStart(4, "0")}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
 
-/** Fine del percorso: inizio + 6 o 12 mesi (non si modifica a mano). */
+/** Fine del percorso: inizio + 3, 6 o 12 mesi (non si modifica a mano). */
 export function journeyEndDate(
   start: string,
   durationMonths: JourneyDuration,

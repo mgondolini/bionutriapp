@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { meetingUrlSchema, setSessionMeetingSchema } from "./journeys.schema";
+import {
+  createJourneySchema,
+  meetingUrlSchema,
+  setSessionMeetingSchema,
+} from "./journeys.schema";
 
 const VALID = "https://meet.google.com/kqz-mdvr-hdp";
 const INVALID_MESSAGE =
@@ -55,5 +59,36 @@ describe("link Meet di un check", () => {
         setSessionMeetingSchema.safeParse({ sessionId, meetingUrl }).success,
       ).toBe(false);
     }
+  });
+});
+
+describe("createJourneySchema", () => {
+  const base = {
+    clientId: "aaaaaaaa-2222-4000-8000-000000000001",
+    previousJourneyId: null,
+    durationMonths: 3,
+    startDate: "2026-11-25",
+    includeOnboarding: true,
+    giftMode: "none",
+  };
+
+  it("accetta 3, 6 e 12 mesi", () => {
+    for (const durationMonths of [3, 6, 12]) {
+      expect(
+        createJourneySchema.safeParse({ ...base, durationMonths }).success,
+      ).toBe(true);
+    }
+    expect(
+      createJourneySchema.safeParse({ ...base, durationMonths: 9 }).success,
+    ).toBe(false);
+  });
+
+  it("l'omaggio incluso non si sceglie più", () => {
+    expect(
+      createJourneySchema.safeParse({ ...base, giftMode: "added" }).success,
+    ).toBe(true);
+    expect(
+      createJourneySchema.safeParse({ ...base, giftMode: "included" }).success,
+    ).toBe(false);
   });
 });

@@ -1879,7 +1879,7 @@ export const copy = {
       done: "Completata",
       skipped: "Saltata",
     },
-    duration: { 6: "6 mesi", 12: "1 anno" },
+    duration: { 3: "3 mesi", 6: "6 mesi", 12: "1 anno" },
     kind: {
       first: "Primo percorso",
       extension: "Estensione",
@@ -1919,7 +1919,7 @@ export const copy = {
       endLabel: "Data di fine",
       endCalculated: "(calcolata)",
       durationHint:
-        "Con 6 mesi: onboarding + 5 check. Con 1 anno: onboarding + 11 check. I check sono a distanza regolare (circa uno al mese) e l’ultimo cade sulla data di fine.",
+        "Con 3 mesi: onboarding + 2 check. Con 6 mesi: onboarding + 5 check. Con 1 anno: onboarding + 11 check. Senza onboarding c’è un check in più. I check sono a distanza regolare (circa uno al mese) e l’ultimo cade sulla data di fine.",
       recalcSummary: (recalculated: number, fixed: number) =>
         `${recalculated === 1 ? "1 sessione si ricalcola" : `${recalculated} sessioni si ricalcolano`}${fixed > 0 ? `, ${fixed === 1 ? "1 resta ferma" : `${fixed} restano ferme`} perché ${fixed === 1 ? "l’hai modificata" : "le hai modificate"} a mano` : ""}.`,
       recalcAdded: (n: number) =>
@@ -1932,6 +1932,8 @@ export const copy = {
         "Non puoi cambiare la durata: un check con foto di avanzamento già caricate verrebbe tolto o non prevederebbe più le foto.",
       applyDuration: "Aggiorna le date",
       durationSaved: "Percorso aggiornato",
+      pausedNotice:
+        "Il cliente è In pausa: il percorso è in sola lettura. Per modificarlo riportalo In percorso dal Profilo.",
       recalcNote:
         "Se cambi durata o data di inizio, le sessioni che non hai toccato si ricalcolano. Quelle con data modificata a mano restano dove le hai messe.",
       sessionsTitle: "Sessioni",
@@ -2022,11 +2024,7 @@ export const copy = {
           },
           added: {
             label: "Check omaggio aggiunto ai check",
-            hint: "Il primo check è gratuito e si somma a quelli del percorso (5 con 6 mesi, 11 con 1 anno).",
-          },
-          included: {
-            label: "Check omaggio incluso nei check",
-            hint: "Il check gratuito è uno di quelli del percorso: il cliente ne ha uno a pagamento in meno.",
+            hint: "Il primo check è gratuito e si somma a quelli del percorso (2 con 3 mesi, 5 con 6 mesi, 11 con 1 anno; uno in più senza onboarding).",
           },
         },
         endPreview: "Fine:",
@@ -2046,6 +2044,8 @@ export const copy = {
         notFound: "Il percorso non esiste o non appartiene al tuo studio.",
         alreadyActive: "Il cliente ha già un percorso attivo.",
         concluded: "Il percorso è concluso: è in sola lettura.",
+        paused:
+          "Il cliente è In pausa: il percorso è in sola lettura. Per modificarlo riportalo In percorso dal Profilo.",
         previousNotConcluded:
           "Puoi estendere o riprendere solo un percorso concluso.",
         dateRequired: "Inserisci una data valida.",

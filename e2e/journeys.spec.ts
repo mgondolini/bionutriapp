@@ -202,7 +202,8 @@ test("dal percorso concluso si estende con l'omaggio e il cliente torna In perco
   ).toBeChecked();
   await dialog.getByRole("button", { name: "6 mesi" }).click();
   await dialog.getByLabel("Data di inizio").fill(todayInRome());
-  await expect(dialog.getByText("6 sessioni:")).toBeVisible();
+  // senza onboarding 6 check (il suo posto diventa un check), più l'omaggio
+  await expect(dialog.getByText("7 sessioni:")).toBeVisible();
   await dialog.getByRole("button", { name: "Crea nuovo percorso" }).click();
   await dialog.getByRole("button", { name: "Crea nuovo percorso" }).click();
   await expect(page.getByText("Percorso creato")).toBeVisible();
@@ -462,4 +463,38 @@ test("il cliente non legge le sessioni di altri clienti né la nota e l'omaggio"
   expect(html).not.toContain(OTHER_MEET);
   expect(html).not.toContain(OTHER_SESSION_MEET);
   await device.context.close();
+});
+
+test("con il cliente In pausa il percorso è in sola lettura", async ({
+  page,
+}) => {
+  const admin = adminClient();
+  const setStage = async (stage: "paused" | "in_progress") => {
+    const { error } = await admin
+      .from("clients")
+      .update({ journey_stage: stage })
+      .eq("id", client.clientId);
+    if (error) throw error;
+  };
+  await setStage("paused");
+  try {
+    await login(page, OWNER.email, OWNER.password);
+    await expect(page).toHaveURL(/\/admin/);
+    await openJourneyTab(page, client.clientId);
+    await expect(
+      page.getByText(/Il cliente è In pausa: il percorso è in sola lettura/),
+    ).toBeVisible();
+    // quadrati senza pulsanti, niente durata, salvataggio né nuovo percorso
+    const sessions = page.getByRole("list", { name: "Sessioni del percorso" });
+    await expect(sessions.getByRole("listitem").first()).toBeVisible();
+    await expect(sessions.getByRole("button")).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "Salva modifiche" }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "Estendi o riprendi" }),
+    ).toHaveCount(0);
+  } finally {
+    await setStage("in_progress");
+  }
 });

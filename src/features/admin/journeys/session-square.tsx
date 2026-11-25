@@ -99,7 +99,8 @@ export function SessionSquareContent({
             </span>
           ) : null}
           {session.modified ? (
-            <span className="rounded-full bg-warm px-2 py-0.5 text-[11px] font-bold text-foreground">
+            // Profondo, non pesca: la pesca è delle foto da completare e dell'omaggio
+            <span className="rounded-full bg-foreground px-2 py-0.5 text-[11px] font-bold text-white">
               {t.admin.modified}
             </span>
           ) : null}

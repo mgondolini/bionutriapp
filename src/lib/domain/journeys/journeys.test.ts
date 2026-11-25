@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildSessions,
+  journeyCheckCount,
   planJourney,
   suggestComposition,
   type JourneyComposition,
@@ -142,6 +143,7 @@ describe("composizione", () => {
       "check",
       "check",
       "check",
+      "check",
     ]);
     const included = buildSessions({
       durationMonths: 6,
@@ -158,14 +160,46 @@ describe("composizione", () => {
     ]);
   });
 
-  it("da 5 a 13 sessioni", () => {
+  it("senza onboarding un check in più: 6 con 6 mesi, 12 con un anno", () => {
+    const six = {
+      durationMonths: 6,
+      includeOnboarding: false,
+      giftMode: "none",
+    } as const;
+    expect(buildSessions(six).map((s) => s.type)).toEqual(
+      Array(6).fill("check"),
+    );
+    expect(journeyCheckCount(six)).toBe(6);
+    expect(journeyCheckCount({ ...six, durationMonths: 12 })).toBe(12);
+    expect(journeyCheckCount({ ...six, includeOnboarding: true })).toBe(5);
+  });
+
+  it("3 mesi: onboarding + 2 check, 3 check senza onboarding", () => {
+    const three = {
+      durationMonths: 3,
+      includeOnboarding: true,
+      giftMode: "none",
+    } as const;
+    expect(buildSessions(three).map((s) => s.type)).toEqual([
+      "onboarding",
+      "check",
+      "check",
+    ]);
+    expect(buildSessions({ ...three, includeOnboarding: false })).toHaveLength(
+      3,
+    );
+    const plan = planJourney(three, "2026-11-25");
+    expect(plan.at(-1)!.calculatedDate).toBe("2027-02-25");
+  });
+
+  it("da 3 a 13 sessioni", () => {
     expect(
       buildSessions({
         durationMonths: 6,
         includeOnboarding: false,
         giftMode: "none",
       }),
-    ).toHaveLength(5);
+    ).toHaveLength(6);
     expect(
       buildSessions({
         durationMonths: 12,
@@ -181,7 +215,7 @@ describe("composizione", () => {
       "2026-11-12",
     );
     expect(plan.map((s) => s.calculatedDate)).toEqual(
-      calculateSessionDates("2026-11-12", 6, 6),
+      calculateSessionDates("2026-11-12", 6, 7),
     );
   });
 

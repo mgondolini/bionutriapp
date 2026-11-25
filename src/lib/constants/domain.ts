@@ -618,20 +618,31 @@ export function videoPath(folderId: string, videoId: string): string {
 // Percorso (mockup v5: A17–A19, C5, C19–C21)
 // ---------------------------------------------------------------------
 
-/** Durata in mesi: 6 mesi oppure 1 anno. */
-export const JOURNEY_DURATIONS = [6, 12] as const;
+/** Durata in mesi: 3 mesi, 6 mesi oppure 1 anno. */
+export const JOURNEY_DURATIONS = [3, 6, 12] as const;
 export type JourneyDuration = (typeof JOURNEY_DURATIONS)[number];
 /** Check del percorso, senza onboarding né omaggio aggiunto. */
 export const JOURNEY_CHECKS_BY_DURATION: Record<JourneyDuration, number> = {
+  3: 2,
   6: 5,
   12: 11,
 };
 /** Primo percorso, estensione (entro la soglia) o ripresa (oltre). */
 export const JOURNEY_KINDS = ["first", "extension", "resume"] as const;
 export type JourneyKind = (typeof JOURNEY_KINDS)[number];
-/** Check omaggio: nessuno, aggiunto ai check del percorso o incluso. */
+/**
+ * Check omaggio: nessuno, aggiunto ai check del percorso o incluso. "Incluso"
+ * non si sceglie più (decisione del nutrizionista, 25 novembre 2026): resta
+ * solo per leggere i percorsi già creati così.
+ */
 export const JOURNEY_GIFT_MODES = ["none", "added", "included"] as const;
 export type JourneyGiftMode = (typeof JOURNEY_GIFT_MODES)[number];
+/** Le scelte offerte per un nuovo percorso. */
+export const JOURNEY_GIFT_OPTIONS = [
+  "none",
+  "added",
+] as const satisfies readonly JourneyGiftMode[];
+export type JourneyGiftOption = (typeof JOURNEY_GIFT_OPTIONS)[number];
 export const JOURNEY_STATUSES = ["active", "concluded"] as const;
 export type JourneyStatus = (typeof JOURNEY_STATUSES)[number];
 export const JOURNEY_SESSION_TYPES = ["onboarding", "check", "gift"] as const;

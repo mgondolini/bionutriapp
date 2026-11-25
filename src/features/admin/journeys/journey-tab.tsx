@@ -154,6 +154,51 @@ function ConcludedJourney({
 }
 
 /**
+ * Percorso attivo di un cliente In pausa: sola lettura, solo i quadrati delle
+ * sessioni e l'avviso (il service rifiuta comunque ogni modifica).
+ */
+function PausedJourney({
+  journey,
+  today,
+}: {
+  journey: StaffJourneyView;
+  today: string;
+}) {
+  return (
+    <section
+      aria-labelledby="journey-paused"
+      className="flex flex-col gap-5 rounded-[20px] border border-admin-line bg-card p-6"
+    >
+      <div className="flex flex-col gap-1">
+        <h2 id="journey-paused" className="text-[17px] font-bold">
+          {t.journeyHeading(journey.number, t.duration[journey.durationMonths])}
+        </h2>
+        <p
+          role="status"
+          className="mt-2 flex gap-2.5 rounded-xl bg-info px-4 py-3 text-sm text-info-foreground"
+        >
+          <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+          {t.admin.pausedNotice}
+        </p>
+      </div>
+      <ul
+        aria-label={t.admin.sessionsGroup}
+        className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6"
+      >
+        {journey.sessions.map((session) => (
+          <li
+            key={session.id}
+            className={sessionSquareClass(session.state, false)}
+          >
+            <SessionSquareContent session={session} today={today} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/**
  * Scheda Percorso (A17–A19): stato vuoto con "Imposta percorso", storico dei
  * percorsi, avviso del ritorno automatico In percorso e il percorso scelto
  * (attivo modificabile, concluso in sola lettura).
@@ -175,14 +220,16 @@ export function JourneyTab({
         title={t.admin.empty.title}
         description={t.admin.empty.description}
         action={
-          <NewJourneyDialog
-            clientId={client.id}
-            clientName={clientName}
-            previous={null}
-            clientConcluded={client.stage === "completed"}
-            today={today}
-            threshold={data.threshold}
-          />
+          client.stage === "paused" ? undefined : (
+            <NewJourneyDialog
+              clientId={client.id}
+              clientName={clientName}
+              previous={null}
+              clientConcluded={client.stage === "completed"}
+              today={today}
+              threshold={data.threshold}
+            />
+          )
         }
       />
     );
@@ -222,7 +269,9 @@ export function JourneyTab({
           selectedId={selected.id}
         />
       ) : null}
-      {selected.status === "active" ? (
+      {selected.status === "active" && client.stage === "paused" ? (
+        <PausedJourney journey={selected} today={today} />
+      ) : selected.status === "active" ? (
         <>
           <DurationCard
             key={`${selected.id}-${selected.startDate}-${selected.durationMonths}`}
@@ -257,7 +306,9 @@ export function JourneyTab({
         <ConcludedJourney
           journey={selected}
           data={data}
-          canExtend={!active && selected.id === latest.id}
+          canExtend={
+            !active && selected.id === latest.id && client.stage !== "paused"
+          }
           clientName={clientName}
         />
       )}
